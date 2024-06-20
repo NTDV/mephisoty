@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
-import ru.valkovets.mephisoty.settings.VisibilityState;
+import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.settings.AllowState;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -22,6 +21,12 @@ public class Season {
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 private Long id;
 
+private User createdBy;
+private OffsetDateTime createdAt;
+private User editedBy;
+private OffsetDateTime editedAt;
+private String comment;
+
 private String title;
 private String description;
 private String rules;
@@ -30,6 +35,6 @@ private OffsetDateTime end;
 
 private String resultFormula; // math + Season stages
 
-private VisibilityState stageVisibility;
-private VisibilityState scoreVisibility;
+private AllowState stageVisibility;
+private AllowState scoreVisibility;
 }

@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.valkovets.mephisoty.db.model.userdata.User;
+
+import java.time.OffsetDateTime;
 
 @Entity
 @Getter
@@ -16,6 +19,12 @@ public class AchievementType {
 @Id
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 private Long id;
+
+private User createdBy;
+private OffsetDateTime createdAt;
+private User editedBy;
+private OffsetDateTime editedAt;
+private String comment;
 
 private String title;
 private String description;

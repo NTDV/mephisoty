@@ -1,21 +1,23 @@
-package ru.valkovets.mephisoty.db.model.season.timing;
+package ru.valkovets.mephisoty.db.model.season.qa;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "schedule_record")
-public class ScheduleRecord {
+@Table(name = "answer")
+public class Answer {
 @Id
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 private Long id;
@@ -26,6 +28,9 @@ private User editedBy;
 private OffsetDateTime editedAt;
 private String comment;
 
-private User participant;
-private StageSchedule stageSchedule;
+private Question question;
+
+private String shortAnswer;
+private String richAnswer;
+private Set<File> files;
 }

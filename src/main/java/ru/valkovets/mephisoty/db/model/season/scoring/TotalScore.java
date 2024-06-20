@@ -9,6 +9,8 @@ import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -19,6 +21,12 @@ public class TotalScore {
 @Id
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 private Long id;
+
+private User createdBy;
+private OffsetDateTime createdAt;
+private User editedBy;
+private OffsetDateTime editedAt;
+private String comment;
 
 private Season season;
 
