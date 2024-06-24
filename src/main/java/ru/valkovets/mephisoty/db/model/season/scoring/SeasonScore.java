@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
-import ru.valkovets.mephisoty.db.model.season.Stage;
+import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
 @Entity
@@ -18,12 +18,12 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Table(name = "stage_score")
-public class StageScore extends BasicEntity {
+@Table(name = "total_score")
+public class SeasonScore extends BasicEntity {
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "stage_id", nullable = false)
+@JoinColumn(name = "season_id", nullable = false)
 @NotNull
-private Stage stage;
+private Season season;
 
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "participant_id", nullable = false)
@@ -32,5 +32,5 @@ private User participant;
 
 @Column(name = "score")
 @PositiveOrZero
-private Float scoreByStageFormula;
+private Float scoreBySeasonFormula;
 }

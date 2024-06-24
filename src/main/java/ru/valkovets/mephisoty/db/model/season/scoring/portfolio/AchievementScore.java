@@ -1,37 +1,49 @@
 package ru.valkovets.mephisoty.db.model.season.scoring.portfolio;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-
-import java.time.OffsetDateTime;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "achievement_score")
-public class AchievementScore {
-@Id
-@GeneratedValue(strategy = GenerationType.SEQUENCE)
-private Long id;
+public class AchievementScore extends BasicEntity {
 
-private User createdBy;
-private OffsetDateTime createdAt;
-private User editedBy;
-private OffsetDateTime editedAt;
-private String comment;
-
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "participant_id", nullable = false)
+@NotNull
 private User participant;
+
+@ManyToOne(fetch = FetchType.EAGER, optional = false)
+@JoinColumn(name = "type_id", nullable = false)
 private AchievementType type;
 
-private float bySum;
-private float byFormula;
-private float byExpert;
+@NotNull
+@Column(name = "sum", nullable = false)
+@PositiveOrZero
+private Float byPlainSum = 0f;
 
-private float totalByFormula;
+@NotNull
+@Column(name = "formula")
+@PositiveOrZero
+private Float byFormulaSum;
+
+@Column(name = "expert")
+@PositiveOrZero
+private Float byExpert;
+
+@Column(name = "total")
+@PositiveOrZero
+private Float totalByFormula;
 }

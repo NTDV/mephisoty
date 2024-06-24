@@ -1,43 +1,49 @@
 package ru.valkovets.mephisoty.db.model.files;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.season.qa.Answer;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @Table(name = "file")
-public class File {
-@Id
-@GeneratedValue(generator = "org.hibernate.id.UUIDGenerator")
-@GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-@Column(name = "id", updatable = false, nullable = false)
-private UUID id;
-
-private User createdBy;
-private OffsetDateTime createdAt;
-
+public class File extends BasicEntity {
+@Length(max = 200)
+@Column(name = "original_name", length = 200)
+@NotBlank
 private String originalName;
 
-@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "owner_id", nullable = false)
+@NotNull
 private User owner;
 
-//@ElementCollection
-//private Set<FileAccessPolicy> accessPolicy;
+@NotNull
+@OneToMany(mappedBy = "avatar", orphanRemoval = true)
+private Set<User> usersWithSuchAvatar = new HashSet<>();
 
-// todo сделать норм
-public File(final String originalName, final User owner) {
-    this.originalName = originalName;
-    this.owner = owner;
-}
+@Enumerated
+@NotNull
+@Column(name = "access_policy")
+private FileAccessPolicy accessPolicy = FileAccessPolicy.ADMIN;
+
+@ManyToMany(fetch = FetchType.LAZY, mappedBy = "files")
+@NotNull
+private Set<Answer> answers = new LinkedHashSet<>();
+
 }

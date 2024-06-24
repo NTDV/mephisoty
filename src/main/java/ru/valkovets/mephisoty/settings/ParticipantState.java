@@ -1,11 +1,9 @@
 package ru.valkovets.mephisoty.settings;
 
-public enum UserState {
+public enum ParticipantState {
     PARTICIPANT,
     DISQUALIFIED,
     FINAL_MEMBER,
     WINNER,
-    BANNED,
-    ADMIN,
-    EXPERT
+    BANNED;
 }

@@ -1,35 +1,55 @@
 package ru.valkovets.mephisoty.db.model.season.scoring.portfolio;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.valkovets.mephisoty.db.model.userdata.User;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
+import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
+import ru.valkovets.mephisoty.settings.ValidationConst;
 
-import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "achievement_type")
-public class AchievementType {
-@Id
-@GeneratedValue(strategy = GenerationType.SEQUENCE)
-private Long id;
+public class AchievementType extends TdrEntity {
 
-private User createdBy;
-private OffsetDateTime createdAt;
-private User editedBy;
-private OffsetDateTime editedAt;
-private String comment;
-
-private String title;
-private String description;
+@Length(max = 100)
+@Column(name = "literal", nullable = false, unique = true, length = 100)
+@Pattern(regexp = ValidationConst.LITERAL_PATTERN)
+@NotBlank
 private String literal; // :S - bySum, :F - byFormula, :E - byExpert
 
-private String byFormulaFormula;
-private String totalFormula;
+@Length(max = 1000)
+@Column(name = "sum_formula", length = 1000)
+@Pattern(regexp = ValidationConst.FORMULA_PATTERN)
+@NotBlank
+private String typeSumFormula;
+
+@Length(max = 1000)
+@Column(name = "total_formula", length = 1000)
+@Pattern(regexp = ValidationConst.FORMULA_PATTERN)
+@NotBlank
+private String typeTotalFormula;
+
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "achievementType", orphanRemoval = true)
+@NotNull
+private Set<Achievement> achievements = new LinkedHashSet<>();
+
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "type", orphanRemoval = true)
+@NotNull
+private Set<AchievementScore> achievementScores = new LinkedHashSet<>();
+
 }

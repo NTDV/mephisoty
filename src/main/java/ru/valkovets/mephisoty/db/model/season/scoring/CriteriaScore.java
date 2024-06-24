@@ -1,35 +1,45 @@
 package ru.valkovets.mephisoty.db.model.season.scoring;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.valkovets.mephisoty.db.model.season.timing.ScheduleRecord;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.proxy.HibernateProxy;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
-import java.time.OffsetDateTime;
+import java.util.Objects;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 @Table(name = "criteria_score")
-public class CriteriaScore {
-@Id
-@GeneratedValue(strategy = GenerationType.SEQUENCE)
-private Long id;
+public class CriteriaScore extends BasicEntity {
 
-private User createdBy;
-private OffsetDateTime createdAt;
-private User editedBy;
-private OffsetDateTime editedAt;
-private String comment;
-
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "criteria_id", nullable = false)
+@NotNull
 private Criteria criteria;
 
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "expert_id", nullable = false)
+@NotNull
 private User expert;
+
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "participant_id", nullable = false)
+@NotNull
 private User participant;
-private float score;
+
+@NotNull
+@Column(name = "score", nullable = false)
+@PositiveOrZero
+private Float score = 0f;
 }

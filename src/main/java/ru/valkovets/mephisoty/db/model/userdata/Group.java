@@ -1,29 +1,35 @@
 package ru.valkovets.mephisoty.db.model.userdata;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.proxy.HibernateProxy;
+import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 
-import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "group")
-public class Group {
-@Id
-@GeneratedValue(strategy = GenerationType.SEQUENCE)
-private Long id;
+@SuperBuilder
+@Table(name = "app_group")
+public class Group extends BasicEntity {
 
-private User createdBy;
-private OffsetDateTime createdAt;
-private User editedBy;
-private OffsetDateTime editedAt;
-private String comment;
-
+@Length(min = 1, max = 10)
+@NotBlank
+@Column(name = "title", nullable = false, unique = true, length = 10)
 private String title;
+
+@NotNull
+@OneToMany(mappedBy = "group")
+private Set<User> users = new LinkedHashSet<>();
 }

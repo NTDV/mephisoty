@@ -1,13 +1,12 @@
 package ru.valkovets.mephisoty.application;
 
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
-import ru.valkovets.mephisoty.application.configuration.StorageConfiguration;
+import ru.valkovets.mephisoty.application.config.StorageConfig;
 import ru.valkovets.mephisoty.application.services.StorageService;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.userdata.User;
@@ -28,7 +27,7 @@ private final FileRepository fileRepository;
 private final Path rootLocation;
 
 @Autowired
-public FileSystemStorageService(final FileRepository fileRepository, final StorageConfiguration configuration) throws IOException {
+public FileSystemStorageService(final FileRepository fileRepository, final StorageConfig configuration) throws IOException {
     this.rootLocation = Paths.get(configuration.getLocation());
     this.fileRepository = fileRepository;
     init();
@@ -53,14 +52,14 @@ public Path getRootPath() {
 
 @Override
 public File save(final ByteArrayOutputStream stream, final String originalName, final User owner) throws IOException {
-    final File fileEntity = fileRepository.save(new File(originalName, owner));
+    final File fileEntity = fileRepository.save(File.builder().originalName(originalName).owner(owner).build());
     store(stream, fileEntity.getId().toString());
     return fileEntity;
 }
 
 @Override
 public File save(final MultipartFile file, final User owner) throws FileSystemException {
-    final File fileEntity = fileRepository.save(new File(file.getOriginalFilename(), owner));
+    final File fileEntity = fileRepository.save(File.builder().originalName(file.getOriginalFilename()).owner(owner).build());
     store(file, fileEntity.getId().toString());
     return fileEntity;
 }
