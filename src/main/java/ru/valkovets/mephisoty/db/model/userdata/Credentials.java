@@ -6,21 +6,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.valkovets.mephisoty.db.dto.userdata.CredentialsDto;
+import ru.valkovets.mephisoty.api.dto.userdata.SignUpRequest;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
-import ru.valkovets.mephisoty.security.credentials.PasswordManager;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -81,7 +78,7 @@ public static Credentials getCurrent() {
     return ((Credentials) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 }
 
-public static Credentials from(final CredentialsDto dto, final PasswordEncoder passwordEncoder) {
+public static Credentials from(final SignUpRequest dto, final PasswordEncoder passwordEncoder) {
     return Credentials.builder()
                       .comment(dto.comment())
                       .email(dto.email())

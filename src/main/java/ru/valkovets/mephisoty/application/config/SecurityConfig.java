@@ -1,44 +1,101 @@
 package ru.valkovets.mephisoty.application.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
+import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
+import ru.valkovets.mephisoty.security.filter.JwtAuthenticationFilter;
+import ru.valkovets.mephisoty.settings.ParticipantState;
+import ru.valkovets.mephisoty.settings.UserRole;
+
+import java.util.List;
+
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(11);
+private final JwtAuthenticationFilter jwtAuthenticationFilter;
+private final CredentialsService credentialsService;
+public static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(11);
+
+
+//@Autowired
+public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
+    auth.inMemoryAuthentication()
+        .withUser(Credentials.builder()
+                             .id(0L)
+                             .email("noreply@mephisoty.ru")
+                             .password("123321")
+                             .role(UserRole.ADMIN)
+                             .user(User.builder()
+                                       .state(ParticipantState.NOT_PARTICIPANT)
+                                       .firstName("Robot")
+                                       .secondName("Robot")
+                                       .thirdName("Robot")
+                                       .build())
+                             .build());
+}
+
+@Bean
+public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+    http.csrf(AbstractHttpConfigurer::disable)
+        // Своего рода отключение CORS (разрешение запросов со всех доменов)
+        .cors(cors -> cors.configurationSource(request -> {
+            final var corsConfiguration = new CorsConfiguration();
+            corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+            corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            corsConfiguration.setAllowedHeaders(List.of("*"));
+            corsConfiguration.setAllowCredentials(true);
+            return corsConfiguration;
+        }))
+        // Настройка доступа к конечным точкам
+        .authorizeHttpRequests(request -> request
+                // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+        .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
+        .authenticationProvider(authenticationProvider())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+}
+
 
 @Bean
 public PasswordEncoder passwordEncoder() {
     return passwordEncoder;
 }
 
-@Autowired
-public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication().withUser("user")
-        .password(passwordEncoder.encode("password"))
-        .roles("USER");
+@Bean
+public AuthenticationProvider authenticationProvider() {
+    final DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(credentialsService.userDetailsService());
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
 }
 
 @Bean
-public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
-    http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-        .csrf(AbstractHttpConfigurer::disable)
-        .cors(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth.requestMatchers("/registration")
-                                           .permitAll()
-                                           .anyRequest()
-                                           .authenticated());
-
-    return http.build();
+public AuthenticationManager authenticationManager(final AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
 }
 }

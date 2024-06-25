@@ -8,8 +8,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.valkovets.mephisoty.db.dto.userdata.UserDto;
+import ru.valkovets.mephisoty.api.dto.userdata.UserRegistrationDto;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.season.schedule.ScheduleRecord;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
@@ -114,7 +113,7 @@ private Set<Answer> answers = new LinkedHashSet<>();
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<Answer> answersAsExpert = new LinkedHashSet<>();
 
-public static User from(final UserDto dto) {
+public static User from(final UserRegistrationDto dto) {
     return User.builder()
                .comment(dto.comment())
                .state(dto.state())
