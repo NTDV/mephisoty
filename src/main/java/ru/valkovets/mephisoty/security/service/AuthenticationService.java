@@ -36,15 +36,9 @@ public JwtAuthenticationResponse signUp(final SignUpRequest request) {
  * @return токен
  */
 public JwtAuthenticationResponse signIn(final SignInRequest request) {
-    try {
-        authenticationManager.authenticate(request.getAuthToken());
-    } catch (final BadCredentialsException e) {
-        System.out.println(e);
-        throw e;
-    }
-    final UserDetails credentials = credentialsService
-            .userDetailsService()
-            .loadUserByUsername(request.email());
-    return new JwtAuthenticationResponse(jwtService.generateToken(credentials));
+    authenticationManager.authenticate(request.getAuthToken());
+
+    return new JwtAuthenticationResponse(jwtService.generateToken(
+            credentialsService.userDetailsService().loadUserByUsername(request.email())));
 }
 }

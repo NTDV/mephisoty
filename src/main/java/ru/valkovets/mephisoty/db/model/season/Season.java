@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 import ru.valkovets.mephisoty.settings.AllowState;
@@ -27,8 +28,10 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "season")
+@NamedEntityGraph(name = "season_with_stages", attributeNodes = { @NamedAttributeNode("stages") })
 public class Season extends TdrseEntity {
-@NotNull
+
+//@NotNull
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
 private Set<Stage> stages = new LinkedHashSet<>();
 
@@ -49,4 +52,18 @@ private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
 private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
+
+public static Season from(final SeasonDto seasonDto) {
+    return Season.builder()
+                 .comment(seasonDto.comment())
+                 .title(seasonDto.title())
+                 .description(seasonDto.description())
+                 .rules(seasonDto.rules())
+                 .start(seasonDto.start())
+                 .end(seasonDto.end())
+                 .seasonResultFormula(seasonDto.seasonResultFormula())
+                 .stageVisibility(seasonDto.stageVisibility())
+                 .scoreVisibility(seasonDto.scoreVisibility())
+                 .build();
+}
 }

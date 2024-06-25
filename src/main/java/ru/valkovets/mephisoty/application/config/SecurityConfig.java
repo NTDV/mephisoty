@@ -35,25 +35,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 public class SecurityConfig {
 private final JwtAuthenticationFilter jwtAuthenticationFilter;
 private final CredentialsService credentialsService;
-public static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(11);
-
-
-//@Autowired
-public void configureGlobal(final AuthenticationManagerBuilder auth) throws Exception {
-    auth.inMemoryAuthentication()
-        .withUser(Credentials.builder()
-                             .id(0L)
-                             .email("noreply@mephisoty.ru")
-                             .password("123321")
-                             .role(UserRole.ADMIN)
-                             .user(User.builder()
-                                       .state(ParticipantState.NOT_PARTICIPANT)
-                                       .firstName("Robot")
-                                       .secondName("Robot")
-                                       .thirdName("Robot")
-                                       .build())
-                             .build());
-}
+public static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(5);
 
 @Bean
 public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
@@ -72,7 +54,7 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
                 // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
+                .requestMatchers("/endpoint", "/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated())
         .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
         .authenticationProvider(authenticationProvider())
