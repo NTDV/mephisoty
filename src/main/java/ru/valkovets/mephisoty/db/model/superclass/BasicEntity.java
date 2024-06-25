@@ -18,6 +18,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
@@ -40,20 +41,20 @@ private Long id;
 @Basic(fetch = FetchType.LAZY)
 @PastOrPresent
 @NotNull
-@Column(name = "created_date", nullable = false, updatable = false)
+@Column(name = "created_at", nullable = false, updatable = false)
 @CreatedDate
-private OffsetDateTime createdDate;
+private Instant createdAt;
 
 @Basic(fetch = FetchType.LAZY)
 @PastOrPresent
-@Column(name = "modified_date")
+@Column(name = "modified_at")
 @LastModifiedDate
-private OffsetDateTime modifiedDate;
+private Instant modifiedAt;
 
 @Basic(fetch = FetchType.LAZY)
 @Positive
-@NotNull
-@Column(name = "created_by", nullable = false, updatable = false)
+//@NotNull
+@Column(name = "created_by", updatable = false)
 @CreatedBy
 private Long createdBy;
 

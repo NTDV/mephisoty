@@ -8,10 +8,14 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import ru.valkovets.mephisoty.db.dto.userdata.CredentialsDto;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
+import ru.valkovets.mephisoty.security.credentials.PasswordManager;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Collection;
@@ -25,6 +29,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "credentials")
+@EntityListeners(AuditingEntityListener.class)
 public class Credentials extends BasicEntity implements UserDetails {
 
 @Length(max = 100)
@@ -39,9 +44,8 @@ private String email;
 private String password;
 
 @NotNull
-@OneToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "user_id", nullable = false, unique = true)
-private User user; // credentials is parent, user is child
+@OneToOne(fetch = FetchType.EAGER, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)
+private User user;
 
 @NotNull
 @Enumerated
@@ -75,5 +79,15 @@ public boolean isEnabled() {
 @Transient
 public static Credentials getCurrent() {
     return ((Credentials) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+}
+
+public static Credentials from(final CredentialsDto dto, final PasswordEncoder passwordEncoder) {
+    return Credentials.builder()
+                      .comment(dto.comment())
+                      .email(dto.email())
+                      .password(passwordEncoder.encode(dto.password()))
+                      .user(User.from(dto.user()))
+                      .role(dto.role())
+                      .build();
 }
 }

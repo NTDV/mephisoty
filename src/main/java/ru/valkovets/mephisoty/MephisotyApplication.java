@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @EnableWebMvc
-@EnableJpaAuditing
 public class MephisotyApplication {
 
 public static void main(final String[] args) {

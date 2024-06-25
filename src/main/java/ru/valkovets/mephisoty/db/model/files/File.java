@@ -6,14 +6,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
+import ru.valkovets.mephisoty.settings.UserRole;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.nio.file.NoSuchFileException;
+import java.util.*;
 
 @Entity
 @Getter
@@ -39,11 +42,27 @@ private Set<User> usersWithSuchAvatar = new HashSet<>();
 
 @Enumerated
 @NotNull
-@Column(name = "access_policy")
+@Column(name = "access_policy", nullable = false)
 private FileAccessPolicy accessPolicy = FileAccessPolicy.ADMIN;
 
 @ManyToMany(fetch = FetchType.LAZY, mappedBy = "files")
 @NotNull
 private Set<Answer> answers = new LinkedHashSet<>();
 
+public static File tryGetByCurrentUser(final Optional<File> file) throws NoResultException, AccessDeniedException {
+    if (file.isEmpty()) throw new NoResultException("No such file");
+    return tryGetBy(file.get(), Credentials.getCurrent());
+}
+
+public static File tryGetBy(@NotNull final File file, final Credentials credentials) throws AccessDeniedException {
+    if (credentials == null && file.accessPolicy != FileAccessPolicy.ALL) throw new AccessDeniedException("User can not access the file.");
+
+    if (file.accessPolicy == FileAccessPolicy.ALL ||
+        file.accessPolicy == FileAccessPolicy.ALL_REGISTERED && credentials.getId() != null ||
+        credentials.getRole() == UserRole.ADMIN ||
+        file.accessPolicy == FileAccessPolicy.AUTHOR_AND_ADMIN && file.owner.equals(credentials.getUser()) ||
+        file.accessPolicy == FileAccessPolicy.EXPERT_AND_ADMIN && credentials.getRole() == UserRole.EXPERT) {
+        return file;
+    } else throw new AccessDeniedException("User can not access the file.");
+}
 }

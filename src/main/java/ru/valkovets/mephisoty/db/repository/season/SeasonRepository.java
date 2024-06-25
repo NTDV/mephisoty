@@ -5,11 +5,12 @@ import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
 import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SeasonRepository extends JpaRepository<Season, Long> {
+public interface SeasonRepository extends BasicRepository<Season> {
 
 }

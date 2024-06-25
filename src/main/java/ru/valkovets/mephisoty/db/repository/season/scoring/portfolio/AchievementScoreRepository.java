@@ -4,8 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.AchievementScore;
+import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
 @Repository
-public interface AchievementScoreRepository extends JpaRepository<AchievementScore, Long> {
+public interface AchievementScoreRepository extends BasicRepository<AchievementScore> {
 
 }
