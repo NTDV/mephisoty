@@ -34,6 +34,7 @@ public Season edit(@PathVariable final Long id, @RequestBody final SeasonDto dto
 }
 
 @DeleteMapping("/{id}")
+@Operation(summary = "Удаление сезона")
 public void delete(@PathVariable final Long id) {
     seasonService.delete(id);
 }
