@@ -19,10 +19,18 @@ public Season findById(@NotNull @Positive final Long id) {
 }
 
 public Season save(final SeasonDto season) {
-    return seasonRepository.save(Season.from(season));
+    return seasonRepository.save(Season.createFrom(season));
 }
 
 public Season save(final Season season) {
     return seasonRepository.save(season);
+}
+
+public Season edit(final Long id, final SeasonDto dto) {
+    return findById(id).editFrom(dto);
+}
+
+public void delete(final Long id) {
+    seasonRepository.deleteById(id);
 }
 }

@@ -27,4 +27,14 @@ public Season create(@RequestBody final SeasonDto dto) {
     return seasonService.save(dto);
 }
 
+@PutMapping("/{id}")
+@Operation(summary = "Редактировать сезон")
+public Season edit(@PathVariable final Long id, @RequestBody final SeasonDto dto) {
+    return seasonService.edit(id, dto);
+}
+
+@DeleteMapping("/{id}")
+public void delete(@PathVariable final Long id) {
+    seasonService.delete(id);
+}
 }

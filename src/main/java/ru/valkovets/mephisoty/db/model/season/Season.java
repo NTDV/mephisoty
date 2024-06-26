@@ -1,7 +1,6 @@
 package ru.valkovets.mephisoty.db.model.season;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
 import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
@@ -18,7 +16,6 @@ import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -53,7 +50,20 @@ private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
 private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
 
-public static Season from(final SeasonDto seasonDto) {
+public Season editFrom(final SeasonDto seasonDto) {
+    setComment(seasonDto.comment());
+    setTitle(seasonDto.title());
+    setDescription(seasonDto.description());
+    setRules(seasonDto.rules());
+    setStart(seasonDto.start());
+    setEnd(seasonDto.end());
+    setSeasonResultFormula(seasonDto.seasonResultFormula());
+    setStageVisibility(seasonDto.stageVisibility());
+    setScoreVisibility(seasonDto.scoreVisibility());
+    return this;
+}
+
+public static Season createFrom(final SeasonDto seasonDto) {
     return Season.builder()
                  .comment(seasonDto.comment())
                  .title(seasonDto.title())
