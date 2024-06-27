@@ -1,7 +1,6 @@
 package ru.valkovets.mephisoty.db.model.superclass;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
@@ -19,10 +18,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.Objects;
-
-import static jakarta.persistence.GenerationType.IDENTITY;
 
 @MappedSuperclass
 @Getter

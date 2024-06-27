@@ -7,7 +7,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
@@ -15,7 +14,6 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 import ru.valkovets.mephisoty.settings.UserRole;
 
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 @Entity

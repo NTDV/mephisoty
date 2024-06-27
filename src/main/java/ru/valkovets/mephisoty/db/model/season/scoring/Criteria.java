@@ -4,15 +4,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity

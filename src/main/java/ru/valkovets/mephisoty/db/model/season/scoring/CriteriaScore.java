@@ -5,11 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.proxy.HibernateProxy;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-
-import java.util.Objects;
 
 @Entity
 @Getter

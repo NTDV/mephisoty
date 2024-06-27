@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 

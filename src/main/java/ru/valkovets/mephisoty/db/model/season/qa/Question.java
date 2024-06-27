@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
 import ru.valkovets.mephisoty.settings.AllowState;

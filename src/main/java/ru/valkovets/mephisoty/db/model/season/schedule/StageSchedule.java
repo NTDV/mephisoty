@@ -5,13 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.settings.AllowState;
 
-import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
