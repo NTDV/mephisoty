@@ -37,19 +37,22 @@ private String originalName;
 private User owner;
 
 @NotNull
+@Builder.Default
 @OneToMany(mappedBy = "avatar", orphanRemoval = true)
 private Set<User> usersWithSuchAvatar = new HashSet<>();
 
-@Enumerated
 @NotNull
+@Enumerated
+@Builder.Default
 @Column(name = "access_policy", nullable = false)
 private FileAccessPolicy accessPolicy = FileAccessPolicy.ADMIN;
 
-@ManyToMany(fetch = FetchType.LAZY, mappedBy = "files")
 @NotNull
+@Builder.Default
+@ManyToMany(fetch = FetchType.LAZY, mappedBy = "files")
 private Set<Answer> answers = new LinkedHashSet<>();
 
-public static File tryGetByCurrentUser(final Optional<File> file) throws NoResultException, AccessDeniedException {
+public static File tryGetByCurrentUser(final Optional<? extends File> file) throws NoResultException, AccessDeniedException {
     if (file.isEmpty()) throw new NoResultException("No such file");
     return tryGetBy(file.get(), Credentials.getCurrent());
 }

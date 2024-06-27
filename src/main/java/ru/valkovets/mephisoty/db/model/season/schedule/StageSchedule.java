@@ -3,10 +3,7 @@ package ru.valkovets.mephisoty.db.model.season.schedule;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.season.Stage;
@@ -27,15 +24,16 @@ import java.util.Set;
 @Table(name = "stage_schedule")
 public class StageSchedule extends TdrseEntity {
 
+@NotNull
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "stage_id", nullable = false)
-@NotNull
 private Stage stage;
 
-@Column(name = "participants_max")
 @PositiveOrZero
+@Column(name = "participants_max")
 private Integer participantsMax;
 
+@Builder.Default
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(name = "user_stage_schedules_as_expert",
            joinColumns = @JoinColumn(name = "stage_schedule_id"),
@@ -44,9 +42,11 @@ private Set<User> experts = new LinkedHashSet<>();
 
 @NotNull
 @Enumerated
+@Builder.Default
 @Column(name = "state")
 private AllowState state = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stageSchedule", orphanRemoval = true)
 private Set<ScheduleRecord> scheduleRecords = new LinkedHashSet<>();
 

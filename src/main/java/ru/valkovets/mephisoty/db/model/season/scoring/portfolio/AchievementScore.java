@@ -3,10 +3,7 @@ package ru.valkovets.mephisoty.db.model.season.scoring.portfolio;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
@@ -30,20 +27,21 @@ private User participant;
 private AchievementType type;
 
 @NotNull
-@Column(name = "sum", nullable = false)
 @PositiveOrZero
+@Builder.Default
+@Column(name = "sum", nullable = false)
 private Float byPlainSum = 0f;
 
 @NotNull
-@Column(name = "formula")
 @PositiveOrZero
+@Column(name = "formula")
 private Float byFormulaSum;
 
-@Column(name = "expert")
 @PositiveOrZero
+@Column(name = "expert")
 private Float byExpert;
 
-@Column(name = "total")
 @PositiveOrZero
+@Column(name = "total")
 private Float totalByFormula;
 }

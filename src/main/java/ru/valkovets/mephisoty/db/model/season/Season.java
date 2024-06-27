@@ -1,12 +1,10 @@
 package ru.valkovets.mephisoty.db.model.season;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
@@ -28,7 +26,9 @@ import java.util.Set;
 @NamedEntityGraph(name = "season_with_stages", attributeNodes = { @NamedAttributeNode("stages") })
 public class Season extends TdrseEntity {
 
-//@NotNull
+@JsonManagedReference
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
 private Set<Stage> stages = new LinkedHashSet<>();
 
@@ -38,15 +38,19 @@ private Set<Stage> stages = new LinkedHashSet<>();
 private String seasonResultFormula; // math + Season stages
 
 @NotNull
+@Builder.Default
 @Enumerated
-@Column(name = "stage_visibility", nullable = false)
-private AllowState stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
+@Column(name = "season_visibility", nullable = false)
+private AllowState seasonVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @NotNull
+@Builder.Default
 @Enumerated
 @Column(name = "score_visibility", nullable = false)
 private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
 private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
 
@@ -58,7 +62,7 @@ public Season editFrom(final SeasonDto seasonDto) {
     setStart(seasonDto.start());
     setEnd(seasonDto.end());
     setSeasonResultFormula(seasonDto.seasonResultFormula());
-    setStageVisibility(seasonDto.stageVisibility());
+    setSeasonVisibility(seasonDto.seasonVisibility());
     setScoreVisibility(seasonDto.scoreVisibility());
     return this;
 }
@@ -72,7 +76,7 @@ public static Season createFrom(final SeasonDto seasonDto) {
                  .start(seasonDto.start())
                  .end(seasonDto.end())
                  .seasonResultFormula(seasonDto.seasonResultFormula())
-                 .stageVisibility(seasonDto.stageVisibility())
+                 .seasonVisibility(seasonDto.seasonVisibility())
                  .scoreVisibility(seasonDto.scoreVisibility())
                  .build();
 }

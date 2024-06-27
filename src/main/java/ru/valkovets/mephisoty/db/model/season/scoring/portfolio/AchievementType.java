@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
@@ -44,12 +41,14 @@ private String typeSumFormula;
 @NotBlank
 private String typeTotalFormula;
 
-@OneToMany(fetch = FetchType.LAZY, mappedBy = "achievementType", orphanRemoval = true)
 @NotNull
+@Builder.Default
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "achievementType", orphanRemoval = true)
 private Set<Achievement> achievements = new LinkedHashSet<>();
 
-@OneToMany(fetch = FetchType.LAZY, mappedBy = "type", orphanRemoval = true)
 @NotNull
+@Builder.Default
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "type", orphanRemoval = true)
 private Set<AchievementScore> achievementScores = new LinkedHashSet<>();
 
 }

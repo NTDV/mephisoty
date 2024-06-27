@@ -4,10 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.userdata.JwtAuthenticationResponse;
 import ru.valkovets.mephisoty.api.dto.userdata.SignInRequest;
 import ru.valkovets.mephisoty.api.dto.userdata.SignUpRequest;
@@ -21,14 +19,14 @@ public class AuthController {
 private final AuthenticationService authenticationService;
 
 @Operation(summary = "Регистрация пользователя")
-@PostMapping("/sign-up")
-public JwtAuthenticationResponse signUp(@RequestBody @Valid final SignUpRequest request) {
-    return authenticationService.signUp(request);
+@PostMapping("/register")
+public JwtAuthenticationResponse register(@RequestBody @Valid final SignUpRequest request) {
+    return authenticationService.register(request);
 }
 
 @Operation(summary = "Авторизация пользователя")
-@PostMapping("/sign-in")
-public JwtAuthenticationResponse signIn(@RequestBody @Valid final SignInRequest request) {
-    return authenticationService.signIn(request);
+@PostMapping("/login")
+public JwtAuthenticationResponse login(@RequestBody @Valid final SignInRequest request) {
+    return authenticationService.login(request);
 }
 }

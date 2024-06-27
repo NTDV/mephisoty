@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.model.userdata;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -55,6 +56,7 @@ private String firstName;
 private String secondName;
 
 @NotNull
+@Builder.Default
 @Length(max = 30)
 @Column(name = "third_name", length = 30)
 private String thirdName = "";
@@ -64,52 +66,64 @@ private String thirdName = "";
 @JoinColumn(name = "group_id")
 private Group group;
 
+@JsonIgnore
 @Nullable
 @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 @JoinColumn(name = "credentials_id", unique = true)
 private Credentials credentials;
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", orphanRemoval = true)
 private Set<File> files = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "expert", orphanRemoval = true)
 private Set<CriteriaScore> criteriaScoresAsExpert = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<CriteriaScore> criteriaScores = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<StageScore> stageScores = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", orphanRemoval = true)
 private Set<Achievement> achievements = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<AchievementScore> achievementScores = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<ScheduleRecord> scheduleRecords = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @ManyToMany(fetch = FetchType.LAZY, mappedBy = "experts")
 private Set<StageSchedule> stageSchedulesAsExpert = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<Answer> answers = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
+@Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<Answer> answersAsExpert = new LinkedHashSet<>();
 

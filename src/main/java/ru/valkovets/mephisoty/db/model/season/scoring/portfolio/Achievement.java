@@ -5,10 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
@@ -38,14 +35,16 @@ private LocalDate receivedAt;
 @Column(name = "title", nullable = false, length = 120)
 private String title;
 
-@Length(max = 2000)
-@Column(name = "description", nullable = false, length = 2000)
 @NotNull
+@Length(max = 2000)
+@Builder.Default
+@Column(name = "description", nullable = false, length = 2000)
 private String description = "";
 
 @NotNull
-@Column(name = "score", nullable = false)
 @PositiveOrZero
+@Builder.Default
+@Column(name = "score", nullable = false)
 private Float pgasScore = 0f;
 
 @ManyToOne(fetch = FetchType.EAGER, optional = false)

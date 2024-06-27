@@ -3,10 +3,7 @@ package ru.valkovets.mephisoty.db.model.season.scoring;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.proxy.HibernateProxy;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
@@ -39,7 +36,8 @@ private User expert;
 private User participant;
 
 @NotNull
-@Column(name = "score", nullable = false)
 @PositiveOrZero
+@Builder.Default
+@Column(name = "score", nullable = false)
 private Float score = 0f;
 }

@@ -2,8 +2,6 @@ package ru.valkovets.mephisoty.security.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.userdata.JwtAuthenticationResponse;
@@ -25,7 +23,7 @@ private final AuthenticationManager authenticationManager;
  * @param request данные пользователя
  * @return токен
  */
-public JwtAuthenticationResponse signUp(final SignUpRequest request) {
+public JwtAuthenticationResponse register(final SignUpRequest request) {
     return new JwtAuthenticationResponse(jwtService.generateToken(credentialsService.save(request, passwordEncoder)));
 }
 
@@ -35,7 +33,7 @@ public JwtAuthenticationResponse signUp(final SignUpRequest request) {
  * @param request данные пользователя
  * @return токен
  */
-public JwtAuthenticationResponse signIn(final SignInRequest request) {
+public JwtAuthenticationResponse login(final SignInRequest request) {
     authenticationManager.authenticate(request.getAuthToken());
 
     return new JwtAuthenticationResponse(jwtService.generateToken(

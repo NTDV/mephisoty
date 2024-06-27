@@ -23,7 +23,7 @@ public record SeasonDto(@NotNull @Length(max = 200) String comment,
                         @NotNull OffsetDateTime start,
                         @NotNull OffsetDateTime end,
                         @Pattern(regexp = ValidationConst.FORMULA_PATTERN) @Length(max = 1000) String seasonResultFormula,
-                        @NotNull AllowState stageVisibility,
+                        @NotNull AllowState seasonVisibility,
                         @NotNull AllowState scoreVisibility)
         implements Serializable {
 }
