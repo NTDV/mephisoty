@@ -50,7 +50,7 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
                 // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/endpoint", "/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
+                .requestMatchers("/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
                 .anyRequest().authenticated())
         .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
         .authenticationProvider(authenticationProvider())
