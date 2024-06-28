@@ -65,3 +65,9 @@ tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     dependsOn test
 }
+
+tasks.bootBuildImage {
+    docker {
+        host = "//./pipe/dockerDesktopLinuxEngine"
+    }
+}
