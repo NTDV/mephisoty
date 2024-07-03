@@ -39,13 +39,13 @@ private String seasonResultFormula; // math + Season stages
 
 @NotNull
 @Builder.Default
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Column(name = "season_visibility", nullable = false)
 private AllowState seasonVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @NotNull
 @Builder.Default
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Column(name = "score_visibility", nullable = false)
 private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 

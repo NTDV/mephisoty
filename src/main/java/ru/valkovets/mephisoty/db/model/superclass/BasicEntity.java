@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
@@ -60,9 +57,10 @@ private Long createdBy;
 @LastModifiedBy
 private Long modifiedBy;
 
-@Basic(fetch = FetchType.LAZY)
 @NotNull
 @Length(max = 200)
+@Builder.Default
+@Basic(fetch = FetchType.LAZY)
 @Column(name = "comment", nullable = false, length = 200)
 private String comment = "";
 

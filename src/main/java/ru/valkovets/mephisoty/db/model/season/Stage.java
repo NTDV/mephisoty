@@ -49,19 +49,19 @@ private String stageResultFormula; // math + Stage criterias + AchievmentTypes (
 private Set<Criteria> criterias = new LinkedHashSet<>();
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "stage_visibility", nullable = false)
 private AllowState stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "score_visibility", nullable = false)
 private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "schedule_visibility", nullable = false)
 private AllowState scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;

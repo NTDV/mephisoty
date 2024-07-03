@@ -39,7 +39,7 @@ private Integer participantsMax;
 private Set<User> experts = new LinkedHashSet<>();
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "state")
 private AllowState state = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;

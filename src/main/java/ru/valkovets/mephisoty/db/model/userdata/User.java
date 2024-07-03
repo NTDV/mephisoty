@@ -41,7 +41,7 @@ public class User extends BasicEntity {
 private File avatar;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Column(name = "state", nullable = false)
 private ParticipantState state;
 

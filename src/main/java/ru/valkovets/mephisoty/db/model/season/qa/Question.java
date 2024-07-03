@@ -30,13 +30,13 @@ public class Question extends TdrEntity {
 private Stage stage;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "short_answer_visibility", nullable = false)
 private AllowState shortAnswerVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "rich_answer_visibility", nullable = false)
 private AllowState richAnswerVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;

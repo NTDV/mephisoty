@@ -45,7 +45,7 @@ private String password;
 private User user;
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Column(name = "role", nullable = false)
 private UserRole role;
 

@@ -3,6 +3,11 @@ package ru.valkovets.mephisoty.db.service.season;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
@@ -74,5 +79,20 @@ public Season addStageFor(final Long id, final Stage stage) {
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<SeasonScore> getSeasonScoresFrom(final Long id) {
     return seasonRepository.getSeasonScoresById(id, SeasonScore.class);
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+public Page<Season> getAll(final int page, final int size, final Sort sort) {
+    return seasonRepository.findAll(PageRequest.of(page, size, sort));
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+public Page<Season> getAll(final int page, final int size) {
+    return seasonRepository.findAll(PageRequest.of(page, size, Sort.by("id")));
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+public Page<Season> getAll(final int page, final int size, final Specification<Season> specification, final Sort sort) {
+    return seasonRepository.findAll(specification, PageRequest.of(page, size, sort));
 }
 }

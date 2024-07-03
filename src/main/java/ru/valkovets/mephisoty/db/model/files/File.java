@@ -40,7 +40,7 @@ private User owner;
 private Set<User> usersWithSuchAvatar = new HashSet<>();
 
 @NotNull
-@Enumerated
+@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "access_policy", nullable = false)
 private FileAccessPolicy accessPolicy = FileAccessPolicy.ADMIN;
