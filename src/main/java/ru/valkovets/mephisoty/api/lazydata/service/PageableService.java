@@ -14,8 +14,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
-public class SeasonPageableService {
-// id, title, start, end, seasonVisibility, scoreVisibility
+public class PageableService {
 public static Number tryParseNumber(final String value) {
     try {
         return Long.valueOf(value);
@@ -51,11 +50,6 @@ public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode
     };
 }
 
-public static <T> Specification<T> unitSpecs(final OperatorMode operatorMode, final Stream<Specification<T>> specs) {
-    return specs.reduce(Specification::and).orElse(null);
-
-}
-
 public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEvent src) {
     if (src.filters() == null) return null;
     return src.filters()
@@ -67,17 +61,18 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
                   final Object value = e.getValue();
 
                   return switch (value) {
-                      case final String string -> SeasonPageableService.<EntityT>useMode(MatchMode.equals, key, string);
+                      case final String string -> PageableService.<EntityT>useMode(MatchMode.equals, key, string);
 
                       case final DataTableOperatorFilterMetaData operatorFilterMetaData -> unitSpecs(
                               operatorFilterMetaData.operator(),
                               Objects.requireNonNull(operatorFilterMetaData.constraints())
                                      .stream()
                                      .filter(filter -> filter.value() != null)
-                                     .map(filter -> SeasonPageableService.<EntityT>useMode(filter.matchMode(), key, filter.value())));
+                                     .map(filter -> PageableService.<EntityT>useMode(filter.matchMode(), key,
+                                                                                     filter.value())));
 
                       case final DataTableFilterMetaData filterMetaData ->
-                              SeasonPageableService.<EntityT>useMode(filterMetaData.matchMode(), key, filterMetaData.value());
+                              PageableService.<EntityT>useMode(filterMetaData.matchMode(), key, filterMetaData.value());
 
                       default -> throw new ClassCastException("Unsupported type: " + value.getClass() + ". " +
                                                               "Must be String, DataTableOperatorFilterMetaData or DataTableFilterMetaData.");
@@ -86,5 +81,10 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
               .filter(Objects::nonNull)
               .reduce(Specification::and)
               .orElse(null);
+}
+
+public static <T> Specification<T> unitSpecs(final OperatorMode operatorMode, final Stream<Specification<T>> specs) {
+    return specs.reduce(operatorMode == OperatorMode.and ? Specification::and : Specification::or).orElse(null);
+
 }
 }

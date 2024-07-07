@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.model.superclass;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -60,7 +61,6 @@ private Long modifiedBy;
 @NotNull
 @Length(max = 200)
 @Builder.Default
-@Basic(fetch = FetchType.LAZY)
 @Column(name = "comment", nullable = false, length = 200)
 private String comment = "";
 

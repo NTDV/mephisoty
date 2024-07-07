@@ -1,6 +1,7 @@
 package ru.valkovets.mephisoty.db.model.season;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -26,6 +27,7 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "stage")
+@NamedEntityGraph(name = "stage_with_criterias", attributeNodes = @NamedAttributeNode("criterias"))
 public class Stage extends TdrseEntity {
 
 @JsonBackReference // todo Не будет этого поля вообще выводиться
@@ -44,6 +46,8 @@ private String literal;
 @Pattern(regexp = ValidationConst.FORMULA_PATTERN)
 private String stageResultFormula; // math + Stage criterias + AchievmentTypes (only total?)
 
+@JsonManagedReference
+@NotNull
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 @Builder.Default
 private Set<Criteria> criterias = new LinkedHashSet<>();
@@ -66,17 +70,17 @@ private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 @Column(name = "schedule_visibility", nullable = false)
 private AllowState scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
 
-//@NotNull
+@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 private Set<StageScore> stageScoresForParticipants = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 private Set<StageSchedule> stageSchedules = new LinkedHashSet<>();
 
-//@NotNull
+@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 private Set<Question> questions = new LinkedHashSet<>();
@@ -96,5 +100,20 @@ public static Stage createFrom(final StageDto stageDto, final Season season) {
                 .scoreVisibility(stageDto.scoreVisibility())
                 .scheduleAccessState(stageDto.scheduleAccessState())
                 .build();
+}
+
+public Stage editFrom(final StageDto dto) {
+    setComment(dto.comment());
+    setTitle(dto.title());
+    setDescription(dto.description());
+    setRules(dto.rules());
+    setStart(dto.start());
+    setEnd(dto.end());
+    literal = dto.literal();
+    stageResultFormula = dto.stageResultFormula();
+    stageVisibility = dto.stageVisibility();
+    scoreVisibility = dto.scoreVisibility();
+    scheduleAccessState = dto.scheduleAccessState();
+    return this;
 }
 }

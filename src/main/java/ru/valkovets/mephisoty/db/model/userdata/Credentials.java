@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,7 +43,8 @@ private String email;
 private String password;
 
 @NotNull
-@OneToOne(fetch = FetchType.EAGER, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)
+@OneToOne(fetch = FetchType.LAZY, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)
+@LazyToOne(LazyToOneOption.NO_PROXY)
 private User user;
 
 @NotNull

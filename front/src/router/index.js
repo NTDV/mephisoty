@@ -14,9 +14,19 @@ const router = createRouter({
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {
-                    path: '/admin/season',
-                    name: 'season',
+                    path: '/admin/seasons',
+                    name: 'seasons',
                     component: () => import('@/views/pages/SeasonCrud.vue')
+                },
+                {
+                    path: '/admin/season/:id',
+                    name: 'season',
+                    component: () => import('@/views/pages/SeasonAdminView.vue')
+                },
+                {
+                    path: '/admin/stages',
+                    name: 'stages',
+                    component: () => import('@/views/pages/StageCrud.vue')
                 },
                 {
                     path: '/uikit/formlayout',
@@ -39,9 +49,9 @@ const router = createRouter({
                     component: () => import('@/views/uikit/InvalidState.vue')
                 },
                 {
-                    path: '/uikit/button',
-                    name: 'button',
-                    component: () => import('@/views/uikit/Button.vue')
+                    path: '/uikit/button1',
+                    name: 'button1',
+                    component: () => import('@/views/uikit/Button1.vue')
                 },
                 {
                     path: '/uikit/table',

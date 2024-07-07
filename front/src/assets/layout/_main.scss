@@ -37,3 +37,9 @@ a {
 .text-nowrap {
     text-wrap: nowrap;
 }
+
+textarea.fixed-resizable {
+  min-height: 2.5em;
+  max-width: 100%;
+  min-width: 100%;
+}

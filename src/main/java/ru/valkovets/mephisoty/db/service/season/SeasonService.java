@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +14,12 @@ import ru.valkovets.mephisoty.api.dto.season.StageDto;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
+import ru.valkovets.mephisoty.db.projection.IdTitleProj;
+import ru.valkovets.mephisoty.db.projection.SeasonCrudTableProj;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -62,9 +64,9 @@ public Set<Stage> getStagesFrom(final Long id) {
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Season addStageFor(final Long id, final StageDto stage) {
+public Season addStageFor(final Long id, final StageDto stageDto) {
     final Season season = getByIdWithStages(id);
-    season.getStages().add(stageRepository.save(Stage.createFrom(stage, season)));
+    season.getStages().add(stageRepository.save(Stage.createFrom(stageDto, season)));
     return save(season);
 }
 
@@ -82,17 +84,15 @@ public Set<SeasonScore> getSeasonScoresFrom(final Long id) {
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<Season> getAll(final int page, final int size, final Sort sort) {
-    return seasonRepository.findAll(PageRequest.of(page, size, sort));
+public Page<SeasonCrudTableProj> getAll(final int page, final int size, final Specification<Season> specification,
+                                        final Sort sort) {
+    return seasonRepository.findBy(Specification.where(specification),
+                                   q -> q.as(SeasonCrudTableProj.class)
+                                         .page(PageRequest.of(page, size, sort)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<Season> getAll(final int page, final int size) {
-    return seasonRepository.findAll(PageRequest.of(page, size, Sort.by("id")));
-}
-
-@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<Season> getAll(final int page, final int size, final Specification<Season> specification, final Sort sort) {
-    return seasonRepository.findAll(specification, PageRequest.of(page, size, sort));
+public List<IdTitleProj> getAllIdTitleProjSortedByAlphabet() {
+    return seasonRepository.getAllByOrderByTitle(IdTitleProj.class);
 }
 }

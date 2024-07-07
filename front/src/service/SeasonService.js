@@ -1,64 +1,53 @@
 import fetchApi from '@/main';
 
 export class SeasonService {
-    async getSeason(id) {
-        return await fetchApi('/admin/season/' + id).then((resp) => resp.json());
-    }
-
-    async createSeason(seasonDto) {
-        return fetchApi('/admin/season', {
-            method: 'POST',
-            body: JSON.stringify(seasonDto)
-        }).then((resp) => resp.json());
-    }
-
-    getSeasons(lazyParams) {
+    getAll(lazyParams) {
         return fetchApi('/admin/season/', {
             method: 'POST',
             body: JSON.stringify(lazyParams)
         }).then((resp) => resp.json());
     }
 
-    async editSeason(id, seasonDto) {
-        return await fetchApi('/admin/season/' + id, {
+    getAllForSelect() {
+        return fetchApi('/admin/season/select').then((resp) => resp.json());
+    }
+
+    get(id) {
+        return fetchApi('/admin/season/' + id).then((resp) => resp.json());
+    }
+
+    create(seasonDto) {
+        return fetchApi('/admin/season', {
+            method: 'POST',
+            body: JSON.stringify(seasonDto)
+        }).then((resp) => resp.json());
+    }
+
+    edit(id, seasonDto) {
+        return fetchApi('/admin/season/' + id, {
             method: 'PUT',
             body: JSON.stringify(seasonDto)
         }).then((resp) => resp.json());
     }
 
-    async deleteSeason(id) {
-        return await fetchApi('/admin/season/' + id, {
+    delete(id) {
+        return fetchApi('/admin/season/' + id, {
             method: 'DELETE'
         }).then((resp) => resp.json());
     }
 
-    getProductsSmall() {
-        return fetch('/demo/data/products-small.json', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((res) => res.json())
-            .then((d) => d.data);
+    getStages(seasonId) {
+        return fetchApi('/admin/season/' + seasonId + '/stages').then((resp) => resp.json());
     }
 
-    getProducts() {
-        return fetch('/demo/data/products.json', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((res) => res.json())
-            .then((d) => d.data);
+    addStage(seasonId, stageDto) {
+        return fetchApi('/admin/season/' + seasonId + '/stages', {
+            method: 'POST',
+            body: JSON.stringify(stageDto)
+        }).then((resp) => resp.json());
     }
 
-    getProductsMixed() {
-        return fetch('/demo/data/products-mixed.json', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((res) => res.json())
-            .then((d) => d.data);
-    }
-
-    getProductsWithOrdersSmall() {
-        return fetch('/demo/data/products-orders-small.json', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((res) => res.json())
-            .then((d) => d.data);
-    }
-
-    getProductsWithOrdersLarge() {
-        return fetch('/demo/data/products-orders.json', { headers: { 'Cache-Control': 'no-cache' } })
-            .then((res) => res.json())
-            .then((d) => d.data);
+    getScores(seasonId) {
+        return fetchApi('/admin/season/' + seasonId + '/scores').then((resp) => resp.json());
     }
 }

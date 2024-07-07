@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.model.season.scoring;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -21,6 +22,7 @@ import java.util.Set;
 @Table(name = "criteria")
 public class Criteria extends TdrEntity {
 
+@JsonBackReference
 @NotNull
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 private Stage stage;
@@ -46,4 +48,17 @@ private Float min = 0f;
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "criteria", orphanRemoval = true)
 private Set<CriteriaScore> criteriaScores = new LinkedHashSet<>();
+
+public static Criteria from(final CriteriaDto criteriaDto, final Stage stage) {
+    return Criteria.builder()
+                   .stage(stage)
+                   .comment(criteriaDto.comment())
+                   .title(criteriaDto.title())
+                   .description(criteriaDto.description())
+                   .rules(criteriaDto.rules())
+                   .literal(criteriaDto.literal())
+                   .max(criteriaDto.max())
+                   .min(criteriaDto.min())
+                   .build();
+}
 }

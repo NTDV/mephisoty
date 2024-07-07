@@ -62,7 +62,7 @@ const loadLazyData = (event) => {
 
     setTimeout(
         () =>
-            seasonService.getSeasons(lazyParams.value).then((data) => {
+            seasonService.getAll(lazyParams.value).then((data) => {
                 seasons.value = data.collection.map((val) => createSeasonClient(val));
                 totalRecords.value = data.total;
                 loading.value = false;
@@ -87,17 +87,15 @@ const onSelectAllChange = (event) => {
     selectAll.value = event.checked;
 
     if (selectAll.value) {
-        CustomerService.getCustomers().then((data) => {
-            selectAll.value = true;
-            selectedCustomers.value = data.customers;
-        });
+        selectedSeasons.value = seasons.value;
     } else {
         selectAll.value = false;
-        selectedCustomers.value = [];
+        selectedSeasons.value = [];
     }
 };
+
 const onRowSelect = () => {
-    //selectAll.value = selectedSeasons.value.length === totalRecords.value;
+    selectAll.value = selectedSeasons.value.length === totalRecords.value;
 };
 const onRowUnselect = () => {
     selectAll.value = false;
@@ -160,7 +158,7 @@ const saveSeason = async () => {
     if (validateInput()) {
         if (season.value.id) {
             try {
-                const res = await seasonService.editSeason(season.value.id, createSeasonDto());
+                const res = await seasonService.edit(season.value.id, createSeasonDto());
                 if (res.err) {
                     console.error(res);
                     toast.add({ severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не изменен', life: 3000 });
@@ -177,7 +175,7 @@ const saveSeason = async () => {
             }
         } else {
             try {
-                const res = await seasonService.createSeason(createSeasonDto());
+                const res = await seasonService.create(createSeasonDto());
                 if (res.err) {
                     console.error(res);
                     toast.add({ severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не создан', life: 3000 });
@@ -231,7 +229,7 @@ const confirmDeleteSeason = (deleteSeason) => {
 
 const deleteSeason = () => {
     try {
-        const res = seasonService.deleteSeason(season.value.id);
+        const res = seasonService.delete(season.value.id);
         if (res == null || res.err) {
             console.error(res);
             toast.add({ severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не удален', life: 3000 });
@@ -256,7 +254,7 @@ const confirmDeleteSelected = () => {
 const deleteSelectedSeasons = () => {
     try {
         for (const val of selectedSeasons.value) {
-            const res = seasonService.deleteSeason(val.id);
+            const res = seasonService.delete(val.id);
             if (res == null || res.err) {
                 console.error(res);
                 toast.add({ severity: 'error', summary: 'Ошибка сервера', detail: 'Часть сезонов не удалена', life: 3000 });
@@ -277,6 +275,8 @@ const deleteSelectedSeasons = () => {
 
 const clearFilter = () => {
     initFilters();
+    lazyParams.value.filters = filters.value;
+    loadLazyData();
 };
 
 const initFilters = () => {
@@ -290,6 +290,10 @@ const initFilters = () => {
         scoreVisibility: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
     };
 };
+
+const viewSeason = (id) => {
+    router.push({name: 'SeasonAdminView', params: {id: id}});
+}
 </script>
 
 <template>
@@ -332,16 +336,14 @@ const initFilters = () => {
                     :global-filter-fields="['id', 'title']"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25, 50, 100, 500, 1000]"
-                    currentPageReportTemplate="Сезоны с {first} по {last} из {totalRecords} загруженных"
+                    currentPageReportTemplate="Сезоны с {first} по {last} из {totalRecords} всего"
                     sortMode="multiple"
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 class="m-0">Управление сезонами</h5>
-                            <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                                <InputIcon class="pi pi-search" />
-                                <InputText class="w-full sm:w-auto" v-model="filters['global'].value" placeholder="Быстрый поиск..." />
-                            </IconField>
+                            <Button icon="pi pi-filter-slash" label="Сбросить фильтры" outlined type="button"
+                                    @click="clearFilter()"/>
                         </div>
                     </template>
                     <template #empty> Сезонов не найдено. </template>
@@ -437,7 +439,9 @@ const initFilters = () => {
 
                     <Column header="Действия" headerStyle="width:10%;min-width:11rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-eye" class="mr-2" severity="success" rounded @click="viewSeason(slotProps.data.id)" />
+                            <RouterLink :to="'/admin/season/' + slotProps.data.id">
+                                <Button class="mr-2" icon="pi pi-eye" rounded severity="success"/>
+                            </RouterLink>
                             <Button icon="pi pi-pencil" class="mr-2" severity="warning" rounded @click="editSeason(slotProps.data)" />
                             <Button icon="pi pi-trash" class="mr-2" severity="danger" rounded @click="confirmDeleteSeason(slotProps.data)" />
                         </template>
