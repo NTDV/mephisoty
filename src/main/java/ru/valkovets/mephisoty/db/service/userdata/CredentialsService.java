@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.userdata.SignUpRequest;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-import ru.valkovets.mephisoty.db.projection.NamesProj;
+import ru.valkovets.mephisoty.db.projection.special.NamesProj;
 import ru.valkovets.mephisoty.db.repository.userdata.CredentialsRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 

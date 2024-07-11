@@ -16,7 +16,7 @@ import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
-import ru.valkovets.mephisoty.db.projection.StageCrudTableProj;
+import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
 import java.util.Set;
@@ -30,16 +30,18 @@ private final StageService stageService;
 
 @PostMapping("/{seasonId}")
 @Operation(summary = "Получить информацию об этапах")
-public GetAllDto<StageCrudTableProj> getAll(@PathVariable final Long seasonId,
-                                            @RequestBody final DataTablePageEvent searchParams) {
+public GetAllDto<StageShortProj> getAll(@PathVariable final Long seasonId,
+                                        @RequestBody final DataTablePageEvent searchParams) {
     return GetAllDto.from(
             stageService.getAll(
                     searchParams.page() == null ? (int) (searchParams.first() / searchParams.rows()) : searchParams.page(),
                     searchParams.rows(),
-                    (seasonId != null && seasonId != 0 ?
-                     Specification.allOf((root, query, builder) -> builder.equal(root.get("season").get("id"), seasonId),
-                                         PageableService.parseFilter(searchParams)) :
-                     PageableService.parseFilter(searchParams)),
+                    (seasonId != null && seasonId != 0
+                     ? Specification.allOf(
+                            (root, query, builder) ->
+                                    builder.equal(root.get("season").get("id"), seasonId),
+                            PageableService.parseFilter(searchParams))
+                     : PageableService.parseFilter(searchParams)),
                     SortService.getSort(searchParams)));
 }
 

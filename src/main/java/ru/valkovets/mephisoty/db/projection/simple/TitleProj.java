@@ -1,12 +1,10 @@
-package ru.valkovets.mephisoty.db.projection;
+package ru.valkovets.mephisoty.db.projection.simple;
 
 import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
 
 /**
  * Projection for {@link TdrEntity}
  */
-public interface IdTitleProj {
-Long getId();
-
+public interface TitleProj {
 String getTitle();
 }

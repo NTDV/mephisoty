@@ -16,7 +16,7 @@ import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
-import ru.valkovets.mephisoty.db.projection.StageCrudTableProj;
+import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
 
@@ -29,11 +29,12 @@ private final StageRepository stageRepository;
 private final CriteriaRepository criteriaRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<StageCrudTableProj> getAll(final int page, final int size, final Specification<Stage> specification,
-                                       final Sort sort) {
+public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification,
+                                   final Sort sort) {
     return stageRepository.findBy(Specification.where(specification),
-                                  q -> q.as(StageCrudTableProj.class)
-                                        .page(PageRequest.of(page, size, sort)));
+                                  q -> q.sortBy(sort == null ? Sort.unsorted() : sort)
+                                        .as(StageShortProj.class)
+                                        .page(PageRequest.of(page, size)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")

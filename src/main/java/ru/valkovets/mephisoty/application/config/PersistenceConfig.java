@@ -1,13 +1,11 @@
 package ru.valkovets.mephisoty.application.config;
 
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import ru.valkovets.mephisoty.security.audition.AuditorAwareImpl;
 
@@ -16,9 +14,17 @@ import ru.valkovets.mephisoty.security.audition.AuditorAwareImpl;
 @EnableJpaRepositories(basePackages = "ru.valkovets.mephisoty.db.repository")
 @EnableJpaAuditing(auditorAwareRef="auditorProvider")
 public class PersistenceConfig {
+private final SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();
+private final AuditorAwareImpl auditorAware = new AuditorAwareImpl();
+
 @Bean
 AuditorAware<Long> auditorProvider() {
-    return new AuditorAwareImpl();
+    return auditorAware;
+}
+
+@Bean
+public SpelAwareProxyProjectionFactory projectionFactory() {
+    return projectionFactory;
 }
 
 //@Bean

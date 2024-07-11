@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.db.projection;
+package ru.valkovets.mephisoty.db.projection.complex;
 
 import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 
@@ -7,18 +7,7 @@ import java.time.OffsetDateTime;
 /**
  * Projection for {@link TdrseEntity}
  */
-public interface TdrseCommentProj {
-Long getId();
-
-String getComment();
-
-String getTitle();
-
-String getDescription();
-
-String getRules();
-
+public interface SeProj {
 OffsetDateTime getStart();
-
 OffsetDateTime getEnd();
 }

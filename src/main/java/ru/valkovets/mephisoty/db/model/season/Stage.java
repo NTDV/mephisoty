@@ -53,22 +53,47 @@ private String stageResultFormula; // math + Stage criterias + AchievmentTypes (
 private Set<Criteria> criterias = new LinkedHashSet<>();
 
 @NotNull
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "stage_visibility", nullable = false)
-private AllowState stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
-
+private String stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 @NotNull
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "score_visibility", nullable = false)
-private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
-
+private String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 @NotNull
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "schedule_visibility", nullable = false)
-private AllowState scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
+private String scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+
+public static Stage createFrom(final StageDto stageDto, final Season season) {
+    return Stage.builder()
+                .season(season)
+                .comment(stageDto.comment())
+                .title(stageDto.title())
+                .description(stageDto.description())
+                .rules(stageDto.rules())
+                .start(stageDto.start())
+                .end(stageDto.end())
+                .literal(stageDto.literal())
+                .stageResultFormula(stageDto.stageResultFormula())
+                .stageVisibility(stageDto.stageVisibility().name())
+                .scoreVisibility(stageDto.scoreVisibility().name())
+                .scheduleAccessState(stageDto.scheduleAccessState().name())
+                .build();
+}
+
+@Transient
+public AllowState getStageVisibilityEnum() {
+    return AllowState.valueOf(stageVisibility);
+}
+
+@Transient
+public AllowState getScoreVisibilityEnum() {
+    return AllowState.valueOf(scoreVisibility);
+}
 
 @NotNull
 @Builder.Default
@@ -85,21 +110,9 @@ private Set<StageSchedule> stageSchedules = new LinkedHashSet<>();
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 private Set<Question> questions = new LinkedHashSet<>();
 
-public static Stage createFrom(final StageDto stageDto, final Season season) {
-    return Stage.builder()
-                .season(season)
-                .comment(stageDto.comment())
-                .title(stageDto.title())
-                .description(stageDto.description())
-                .rules(stageDto.rules())
-                .start(stageDto.start())
-                .end(stageDto.end())
-                .literal(stageDto.literal())
-                .stageResultFormula(stageDto.stageResultFormula())
-                .stageVisibility(stageDto.stageVisibility())
-                .scoreVisibility(stageDto.scoreVisibility())
-                .scheduleAccessState(stageDto.scheduleAccessState())
-                .build();
+@Transient
+public AllowState getScheduleAccessStateEnum() {
+    return AllowState.valueOf(scheduleAccessState);
 }
 
 public Stage editFrom(final StageDto dto) {
@@ -111,9 +124,9 @@ public Stage editFrom(final StageDto dto) {
     setEnd(dto.end());
     literal = dto.literal();
     stageResultFormula = dto.stageResultFormula();
-    stageVisibility = dto.stageVisibility();
-    scoreVisibility = dto.scoreVisibility();
-    scheduleAccessState = dto.scheduleAccessState();
+    stageVisibility = dto.stageVisibility().name();
+    scoreVisibility = dto.scoreVisibility().name();
+    scheduleAccessState = dto.scheduleAccessState().name();
     return this;
 }
 }

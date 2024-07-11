@@ -23,7 +23,13 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "season")
-@NamedEntityGraph(name = "season_with_stages", attributeNodes = { @NamedAttributeNode("stages") })
+@NamedEntityGraph(name = "season_full", attributeNodes = {
+        @NamedAttributeNode("createdAt"),
+        @NamedAttributeNode("modifiedAt"),
+        @NamedAttributeNode("createdBy"),
+        @NamedAttributeNode("modifiedBy"),
+        @NamedAttributeNode("stages")
+})
 public class Season extends TdrseEntity {
 
 @JsonManagedReference
@@ -39,33 +45,14 @@ private String seasonResultFormula; // math + Season stages
 
 @NotNull
 @Builder.Default
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Column(name = "season_visibility", nullable = false)
-private AllowState seasonVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
-
+private String seasonVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 @NotNull
 @Builder.Default
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Column(name = "score_visibility", nullable = false)
-private AllowState scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS;
-
-@NotNull
-@Builder.Default
-@OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
-private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
-
-public Season editFrom(final SeasonDto seasonDto) {
-    setComment(seasonDto.comment());
-    setTitle(seasonDto.title());
-    setDescription(seasonDto.description());
-    setRules(seasonDto.rules());
-    setStart(seasonDto.start());
-    setEnd(seasonDto.end());
-    setSeasonResultFormula(seasonDto.seasonResultFormula());
-    setSeasonVisibility(seasonDto.seasonVisibility());
-    setScoreVisibility(seasonDto.scoreVisibility());
-    return this;
-}
+private String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
 public static Season createFrom(final SeasonDto seasonDto) {
     return Season.builder()
@@ -76,8 +63,36 @@ public static Season createFrom(final SeasonDto seasonDto) {
                  .start(seasonDto.start())
                  .end(seasonDto.end())
                  .seasonResultFormula(seasonDto.seasonResultFormula())
-                 .seasonVisibility(seasonDto.seasonVisibility())
-                 .scoreVisibility(seasonDto.scoreVisibility())
+                 .seasonVisibility(seasonDto.seasonVisibility().name())
+                 .scoreVisibility(seasonDto.scoreVisibility().name())
                  .build();
+}
+
+@Transient
+public AllowState getSeasonVisibilityEnum() {
+    return AllowState.valueOf(seasonVisibility);
+}
+
+@NotNull
+@Builder.Default
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "season", orphanRemoval = true)
+private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
+
+@Transient
+public AllowState getScoreVisibilityEnum() {
+    return AllowState.valueOf(scoreVisibility);
+}
+
+public Season editFrom(final SeasonDto seasonDto) {
+    setComment(seasonDto.comment());
+    setTitle(seasonDto.title());
+    setDescription(seasonDto.description());
+    setRules(seasonDto.rules());
+    setStart(seasonDto.start());
+    setEnd(seasonDto.end());
+    setSeasonResultFormula(seasonDto.seasonResultFormula());
+    setSeasonVisibility(seasonDto.seasonVisibility().name());
+    setScoreVisibility(seasonDto.scoreVisibility().name());
+    return this;
 }
 }
