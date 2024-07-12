@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.service.season;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -7,16 +8,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
+import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
+import ru.valkovets.mephisoty.db.projection.special.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
+import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
 
@@ -25,12 +32,13 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class StageService {
+private final ProjectionFactory projectionFactory;
 private final StageRepository stageRepository;
 private final CriteriaRepository criteriaRepository;
+private final SeasonRepository seasonRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification,
-                                   final Sort sort) {
+public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification, final Sort sort) {
     return stageRepository.findBy(Specification.where(specification),
                                   q -> q.sortBy(sort == null ? Sort.unsorted() : sort)
                                         .as(StageShortProj.class)
@@ -38,13 +46,15 @@ public Page<StageShortProj> getAll(final int page, final int size, final Specifi
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Stage edit(@NotNull @Positive final Long id, final StageDto dto) {
-    return stageRepository.save(getById(id).editFrom(dto));
+public StageProj edit(@NotNull @Positive final Long id, final StageDto dto) {
+    return projectionFactory.createProjection(StageProj.class,
+                                              stageRepository.save(stageRepository.findById(id).orElseThrow()
+                                                                                  .editFrom(dto)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Stage getById(@NotNull @Positive final Long id) {
-    return stageRepository.findById(id).orElseThrow();
+public StageFullProj getById(@NotNull @Positive final Long id) {
+    return stageRepository.getById(id, StageFullProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
@@ -77,5 +87,22 @@ public Set<StageSchedule> getStageScheduleFrom(final Long id) {
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<Question> getQuestionsFrom(final Long id) {
     return stageRepository.getQuestionsFrom(id, Question.class);
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
+public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
+    final Stage stage = stageRepository.getById(stageId, Stage.class);
+    final Season oldSeason = stage.getSeason();
+    if (oldSeason.getId().equals(newSeasonId)) return projectionFactory.createProjection(StageFullProj.class, stage);
+
+    final Season newSeason = stageRepository.getById(newSeasonId, Season.class);
+    oldSeason.getStages().remove(stage);
+    stage.setSeason(newSeason);
+    newSeason.getStages().add(stage);
+
+    seasonRepository.save(oldSeason);
+    seasonRepository.save(newSeason);
+    return projectionFactory.createProjection(StageFullProj.class, stageRepository.save(stage));
 }
 }

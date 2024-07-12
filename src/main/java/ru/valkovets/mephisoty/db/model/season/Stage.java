@@ -2,6 +2,7 @@ package ru.valkovets.mephisoty.db.model.season;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -27,7 +28,14 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "stage")
-@NamedEntityGraph(name = "stage_with_criterias", attributeNodes = @NamedAttributeNode("criterias"))
+@NamedEntityGraph(name = "stage_full", attributeNodes = {
+    @NamedAttributeNode("createdAt"),
+    @NamedAttributeNode("modifiedAt"),
+    @NamedAttributeNode("createdBy"),
+    @NamedAttributeNode("modifiedBy"),
+    @NamedAttributeNode("season"),
+    @NamedAttributeNode("criterias")
+})
 public class Stage extends TdrseEntity {
 
 @JsonBackReference // todo Не будет этого поля вообще выводиться
@@ -36,7 +44,8 @@ public class Stage extends TdrseEntity {
 private Season season;
 
 @Length(max = 100)
-@Column(name = "literal", nullable = false, unique = true, length = 100)
+@Column(name = "literal", unique = true, length = 100)
+@Nullable
 @Pattern(regexp = ValidationConst.LITERAL_PATTERN)
 //@NotBlank
 private String literal;

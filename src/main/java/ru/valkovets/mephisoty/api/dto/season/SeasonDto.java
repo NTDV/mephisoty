@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
@@ -12,7 +13,7 @@ import java.io.Serializable;
 import java.time.OffsetDateTime;
 
 /**
- * DTO for {@link ru.valkovets.mephisoty.db.model.season.Season}
+ * DTO for {@link Season}
  */
 @Builder
 public record SeasonDto(@NotNull @Length(max = 200) String comment,

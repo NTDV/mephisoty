@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface CredentialsRepository extends BasicRepository<Credentials> {
     Optional<Credentials> findByEmailAndPassword(String email, String hash);
     Optional<Credentials> findByEmail(String email);
+    boolean existsById(long id);
 }

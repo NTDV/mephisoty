@@ -17,13 +17,10 @@ import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
-import ru.valkovets.mephisoty.db.projection.special.SeasonFullProj;
-import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
-import ru.valkovets.mephisoty.db.projection.special.SeasonStagesShortProj;
+import ru.valkovets.mephisoty.db.projection.special.*;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -57,16 +54,18 @@ public void delete(@NotNull @Positive final Long id) {
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Set<Stage> getStagesFrom(final Long id) {
-    return seasonRepository.getSeasonStagesById(id, Stage.class);
+public Set<IdTitleProj> getStagesFrom(final Long id) {
+    return seasonRepository.getSeasonStagesById(id, IdTitleProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 @Transactional
-public SeasonStagesShortProj addStageFor(final Long id, final StageDto stageDto) {
+public StageFullProj addStageFor(final Long id, final StageDto stageDto) {
     final Season season = seasonRepository.getById(id, Season.class);
-    season.getStages().add(stageRepository.save(Stage.createFrom(stageDto, season)));
-    return projectionFactory.createProjection(SeasonStagesShortProj.class, seasonRepository.save(season));
+    final Stage stage = stageRepository.save(Stage.createFrom(stageDto, season));
+    season.getStages().add(stage);
+    seasonRepository.save(season);
+    return projectionFactory.createProjection(StageFullProj.class, stage);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
@@ -84,7 +83,28 @@ public Page<SeasonProj> getAll(final int page, final int size, final Specificati
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public List<IdTitleProj> getAllIdTitleProjSortedByAlphabet() {
-    return seasonRepository.getAllByOrderByTitleAscIdAsc(IdTitleProj.class);
+public Page<IdTitleProj> getAllForSelect(final int page, final int size, final Specification<Season> specification) {
+    return seasonRepository.findBy(Specification.where(specification),
+                                   q -> q.as(IdTitleProj.class)
+                                         .sortBy(Sort.by(Sort.Direction.ASC, "title"))
+                                         .page(PageRequest.of(page, size)));
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
+public SeasonStagesShortProj bindStage(final Long seasonId, final Long stageId) {
+    final Stage stage = stageRepository.findById(stageId).orElseThrow();
+    final Season oldSeason = stage.getSeason();
+    if (oldSeason.getId().equals(seasonId)) {
+        return projectionFactory.createProjection(SeasonStagesShortProj.class, oldSeason);
+    } else {
+        final Season newSeason = seasonRepository.findById(seasonId).orElseThrow();
+        oldSeason.getStages().remove(stage);
+        stage.setSeason(newSeason);
+        newSeason.getStages().add(stage);
+        stageRepository.save(stage);
+        seasonRepository.save(oldSeason);
+        return projectionFactory.createProjection(SeasonStagesShortProj.class, seasonRepository.save(newSeason));
+    }
 }
 }

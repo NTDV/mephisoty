@@ -17,8 +17,8 @@ public interface StageRepository extends BasicRepository<Stage> {
     //@Query("select  stage.criterias from Stage stage where stage.id = ?1")
 <T> Set<T> getCriteriasFrom(Long id, final Class<T> type);
 
-@EntityGraph("stage_with_criterias")
-Stage getById(Long id);
+@EntityGraph("stage_full")
+<T> T getById(Long id, final Class<T> type);
 
 @Query("select s from StageScore s where s.stage.id = ?1")
     //@Query("select stage.stageScores from Stage stage where stage.id = ?1")

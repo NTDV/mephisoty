@@ -16,10 +16,16 @@ import java.util.stream.Stream;
 @Service
 public class PageableService {
 public static Number tryParseNumber(final String value) {
+    if (value == null) return null;
+    
     try {
         return Long.valueOf(value);
     } catch (final Exception ignored) {
-        return Float.valueOf(value);
+        try {
+            return Float.valueOf(value);
+        } catch (final Exception e) {
+            return null;
+        }
     }
 }
 

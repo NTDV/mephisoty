@@ -16,6 +16,9 @@ import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
+import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
+import ru.valkovets.mephisoty.db.projection.special.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
@@ -47,13 +50,13 @@ public GetAllDto<StageShortProj> getAll(@PathVariable final Long seasonId,
 
 @GetMapping("/{id}")
 @Operation(summary = "Получить информацию об этапе")
-public Stage get(@PathVariable final Long id) {
+public StageFullProj get(@PathVariable final Long id) {
     return stageService.getById(id);
 }
 
 @PutMapping("/{id}")
 @Operation(summary = "Редактировать этап")
-public Stage edit(@PathVariable final Long id, @RequestBody final StageDto dto) {
+public StageProj edit(@PathVariable final Long id, @RequestBody final StageDto dto) {
     return stageService.edit(id, dto);
 }
 
@@ -62,6 +65,13 @@ public Stage edit(@PathVariable final Long id, @RequestBody final StageDto dto) 
 public void delete(@PathVariable final Long id) {
     stageService.delete(id);
 }
+
+@PutMapping("/{stageId}/season/{seasonId}")
+@Operation(summary = "Прикрепить этап к сезону")
+public StageFullProj bindStage(@PathVariable final Long stageId, @PathVariable final Long seasonId) {
+    return stageService.bindStage(seasonId, stageId);
+}
+
 
 @GetMapping("/{id}/criterias")
 @Operation(summary = "Получить информацию о критериях этапа")

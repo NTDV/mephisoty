@@ -1,5 +1,8 @@
 package ru.valkovets.mephisoty.db.repository.season;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,5 +25,5 @@ public interface SeasonRepository extends BasicRepository<Season> {
 @EntityGraph("season_full")
 <T> T getById(Long id, final Class<T> type);
 
-<T> List<T> getAllByOrderByTitleAscIdAsc(Class<T> type);
+<T> Page<T> getAllByOrderByTitleAscIdAsc(Specification<Season> specification, Pageable pageable, Class<T> type);
 }
