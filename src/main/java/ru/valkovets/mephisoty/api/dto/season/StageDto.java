@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.api.dto.season;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,6 +16,7 @@ import java.time.OffsetDateTime;
  * DTO for {@link Stage}
  */
 public record StageDto(@NotNull @Length(max = 200) String comment,
+                       @Nullable Long season,
                        @NotBlank @Length(max = 120) String title,
                        @NotNull @Length(max = 2000) String description,
                        @NotNull @Length(max = 2000) String rules,

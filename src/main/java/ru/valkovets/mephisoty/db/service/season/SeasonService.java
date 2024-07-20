@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
@@ -83,11 +84,11 @@ public Page<SeasonProj> getAll(final int page, final int size, final Specificati
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<IdTitleProj> getAllForSelect(final int page, final int size, final Specification<Season> specification) {
+public Page<IdTitleProj> getAllForSelect(final long offset, final long limit, final Specification<Season> specification) {
     return seasonRepository.findBy(Specification.where(specification),
                                    q -> q.as(IdTitleProj.class)
                                          .sortBy(Sort.by(Sort.Direction.ASC, "title"))
-                                         .page(PageRequest.of(page, size)));
+                                         .page(new OffsetBasedPageRequest(offset, limit)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
