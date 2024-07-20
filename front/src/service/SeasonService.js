@@ -8,8 +8,11 @@ export class SeasonService {
         }).then((resp) => resp.json());
     }
 
-    getAllForSelect() {
-        return fetchApi('/admin/season/select').then((resp) => resp.json());
+    getAllForSelect(lazyParams) {
+        return fetchApi('/admin/season/select',{
+            method: 'POST',
+            body: JSON.stringify(lazyParams)
+        }).then((resp) => resp.json());
     }
 
     get(id) {

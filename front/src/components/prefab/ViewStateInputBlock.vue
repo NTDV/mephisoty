@@ -16,10 +16,13 @@ const statuses = ref(props.isReadViewOnly ? allowStateService.getBadgeContentVie
 
 <template>
   <label>{{ props.label }}</label>
-  <Dropdown v-model="visibility" :invalid="props.submitted && !visibility" :options="statuses"
-            option-value="value" optionLabel="label" placeholder="Выберите ограничение">
+  <Dropdown v-model="visibility" :invalid="props.submitted && !visibility"
+            :options="statuses" option-value="value" optionLabel="label"
+            placeholder="Выберите ограничение">
     <template #value="slotProps">
-      <span v-if="slotProps.value">{{ allowStateService.getBadgeContentFor(slotProps.value) }}</span>
+      <Tag v-if="slotProps.value"
+           :severity="allowStateService.getBadgeSeverityFor(slotProps.value)"
+           :value="allowStateService.getBadgeContentFor(slotProps.value)"/>
       <span v-else> {{ slotProps.placeholder }} </span>
     </template>
     <template #option="slotProps">

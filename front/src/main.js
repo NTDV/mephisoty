@@ -109,6 +109,11 @@ import VirtualScroller from 'primevue/virtualscroller';
 import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
+import CalendarInputBlock from "@/components/prefab/CalendarInputBlock.vue";
+import CreatedModifiedBlock from "@/components/prefab/CreatedModifiedBlock.vue";
+import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
+import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
+import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -225,6 +230,11 @@ app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
 // todo Import all new here
+app.component('CalendarInputBlock', CalendarInputBlock);
+app.component('CreatedModifiedBlock', CreatedModifiedBlock);
+app.component('TextareaBlock', TextareaBlock);
+app.component('TextInputBlock', TextInputBlock);
+app.component('ViewStateInputBlock', ViewStateInputBlock);
 
 app.mount('#app');
 

@@ -9,7 +9,8 @@ const props = defineProps({
     type: Number,
     default: 120
   },
-  autofocus: Boolean
+  autofocus: Boolean,
+  disabled: Boolean
 })
 </script>
 
@@ -19,7 +20,8 @@ const props = defineProps({
              :autofocus="props.autofocus"
              :invalid="props.invalid"
              :maxlength="props.maxLength"
-             :required="!props.notRequired"/>
+             :required="!props.notRequired"
+             :disabled="props.disabled"/>
   <small v-if="props.invalid"
          class="p-invalid">Неверное заполнение.</small>
 </template>

@@ -6,7 +6,6 @@ import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
 import {useRoute} from "vue-router";
 import {CredsService} from "@/service/CredsService";
-import CreatedModifiedBlock from "@/components/CreatedModifiedBlock.vue";
 
 const toast = useToast();
 
@@ -31,33 +30,32 @@ const statuses = ref(allowStateService.getBadgeContentViewOnly());
 const route = useRoute();
 
 onMounted(() => {
-    loading.value = true;
-    setTimeout(() => seasonService.get(route.params.id)
+  loading.value = true;
+  seasonService.get(route.params.id).then((data) => {
+    season.value = createSeasonClient(data);
+    const creatorIsEditor = season.value.createdBy === season.value.modifiedBy;
+
+    credsService.getFullName(season.value.createdBy)
+      .then((data) => {
+        if (!data.err) season.value.createdBy = data;
+        else console.error(data);
+
+        if (creatorIsEditor) {
+          season.value.modifiedBy = data;
+          loading.value = false;
+        }
+      });
+
+    if (!creatorIsEditor) {
+      credsService.getFullName(season.value.modifiedBy)
         .then((data) => {
-            season.value = createSeasonClient(data);
-            const creatorIsEditor = season.value.createdBy === season.value.modifiedBy;
+          if (!data.err) season.value.lastModifiedBy = data;
+          else console.error(data);
 
-            setTimeout(() => credsService.getFullName(season.value.createdBy)
-                .then((data) => {
-                    if (!data.err) season.value.createdBy = data;
-                    else console.error(data);
-
-                    if (creatorIsEditor) {
-                        season.value.modifiedBy = data;
-                        loading.value = false;
-                    }
-                }), 100);
-
-            if (!creatorIsEditor) {
-                setTimeout(() => credsService.getFullName(season.value.modifiedBy)
-                    .then((data) => {
-                        if (!data.err) season.value.lastModifiedBy = data;
-                        else console.error(data);
-
-                        loading.value = false;
-                    }), 100);
-            }
-        }), 200);
+          loading.value = false;
+        });
+    }
+  });
 });
 
 

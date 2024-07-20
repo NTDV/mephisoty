@@ -29,6 +29,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/StageCrud.vue')
                 },
                 {
+                    path: '/admin/stage/:id',
+                    name: 'stage',
+                    component: () => import('@/views/pages/StageAdminView.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

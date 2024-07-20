@@ -6,9 +6,7 @@ import {SeasonService} from '@/service/SeasonService';
 import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
 import {StageService} from "@/service/StageService";
-import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
-import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
-import CalendarInputBlock from "@/components/prefab/CalendarInputBlock.vue";
+import router from "@/router";
 
 const toast = useToast();
 
@@ -28,15 +26,15 @@ const stageService = new StageService();
 const allowStateService = new AllowStateService();
 const dateTimeService = new DateTimeService();
 
-const stages = ref(null);
-const stageDialog = ref(false);
-const stage = ref({});
+const models = ref(null);
+const editDialog = ref(false);
+const model = ref({});
 const calendarStartValue = ref(null);
 const calendarEndValue = ref(null);
-const deleteStageDialog = ref(false);
-const deleteStagesDialog = ref(false);
+const deleteModelDialog = ref(false);
+const deleteModelsDialog = ref(false);
 
-const selectedStages = ref(null);
+const selectedModels = ref(null);
 const filters = ref({});
 const submitted = ref(false);
 
@@ -88,18 +86,14 @@ const loadLazyData = (event) => {
   loading.value = true;
   lazyParams.value = {...lazyParams.value, first: event?.first || first.value};
 
-  setTimeout(
-    () =>
-      stageService.getAll(lazyParams.value, parentSeason.value).then((data) => {
-        stages.value = data.collection.map((val) => createStageClient(val));
-        totalRecords.value = data.total;
-        loading.value = false;
-      }),
-    500
-  );
+  stageService.getAll(lazyParams.value, parentSeason.value).then((data) => {
+    models.value = data.collection.map((val) => createModelClient(val));
+    totalRecords.value = data.total;
+    loading.value = false;
+  })
 };
 
-const createStageClient = (seasonServer) => {
+const createModelClient = (seasonServer) => {
   return {
     ...seasonServer,
     start: dateTimeService.getDateFromTimestamp(seasonServer.start),
@@ -123,95 +117,105 @@ const onSelectAllChange = (event) => {
   selectAll.value = event.checked;
 
   if (selectAll.value) {
-    selectedStages.value = stages.value;
+    selectedModels.value = models.value;
   } else {
     selectAll.value = false;
-    selectedStages.value = [];
+    selectedModels.value = [];
   }
 };
 
 const onRowSelect = () => {
-  selectAll.value = selectedStages.value.length === totalRecords.value;
+  selectAll.value = selectedModels.value.length === totalRecords.value;
 };
 const onRowUnselect = () => {
   selectAll.value = false;
 };
 
 const openNew = () => {
-  stage.value = {};
+  if (!parentSeason.value) {
+    toast.add({severity: 'error', summary: 'Ошибка', detail: 'Сначала выберите родительский сезон', life: 3000});
+    return;
+  }
+  model.value = {
+    stageVisibility: allowStateService.defaultState,
+    scoreVisibility: allowStateService.defaultState,
+    scheduleAccessState: allowStateService.defaultState
+  };
   submitted.value = false;
-  calendarStartValue.value = null;
-  calendarEndValue.value = null;
-  stageDialog.value = true;
+  calendarStartValue.value = dateTimeService.getDateNow();
+  calendarEndValue.value = dateTimeService.getDateNow();
+  editDialog.value = true;
 };
 
 const hideDialog = () => {
-  stageDialog.value = false;
+  editDialog.value = false;
   submitted.value = false;
 };
 
 const validateInput = () => {
   return (
-    stage.value &&
+    model.value &&
     //season.value.comment &&
-    stage.value.title &&
-    stage.value.title.trim() !== '' &&
+    model.value.title && model.value.title.trim() !== '' &&
     //season.value.description &&
     //season.value.rules &&
     calendarStartValue.value &&
     calendarEndValue.value &&
     // && season.value.seasonResultFormula
-    stage.value.seasonVisibility &&
-    stage.value.scoreVisibility
+    model.value.stageVisibility &&
+    model.value.scoreVisibility &&
+    model.value.scheduleAccessState
   );
 };
 
-const createSeasonDto = () => {
+const createModelDto = () => {
   return {
-    comment: stage.value.comment ? stage.value.comment : '',
-    title: stage.value.title,
-    description: stage.value.description ? stage.value.description : '',
-    rules: stage.value.rules ? stage.value.rules : '',
-    start: getDateTimeOffsetFromDate(calendarStartValue.value),
-    end: getDateTimeOffsetFromDate(calendarEndValue.value),
-    seasonResultFormula: stage.value.seasonResultFormula,
-    seasonVisibility: stage.value.seasonVisibility,
-    scoreVisibility: stage.value.scoreVisibility
+    comment: model.value.comment ? model.value.comment : '',
+    title: model.value.title,
+    description: model.value.description ? model.value.description : '',
+    rules: model.value.rules ? model.value.rules : '',
+    start: dateTimeService.getDateTimeOffsetFromDate(calendarStartValue.value),
+    end: dateTimeService.getDateTimeOffsetFromDate(calendarEndValue.value),
+    literal: model.value.literal,
+    stageResultFormula: model.value.stageResultFormula,
+    stageVisibility: model.value.stageVisibility,
+    scoreVisibility: model.value.scoreVisibility,
+    scheduleAccessState: model.value.scheduleAccessState
   };
 };
 
-const saveSeason = async () => {
+const saveModel = async () => {
   submitted.value = true;
 
   if (validateInput()) {
-    if (stage.value.id) {
+    if (model.value.id) {
       try {
-        const res = await seasonService.edit(stage.value.id, createSeasonDto());
+        const res = await stageService.edit(model.value.id, createModelDto());
         if (res.err) {
           console.error(res);
-          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не изменен', life: 3000});
+          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не изменены', life: 3000});
           return;
         }
 
-        stage.value = createStageClient(res);
-        stages.value[findSeasonIndexById(stage.value.id)] = stage.value;
-        toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон изменен', life: 3000});
+        model.value = createModelClient(res);
+        models.value[findSeasonIndexById(model.value.id)] = model.value;
+        toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные изменен', life: 3000});
       } catch (e) {
         console.error(e);
-        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Сезон не изменен', life: 3000});
+        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Данные не изменен', life: 3000});
         return;
       }
     } else {
       try {
-        const res = await seasonService.create(createSeasonDto());
+        const res = await seasonService.addStage(parentSeason.value, createModelDto());
         if (res.err) {
           console.error(res);
           toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не создан', life: 3000});
           return;
         }
 
-        stage.value = createStageClient(res);
-        stages.value.push(stage.value);
+        model.value = createModelClient(res);
+        models.value.push(model.value);
         toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон добавлен', life: 3000});
       } catch (e) {
         console.error(e);
@@ -220,25 +224,25 @@ const saveSeason = async () => {
       }
     }
 
-    stageDialog.value = false;
-    stage.value = {};
+    editDialog.value = false;
+    model.value = {};
   } else {
     toast.add({severity: 'warn', summary: 'Внимание', detail: 'Неверное заполнение', life: 3000});
   }
 };
 
-const editSeason = (editSeason) => {
-  stage.value = {...editSeason};
-  calendarStartValue.value = editSeason.start;
-  calendarEndValue.value = editSeason.end;
+const editModel = (editModel) => {
+  model.value = {...editModel};
+  calendarStartValue.value = editModel.start;
+  calendarEndValue.value = editModel.end;
 
-  stageDialog.value = true;
+  editDialog.value = true;
 };
 
 const findSeasonIndexById = (id) => {
   let index = -1;
-  for (let i = 0; i < stages.value.length; i++) {
-    if (stages.value[i].id === id) {
+  for (let i = 0; i < models.value.length; i++) {
+    if (models.value[i].id === id) {
       index = i;
       break;
     }
@@ -250,59 +254,55 @@ const exportCSV = () => {
   dt.value.exportCSV();
 };
 
-const confirmDeleteSeason = (deleteSeason) => {
-  stage.value = deleteSeason;
-  deleteStageDialog.value = true;
+const confirmDeleteModel = (deleteModel) => {
+  model.value = deleteModel;
+  deleteModelDialog.value = true;
 };
 
-const deleteSeason = () => {
+const deleteModel = () => {
   try {
-    const res = seasonService.delete(stage.value.id);
+    const res = stageService.delete(model.value.id);
     if (res == null || res.err) {
       console.error(res);
-      toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не удален', life: 3000});
+      toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не удалены', life: 3000});
       return;
     }
   } catch (e) {
     console.error(e);
-    toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Сезон не удален', life: 3000});
+    toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Данные не удалены', life: 3000});
     return;
   }
 
-  stages.value = stages.value.filter((val) => val.id !== stage.value.id);
-  deleteStageDialog.value = false;
-  stage.value = {};
-  toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон удален', life: 3000});
+  models.value = models.value.filter((val) => val.id !== model.value.id);
+  deleteModelDialog.value = false;
+  model.value = {};
+  toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные удалены', life: 3000});
 };
 
 const confirmDeleteSelected = () => {
-  deleteStagesDialog.value = true;
+  deleteModelsDialog.value = true;
 };
 
-const deleteSelectedSeasons = () => {
+const deleteSelected = () => {
   try {
-    for (const val of selectedStages.value) {
-      const res = seasonService.delete(val.id);
+    for (const val of selectedModels.value) {
+      const res = stageService.delete(val.id);
       if (res == null || res.err) {
         console.error(res);
-        toast.add({
-          severity: 'error',
-          summary: 'Ошибка сервера',
-          detail: 'Часть сезонов не удалена',
-          life: 3000
-        });
+        toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Часть данных не удалена', life: 3000});
         return;
       }
     }
   } catch (e) {
     console.error(e);
-    toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Часть сезонов не удалена', life: 3000});
+    toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Часть данных не удалена', life: 3000});
     return;
   }
 
-  stages.value = stages.value.filter((val) => !selectedStages.value.includes(val));
-  deleteStagesDialog.value = false;
-  selectedStages.value = null;
+  debugger;
+  models.value = models.value.filter((val) => !selectedModels.value.includes(val));
+  deleteModelsDialog.value = false;
+  selectedModels.value = null;
   toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон удален', life: 3000});
 };
 
@@ -312,8 +312,8 @@ const clearFilter = () => {
   loadLazyData();
 };
 
-const viewSeason = (id) => {
-  router.push({name: 'SeasonAdminView', params: {id: id}});
+const viewModel = (id) => {
+  router.push({name: 'StageAdminView', params: {id: id}});
 }
 </script>
 
@@ -340,7 +340,7 @@ const viewSeason = (id) => {
                       @click="exportCSV($event)"/>
               <Button class="mr-2 mb-2" icon="pi pi-plus" label="Добавить" severity="success"
                       @click="openNew"/>
-              <Button :disabled="!selectedStages || !selectedStages.length" class="mb-2" icon="pi pi-trash"
+              <Button :disabled="!selectedModels || !selectedModels.length" class="mb-2" icon="pi pi-trash"
                       label="Удалить" severity="danger" @click="confirmDeleteSelected"/>
             </div>
           </template>
@@ -349,7 +349,7 @@ const viewSeason = (id) => {
         <DataTable
           ref="dt"
           v-model:filters="filters"
-          v-model:selection="selectedStages"
+          v-model:selection="selectedModels"
           :first="first"
           :global-filter-fields="['id', 'title']"
           :loading="loading"
@@ -358,7 +358,7 @@ const viewSeason = (id) => {
           :rowsPerPageOptions="[5, 10, 25, 50, 100, 500, 1000]"
           :selectAll="selectAll"
           :totalRecords="totalRecords"
-          :value="stages"
+          :value="models"
           currentPageReportTemplate="Сезоны с {first} по {last} из {totalRecords} всего"
           dataKey="id"
           filter-display="menu"
@@ -510,99 +510,92 @@ const viewSeason = (id) => {
 
           <Column header="Действия" headerStyle="width:10%;min-width:11rem;">
             <template #body="slotProps">
-              <RouterLink :to="'/admin/season/' + slotProps.data.id">
+              <RouterLink :to="'/admin/stage/' + slotProps.data.id">
                 <Button class="mr-2" icon="pi pi-eye" rounded severity="success"/>
               </RouterLink>
               <Button class="mr-2" icon="pi pi-pencil" rounded severity="warning"
-                      @click="editSeason(slotProps.data)"/>
+                      @click="editModel(slotProps.data)"/>
               <Button class="mr-2" icon="pi pi-trash" rounded severity="danger"
-                      @click="confirmDeleteSeason(slotProps.data)"/>
+                      @click="confirmDeleteModel(slotProps.data)"/>
             </template>
           </Column>
         </DataTable>
 
-        <Dialog v-model:visible="editDialog"
-                :modal="true"
-                :style="{ width: '700px' }"
-                class="p-fluid"
+        <Dialog v-model:visible="editDialog" :modal="true"
+                :style="{ width: '700px' }" class="p-fluid"
                 header="Информация об этапе">
           <div class="field">
-            <TextareaBlock v-model="model.comment"
-                           auto-resize
-                           label="Комментарий"
-                           maxlength="200"
+            <TextareaBlock v-model="model.comment" auto-resize
+                           label="Комментарий" maxlength="200"
                            rows="1"/>
           </div>
 
           <div class="field">
-            <TextInputBlock v-model="model.title"
-                            :autofocus="true"
+            <TextInputBlock v-model="model.title" :autofocus="true"
                             :invalid="submitted && !model.title"
                             label="Название"/>
           </div>
 
           <div class="field">
-            <TextareaBlock v-model="model.description"
-                           label="Описание"/>
+            <TextareaBlock v-model="model.description" label="Описание"/>
           </div>
 
           <div class="field">
-            <label for="rules">Правила</label>
-            <Textarea id="rules" v-model="model.rules" maxlength="2000" rows="3"/>
+            <TextareaBlock v-model="model.rules" label="Правила"/>
           </div>
 
           <div class="field">
-            <CalendarInputBlock v-model="calendarStartValue"
-                                :submitted="submitted"
+            <CalendarInputBlock v-model="calendarStartValue" :submitted="submitted"
                                 label="Начало этапа"/>
           </div>
-
           <div class="field">
-            <label for="end">Конец</label>
-            <Calendar
-              v-model="calendarEndValue"
-              :invalid="submitted && !calendarEndValue"
-              :showButtonBar="true"
-              :showIcon="true"
-              :showSeconds="true"
-              :showTime="true"
-              date-format="dd.mm.yy"
-              mask="99.99.9999 99:99:99"
-              selectionMode="single"
-            ></Calendar>
-            <small v-if="submitted && !calendarEndValue" class="p-invalid">Введите дату и время конца этапа.</small>
+            <CalendarInputBlock v-model="calendarEndValue" :submitted="submitted"
+                                label="Конец этапа"/>
           </div>
-
           <div class="field">
-            <label for="rules">Формула</label>
-            <Textarea id="rules" v-model="model.seasonResultFormula" cols="20" disabled rows="3"/>
+            <TextInputBlock v-model="model.literal" label="Литерал" disabled max-length="100"/>
           </div>
-
           <div class="field">
-            <ViewStateInput v-model="model.seasonVisibility" :is-read-view-only="true"
-                            :submitted="submitted" label="Видимость этапа участниками"/>
+            <TextareaBlock v-model="model.stageResultFormula" label="Формула" disabled/>
           </div>
-
           <div class="field">
-            <label for="scoreVisibility">Видимость оценок этапа участниками</label>
-            <Dropdown id="scoreVisibility" v-model="model.scoreVisibility" :invalid="submitted && !season.scoreVisibility" :options="statuses"
-                      option-value="value" optionLabel="label"
-                      placeholder="Выберите ограничение">
-              <template #value="slotProps">
-                <span v-if="slotProps.value">{{ allowStateService.getBadgeContentFor(slotProps.value) }}</span>
-                <span v-else> {{ slotProps.placeholder }} </span>
-              </template>
-              <template #option="slotProps">
-                <Tag :severity="allowStateService.getBadgeSeverityFor(slotProps.option.value)"
-                     :value="slotProps.option.label"/>
-              </template>
-            </Dropdown>
-            <small v-if="submitted && !model.seasonVisibility" class="p-invalid">Выберите один из вариантов.</small>
+            <ViewStateInputBlock v-model="model.stageVisibility" :is-read-view-only="true"
+                                 :submitted="submitted" label="Видимость этапа участниками"/>
+          </div>
+          <div class="field">
+            <ViewStateInputBlock v-model="model.scoreVisibility" :is-read-view-only="true"
+                                 :submitted="submitted" label="Видимость оценок за этап участниками"/>
+          </div>
+          <div class="field">
+            <ViewStateInputBlock v-model="model.scheduleAccessState" :submitted="submitted"
+                                 label="Доступ к расписанию этапа"/>
           </div>
 
           <template #footer>
             <Button icon="pi pi-times" label="Отменить" text @click="hideDialog"/>
             <Button icon="pi pi-check" label="Сохранить" @click="saveModel"/>
+          </template>
+        </Dialog>
+
+        <Dialog v-model:visible="deleteModelDialog" :modal="true" :style="{ width: '700px' }" header="Подтверждение">
+          <div class="flex align-items-center justify-content-center">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"/>
+            <span v-if="model">Вы точно хотите удалить <b>{{ model.title }} <small>ID: {{model.id }}</small></b> и <u>все</u> связанные данные?</span>
+          </div>
+          <template #footer>
+            <Button icon="pi pi-times" label="Нет" @click="deleteModelDialog = false"/>
+            <Button icon="pi pi-trash" label="Да" severity="danger" text @click="deleteModel"/>
+          </template>
+        </Dialog>
+
+        <Dialog v-model:visible="deleteModelsDialog" :modal="true" :style="{ width: '700px' }" header="Подтверждение">
+          <div class="flex align-items-center justify-content-center">
+            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"/>
+            <span v-if="model">Вы точно хотите удалить <b>выбранные данные</b> и <u>всё</u>, что связано с ними?</span>
+          </div>
+          <template #footer>
+            <Button icon="pi pi-times" label="Нет" @click="deleteModelsDialog = false"/>
+            <Button icon="pi pi-trash" label="Да" severity="danger" text @click="deleteSelected"/>
           </template>
         </Dialog>
 

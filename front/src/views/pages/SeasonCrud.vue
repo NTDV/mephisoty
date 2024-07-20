@@ -5,10 +5,7 @@ import {useToast} from 'primevue/usetoast';
 import {SeasonService} from '@/service/SeasonService';
 import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
-import CalendarInputBlock from "@/components/prefab/CalendarInputBlock.vue";
-import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
 import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
-import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
 
 const toast = useToast();
 
@@ -64,15 +61,11 @@ const loadLazyData = (event) => {
   loading.value = true;
   lazyParams.value = {...lazyParams.value, first: event?.first || first.value};
 
-  setTimeout(
-    () =>
-      seasonService.getAll(lazyParams.value).then((data) => {
-        seasons.value = data.collection.map((val) => createSeasonClient(val));
-        totalRecords.value = data.total;
-        loading.value = false;
-      }),
-    500
-  );
+  seasonService.getAll(lazyParams.value).then((data) => {
+    seasons.value = data.collection.map((val) => createSeasonClient(val));
+    totalRecords.value = data.total;
+    loading.value = false;
+  });
 };
 
 const onPage = (event) => {
@@ -106,10 +99,13 @@ const onRowUnselect = () => {
 };
 
 const openNew = () => {
-  season.value = {};
+  season.value = {
+    seasonVisibility: allowStateService.defaultState,
+    scoreVisibility: allowStateService.defaultState,
+  };
   submitted.value = false;
-  calendarStartValue.value = null;
-  calendarEndValue.value = null;
+  calendarStartValue.value = dateTimeService.getDateNow();
+  calendarEndValue.value = dateTimeService.getDateNow();
   seasonDialog.value = true;
 };
 
@@ -478,21 +474,14 @@ const viewSeason = (id) => {
             <TextInputBlock v-model="season.title" :autofocus="true"
                             :invalid="submitted && !season.title"
                             label="Название"/>
-            <label for="title">Название</label>
-            <InputText id="title" v-model.trim="season.title" :invalid="submitted && !season.title" autofocus
-                       maxlength="120" required="true"/>
-            <small v-if="submitted && (!season.title || season.title.trim() === '')" class="p-invalid">Введите
-              название.</small>
           </div>
 
           <div class="field">
-            <label for="description">Описание</label>
-            <Textarea id="description" v-model="season.description" cols="30" maxlength="2000" rows="3"/>
+            <TextareaBlock v-model="season.description" label="Описание"/>
           </div>
 
           <div class="field">
-            <label for="rules">Правила</label>
-            <Textarea id="rules" v-model="season.rules" maxlength="2000" rows="3"/>
+            <TextareaBlock v-model="season.description" label="Правила"/>
           </div>
 
           <div class="field">
@@ -504,8 +493,7 @@ const viewSeason = (id) => {
           </div>
 
           <div class="field">
-            <label for="rules">Формула</label>
-            <Textarea id="rules" v-model="season.seasonResultFormula" cols="20" disabled rows="3"/>
+            <TextareaBlock v-model="season.seasonResultFormula" label="Формула" disabled />
           </div>
 
           <div class="field">
@@ -515,7 +503,7 @@ const viewSeason = (id) => {
 
           <div class="field">
             <ViewStateInputBlock v-model="season.scoreVisibility" :is-read-view-only="true"
-                                 :submitted="submitted" label="Видимость оценок сезона участниками"/>
+                                 :submitted="submitted" label="Видимость итоговых оценок участниками"/>
           </div>
 
           <template #footer>

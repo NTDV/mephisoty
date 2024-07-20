@@ -1,4 +1,6 @@
 export class AllowStateService {
+    defaultState = 'DISALLOW_ALL_FOR_PARTICIPANTS';
+
     mapContent = {
         DISALLOW_ALL_FOR_PARTICIPANTS: 'Скрыто',
         ALLOW_READ_FOR_PARTICIPANTS: 'Видно',

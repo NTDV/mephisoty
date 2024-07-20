@@ -1,4 +1,8 @@
 export class DateTimeService {
+    getDateNow() {
+        return new Date();
+    }
+
     formatDateTimeFromDate(date) {
         const year = date.getFullYear(),
             month = date.getMonth() + 1, // months are zero indexed

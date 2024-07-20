@@ -25,6 +25,12 @@ export class StageService {
         }).then((resp) => resp.json());
     }
 
+    bindStage(seasonId, stageId) {
+        return fetchApi('/admin/stage/' + stageId + '/season/' + seasonId, {
+            method: 'PUT'
+        }).then((resp) => resp.json());
+    }
+
     getCriterias(id) {
         return fetchApi('/admin/stage/' + id + '/criterias').then((resp) => resp.json());
     }
