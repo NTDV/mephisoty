@@ -1,11 +1,15 @@
 package ru.valkovets.mephisoty.db.model.season.scoring;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.TdrEntity;
 import ru.valkovets.mephisoty.settings.ValidationConst;
@@ -20,6 +24,14 @@ import java.util.Set;
 @NoArgsConstructor
 @SuperBuilder
 @Table(name = "criteria")
+@NamedEntityGraph(name = "criteria_full", attributeNodes = {
+    @NamedAttributeNode("createdAt"),
+    @NamedAttributeNode("modifiedAt"),
+    @NamedAttributeNode("createdBy"),
+    @NamedAttributeNode("modifiedBy"),
+    @NamedAttributeNode("stage"),
+    @NamedAttributeNode("criteriaScores")
+})
 public class Criteria extends TdrEntity {
 
 @JsonBackReference
@@ -27,14 +39,15 @@ public class Criteria extends TdrEntity {
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 private Stage stage;
 
-@NotBlank
+//@NotBlank
+@Nullable
 @Length(max = 100)
 @Pattern(regexp = ValidationConst.LITERAL_PATTERN)
-@Column(name = "literal", nullable = false, unique = true, length = 100)
+@Column(name = "literal", unique = true, length = 100)
 private String literal;
 
 @NotNull
-@Positive
+@PositiveOrZero
 @Builder.Default
 @Column(name = "max", nullable = false)
 private Float max = 10f;
@@ -60,5 +73,16 @@ public static Criteria from(final CriteriaDto criteriaDto, final Stage stage) {
                    .max(criteriaDto.max())
                    .min(criteriaDto.min())
                    .build();
+}
+
+public Criteria editFrom(final CriteriaDto dto) {
+    setComment(dto.comment());
+    setTitle(dto.title());
+    setDescription(dto.description());
+    setRules(dto.rules());
+    literal = dto.literal();
+    max = dto.max();
+    min = dto.min();
+    return this;
 }
 }

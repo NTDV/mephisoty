@@ -1,11 +1,8 @@
 <script setup>
 import {DateTimeService} from "@/service/DateTimeService";
-import {onUpdated} from "vue";
 
 const season = defineModel();
 const dateTimeService = new DateTimeService();
-
-onUpdated(() => console.log(season.value))
 </script>
 
 <template>

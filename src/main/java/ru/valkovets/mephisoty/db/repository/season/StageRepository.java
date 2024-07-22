@@ -2,7 +2,6 @@ package ru.valkovets.mephisoty.db.repository.season;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -31,4 +30,6 @@ public interface StageRepository extends BasicRepository<Stage> {
 @Query("select q from Question q where q.stage.id = ?1")
     //@Query("select stage.questions from Stage stage where stage.id = ?1")
 <T> Set<T> getQuestionsFrom(Long id, Class<T> type);
+
+<T> Page<T> getAllByOrderByTitleAscIdAsc(Pageable pageable, Class<T> type);
 }

@@ -1,5 +1,8 @@
 package ru.valkovets.mephisoty.api.lazydata.service;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -29,33 +32,6 @@ public static Number tryParseNumber(final String value) {
     }
 }
 
-public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode, final String param, final String... values) {
-    return (root, query, builder) -> switch (matchMode) {
-        case equals -> builder.equal(root.get(param), values[0]);
-        case notEquals -> builder.notEqual(root.get(param), values[0]);
-
-        case contains -> builder.like(root.get(param), "%" + values[0] + "%");
-        case notContains -> builder.notLike(root.get(param), "%" + values[0] + "%");
-        case endsWith -> builder.like(root.get(param), "%" + values[0]);
-        case startsWith -> builder.like(root.get(param), values[0] + "%");
-
-        case in -> builder.in(root.get(param)).in((Object[]) values);
-
-        case lt -> builder.lt(root.get(param), tryParseNumber(values[0]));
-        case lte -> builder.le(root.get(param), tryParseNumber(values[0]));
-        case gt -> builder.gt(root.get(param), tryParseNumber(values[0]));
-        case gte -> builder.ge(root.get(param), tryParseNumber(values[0]));
-
-        case dateIs -> builder.equal(root.get(param), OffsetDateTime.parse(values[0]));
-        case dateIsNot -> builder.notEqual(root.get(param), OffsetDateTime.parse(values[0]));
-        case dateBefore -> builder.lessThan(root.get(param), OffsetDateTime.parse(values[0]));
-        case dateAfter -> builder.greaterThan(root.get(param), OffsetDateTime.parse(values[0]));
-
-        case between -> throw new NotImplementedException("Between mode is not implemented yet.");
-
-    };
-}
-
 public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEvent src) {
     if (src.filters() == null) return null;
     return src.filters()
@@ -67,7 +43,25 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
                   final Object value = e.getValue();
 
                   return switch (value) {
-                      case final String string -> PageableService.<EntityT>useMode(MatchMode.equals, key, string);
+                      case final String string -> {
+                          final boolean isName = key.equals("name") || key.endsWith(".name");
+                          if (!isName) {
+                              yield PageableService.<EntityT>useMode(MatchMode.equals, key, string);
+                          } else {
+                              yield (Specification<EntityT>) (
+                                  (root, query, builder) -> {
+                                      final Path<?> prefixPath = getNestedPath(root, key);
+                                      return builder.like(
+                                          builder.lower(
+                                              builder.concat(
+                                                  prefixPath.get("second_name"),
+                                                  builder.concat(
+                                                      prefixPath.get("first_name"),
+                                                      prefixPath.get("third_name")))),
+                                          ("%" + string.toLowerCase() + "%"));
+                                  });
+                          }
+                      }
 
                       case final DataTableOperatorFilterMetaData operatorFilterMetaData -> unitSpecs(
                               operatorFilterMetaData.operator(),
@@ -87,6 +81,47 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
               .filter(Objects::nonNull)
               .reduce(Specification::and)
               .orElse(null);
+}
+
+public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode, final String param, final String... values) {
+    return (root, query, builder) -> {
+        final Path<?> prefixPath = getNestedPath(root, param);
+
+        return switch (matchMode) {
+            case equals -> builder.equal(prefixPath, values[0]);
+            case notEquals -> builder.notEqual(prefixPath, values[0]);
+
+            case contains -> builder.like(builder.lower((Expression<String>) prefixPath), "%" + values[0].toLowerCase() + "%");
+            case notContains ->
+                builder.notLike(builder.lower((Expression<String>) prefixPath), "%" + values[0].toLowerCase() + "%");
+            case endsWith -> builder.like(builder.lower((Expression<String>) prefixPath), "%" + values[0].toLowerCase());
+            case startsWith -> builder.like(builder.lower((Expression<String>) prefixPath), values[0].toLowerCase() + "%");
+            // todo Make ?all? case insensitive
+
+            case in -> builder.in(prefixPath).in((Object[]) values);
+
+            case lt -> builder.lt((Expression<? extends Number>) prefixPath, tryParseNumber(values[0]));
+            case lte -> builder.le((Expression<? extends Number>) prefixPath, tryParseNumber(values[0]));
+            case gt -> builder.gt((Expression<? extends Number>) prefixPath, tryParseNumber(values[0]));
+            case gte -> builder.ge((Expression<? extends Number>) prefixPath, tryParseNumber(values[0]));
+
+            case dateIs -> builder.equal(prefixPath, OffsetDateTime.parse(values[0]));
+            case dateIsNot -> builder.notEqual(prefixPath, OffsetDateTime.parse(values[0]));
+            case dateBefore ->
+                builder.lessThan((Expression<? extends OffsetDateTime>) prefixPath, OffsetDateTime.parse(values[0]));
+            case dateAfter ->
+                builder.greaterThan((Expression<? extends OffsetDateTime>) prefixPath, OffsetDateTime.parse(values[0]));
+
+            case between -> throw new NotImplementedException("Between mode is not implemented yet.");
+        };
+    };
+}
+
+public static Path<?> getNestedPath(final Root<?> root, final String path) {
+    final String[] paths = path.split("\\.", 5);
+    Path<?> ret = root.get(paths[0]);
+    for (int i = 1; i < paths.length; i++) ret = ret.get(paths[i]);
+    return ret;
 }
 
 public static <T> Specification<T> unitSpecs(final OperatorMode operatorMode, final Stream<Specification<T>> specs) {

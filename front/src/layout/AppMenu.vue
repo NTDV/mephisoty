@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
 
@@ -12,7 +12,8 @@ const model = ref([
         label: 'Управление',
         items: [
             {label: 'Сезоны', icon: 'pi pi-fw pi-hashtag', to: '/admin/seasons'},
-            {label: 'Этапы', icon: 'pi pi-fw pi-check-square', to: '/admin/stages'}
+          {label: 'Этапы', icon: 'pi pi-fw pi-check-square', to: '/admin/stages'},
+          {label: 'Критерии', icon: 'pi pi-fw pi-table', to: '/admin/criterias'}
         ]
     },
     {

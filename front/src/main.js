@@ -114,6 +114,8 @@ import CreatedModifiedBlock from "@/components/prefab/CreatedModifiedBlock.vue";
 import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
 import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
 import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
+import InputNumberBlock from "@/components/prefab/InputNumberBlock.vue";
+import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -235,6 +237,8 @@ app.component('CreatedModifiedBlock', CreatedModifiedBlock);
 app.component('TextareaBlock', TextareaBlock);
 app.component('TextInputBlock', TextInputBlock);
 app.component('ViewStateInputBlock', ViewStateInputBlock);
+app.component('InputNumberBlock', InputNumberBlock);
+app.component('SkeletonAdminView', SkeletonAdminView);
 
 app.mount('#app');
 

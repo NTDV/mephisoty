@@ -2,11 +2,11 @@
 import {FilterMatchMode, FilterOperator} from 'primevue/api';
 import {onBeforeMount, onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/SeasonService';
 import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
 import {StageService} from "@/service/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
+import {CriteriaService} from "@/service/CriteriaService";
 
 const toast = useToast();
 
@@ -18,19 +18,17 @@ const selectAll = ref(false);
 
 const dt = ref(null);
 
-const parentSeason = ref(null);
-const seasonSelectData = ref(null);
+const parentStage = ref(null);
+const stageSelectData = ref(null);
 
-const seasonService = new SeasonService();
 const stageService = new StageService();
+const criteriaService = new CriteriaService();
 const allowStateService = new AllowStateService();
 const dateTimeService = new DateTimeService();
 
 const models = ref(null);
 const editDialog = ref(false);
 const model = ref({});
-const calendarStartValue = ref(null);
-const calendarEndValue = ref(null);
 const deleteModelDialog = ref(false);
 const deleteModelsDialog = ref(false);
 
@@ -53,12 +51,12 @@ onMounted(() => {
     sortOrder: null,
     filters: filters.value
   };
-  seasonService.getAllForSelect().then((data) => {
-    if (data && !data.err) seasonSelectData.value = data;
+  stageService.getAllForSelect().then((data) => {
+    if (data && !data.err) stageSelectData.value = data;
     else toast.add({
       severity: 'error',
       summary: 'Ошибка сервера',
-      detail: 'Не удалось получить информацию о сезонах',
+      detail: 'Не удалось получить информацию о критериях',
       life: 3000
     });
   });
@@ -70,11 +68,8 @@ const initFilters = () => {
     global: {value: null, matchMode: FilterMatchMode.CONTAINS},
     id: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
     title: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
-    start: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-    end: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
-    stageVisibility: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
-    scoreVisibility: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
-    scheduleAccessState: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]}
+    max: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
+    min: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]}
   };
 };
 
@@ -86,7 +81,7 @@ const loadLazyData = (event) => {
   loading.value = true;
   lazyParams.value = {...lazyParams.value, first: event?.first || first.value};
 
-  stageService.getAll(lazyParams.value, parentSeason.value).then((data) => {
+  criteriaService.getAll(lazyParams.value, parentStage.value).then((data) => {
     models.value = data.collection.map((val) => createModelClient(val));
     totalRecords.value = data.total;
     loading.value = false;
@@ -95,9 +90,7 @@ const loadLazyData = (event) => {
 
 const createModelClient = (seasonServer) => {
   return {
-    ...seasonServer,
-    start: dateTimeService.getDateFromTimestamp(seasonServer.start),
-    end: dateTimeService.getDateFromTimestamp(seasonServer.end)
+    ...seasonServer
   };
 };
 
@@ -132,18 +125,15 @@ const onRowUnselect = () => {
 };
 
 const openNew = () => {
-  if (!parentSeason.value) {
-    toast.add({severity: 'error', summary: 'Ошибка', detail: 'Сначала выберите родительский сезон', life: 3000});
+  if (!parentStage.value) {
+    toast.add({severity: 'error', summary: 'Ошибка', detail: 'Сначала выберите родительский этап', life: 3000});
     return;
   }
   model.value = {
-    stageVisibility: allowStateService.defaultState,
-    scoreVisibility: allowStateService.defaultState,
-    scheduleAccessState: allowStateService.defaultState
+    min: 0,
+    max: 0
   };
   submitted.value = false;
-  calendarStartValue.value = dateTimeService.getDateNow();
-  calendarEndValue.value = dateTimeService.getDateNow();
   editDialog.value = true;
 };
 
@@ -156,15 +146,11 @@ const validateInput = () => {
   return (
     model.value &&
     //season.value.comment &&
-    model.value.title && model.value.title.trim() !== '' &&
+    model.value.title && model.value.title.trim() !== ''
     //season.value.description &&
     //season.value.rules &&
-    calendarStartValue.value &&
-    calendarEndValue.value &&
     // && season.value.seasonResultFormula
-    model.value.stageVisibility &&
-    model.value.scoreVisibility &&
-    model.value.scheduleAccessState
+    && (model.value.min !== null && model.value.min !== undefined && model.value.max !== null && model.value.max !== undefined && model.value.min <= model.value.max)
   );
 };
 
@@ -174,13 +160,9 @@ const createModelDto = () => {
     title: model.value.title,
     description: model.value.description ? model.value.description : '',
     rules: model.value.rules ? model.value.rules : '',
-    start: dateTimeService.getDateTimeOffsetFromDate(calendarStartValue.value),
-    end: dateTimeService.getDateTimeOffsetFromDate(calendarEndValue.value),
     literal: model.value.literal,
-    stageResultFormula: model.value.stageResultFormula,
-    stageVisibility: model.value.stageVisibility,
-    scoreVisibility: model.value.scoreVisibility,
-    scheduleAccessState: model.value.scheduleAccessState
+    max: model.value.max,
+    min: model.value.min
   };
 };
 
@@ -190,7 +172,7 @@ const saveModel = async () => {
   if (validateInput()) {
     if (model.value.id) {
       try {
-        const res = await stageService.edit(model.value.id, createModelDto());
+        const res = await criteriaService.edit(model.value.id, createModelDto());
         if (res.err) {
           console.error(res);
           toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не изменены', life: 3000});
@@ -207,19 +189,19 @@ const saveModel = async () => {
       }
     } else {
       try {
-        const res = await seasonService.addStage(parentSeason.value, createModelDto());
+        const res = await stageService.addCriteria(parentStage.value, createModelDto());
         if (res.err) {
           console.error(res);
-          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не создан', life: 3000});
+          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Критерий не создан', life: 3000});
           return;
         }
 
         model.value = createModelClient(res);
         models.value.push(model.value);
-        toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон добавлен', life: 3000});
+        toast.add({severity: 'success', summary: 'Успешно', detail: 'Критерий добавлен', life: 3000});
       } catch (e) {
         console.error(e);
-        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Сезон не создан', life: 3000});
+        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Критерий не создан', life: 3000});
         return;
       }
     }
@@ -233,8 +215,6 @@ const saveModel = async () => {
 
 const editModel = (editModel) => {
   model.value = {...editModel};
-  calendarStartValue.value = editModel.start;
-  calendarEndValue.value = editModel.end;
 
   editDialog.value = true;
 };
@@ -261,7 +241,7 @@ const confirmDeleteModel = (deleteModel) => {
 
 const deleteModel = () => {
   try {
-    const res = stageService.delete(model.value.id);
+    const res = criteriaService.delete(model.value.id);
     if (res == null || res.err) {
       console.error(res);
       toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не удалены', life: 3000});
@@ -286,7 +266,7 @@ const confirmDeleteSelected = () => {
 const deleteSelected = () => {
   try {
     for (const val of selectedModels.value) {
-      const res = stageService.delete(val.id);
+      const res = criteriaService.delete(val.id);
       if (res == null || res.err) {
         console.error(res);
         toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Часть данных не удалена', life: 3000});
@@ -319,8 +299,9 @@ const clearFilter = () => {
         <Toolbar class="mb-4">
           <template v-slot:start>
             <div class="my-2">
-              <SelectIdByTitleBlock v-model="parentSeason" :crudService="seasonService" infix="season"
-                                    label="Родительский сезон: " style="min-width: 10em; max-width: 20em;" @change="changeSeason"/>
+              <SelectIdByTitleBlock v-model="parentStage" :crudService="stageService" infix="stage"
+                                    label="Родительский этап: " style="min-width: 10em; max-width: 20em;"
+                                    @change="changeSeason"/>
             </div>
           </template>
           <template v-slot:end>
@@ -362,7 +343,7 @@ const clearFilter = () => {
           @row-unselect="onRowUnselect">
           <template #header>
             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-              <h5 class="m-0">Управление этапами</h5>
+              <h5 class="m-0">Управление критериями</h5>
               <Button icon="pi pi-filter-slash" label="Сбросить фильтры" outlined type="button"
                       @click="clearFilter()"/>
             </div>
@@ -373,132 +354,40 @@ const clearFilter = () => {
           <Column headerStyle="width: 3rem" selectionMode="multiple"></Column>
 
           <Column :sortable="true" dataType="numeric" field="id" header="ID"
-                  headerStyle="width:10%; min-width:5rem;">
-            <template #body="slotProps">
-              {{ slotProps.data.id }}
-            </template>
+                  headerStyle="width:15%; min-width:5rem;">
+            <template #body="slotProps">{{ slotProps.data.id }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputNumber v-model="filterModel.value" mode="decimal" @keydown.enter="filterCallback()"/>
             </template>
           </Column>
 
-          <Column :sortable="true" field="title" header="Название" headerStyle="width:14%; min-width:10rem;">
-            <template #body="slotProps">
-              {{ slotProps.data.title }}
-            </template>
+          <Column :sortable="true" field="title" header="Название" headerStyle="width:55%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.title }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по названию"
                          type="text" @keydown.enter="filterCallback()"/>
             </template>
           </Column>
 
-          <Column :sortable="true" dataType="date" field="start" header="Начало"
-                  headerStyle="width:16%; min-width:10rem;">
-            <template #body="slotProps">
-              {{ dateTimeService.formatDateTimeFromDate(slotProps.data.start) }}
-            </template>
+          <Column :sortable="true" dataType="numeric" field="min" header="Мин."
+                  headerStyle="width:15%; min-width:5rem;">
+            <template #body="slotProps">{{ slotProps.data.min }}</template>
             <template #filter="{ filterModel, filterCallback }">
-              <Calendar
-                v-model="filterModel.value"
-                :showButtonBar="true"
-                :showIcon="true"
-                :showSeconds="true"
-                :showTime="true"
-                date-format="dd.mm.yy"
-                hour-format="24"
-                mask="99.99.9999 99:99:99"
-                placeholder="dd.mm.yyyy hh:mm:ss"
-                selectionMode="single"
-                @keydown.enter="filterCallback()"
-              />
+              <InputNumber v-model="filterModel.value" mode="decimal" @keydown.enter="filterCallback()"/>
             </template>
           </Column>
 
-          <Column :sortable="true" dataType="date" field="end" header="Конец"
-                  headerStyle="width:16%; min-width:10rem;">
-            <template #body="slotProps">
-              {{ dateTimeService.formatDateTimeFromDate(slotProps.data.end) }}
-            </template>
+          <Column :sortable="true" dataType="numeric" field="max" header="Макс."
+                  headerStyle="width:15%; min-width:5rem;">
+            <template #body="slotProps">{{ slotProps.data.max }}</template>
             <template #filter="{ filterModel, filterCallback }">
-              <Calendar
-                v-model="filterModel.value"
-                :showButtonBar="true"
-                :showIcon="true"
-                :showSeconds="true"
-                :showTime="true"
-                date-format="dd.mm.yy"
-                hour-format="24"
-                mask="99.99.9999 99:99:99"
-                placeholder="dd.mm.yyyy hh:mm:ss"
-                selectionMode="single"
-                @keydown.enter="filterCallback()"
-              />
-            </template>
-          </Column>
-
-          <Column :showFilterMatchModes="false" :sortable="true" field="stageVisibility"
-                  header="Видимость этапа участниками" headerStyle="width:16%; min-width:13rem;">
-            <template #body="slotProps">
-              <Tag :severity="allowStateService.getBadgeSeverityFor(slotProps.data.stageVisibility)">
-                {{ allowStateService.getBadgeContentFor(slotProps.data.stageVisibility) }}
-              </Tag>
-            </template>
-            <template #filter="{ filterModel, filterCallback }">
-              <Dropdown v-model="filterModel.value" :options="statuses" class="p-column-filter"
-                        option-value="value" optionLabel="label" placeholder="Выберите один" showClear
-                        @keydown.enter="filterCallback()">
-                <template #option="slotProps">
-                  <Tag :key="slotProps.option.value"
-                       :severity="allowStateService.getBadgeSeverityFor(slotProps.option.value)"
-                       :value="slotProps.option.label"/>
-                </template>
-              </Dropdown>
-            </template>
-          </Column>
-
-          <Column :showFilterMatchModes="false" :sortable="true" field="scoreVisibility"
-                  header="Видимость оценок участниками" headerStyle="width:16%; min-width:13rem;">
-            <template #body="slotProps">
-              <Tag :severity="allowStateService.getBadgeSeverityFor(slotProps.data.scoreVisibility)">
-                {{ allowStateService.getBadgeContentFor(slotProps.data.scoreVisibility) }}
-              </Tag>
-            </template>
-            <template #filter="{ filterModel, filterCallback }">
-              <Dropdown v-model="filterModel.value" :options="statuses" class="p-column-filter"
-                        option-value="value" optionLabel="label" placeholder="Выберите один" showClear
-                        @keydown.enter="filterCallback()">
-                <template #option="slotProps">
-                  <Tag :key="slotProps.option.value"
-                       :severity="allowStateService.getBadgeSeverityFor(slotProps.option.value)"
-                       :value="slotProps.option.label"/>
-                </template>
-              </Dropdown>
-            </template>
-          </Column>
-
-          <Column :showFilterMatchModes="false" :sortable="true" field="scheduleAccessState"
-                  header="Видимость расписания участниками" headerStyle="width:16%; min-width:13rem;">
-            <template #body="slotProps">
-              <Tag :severity="allowStateService.getBadgeSeverityFor(slotProps.data.scheduleAccessState)">
-                {{ allowStateService.getBadgeContentFor(slotProps.data.scheduleAccessState) }}
-              </Tag>
-            </template>
-            <template #filter="{ filterModel, filterCallback }">
-              <Dropdown v-model="filterModel.value" :options="statuses" class="p-column-filter"
-                        option-value="value" optionLabel="label" placeholder="Выберите один" showClear
-                        @keydown.enter="filterCallback()">
-                <template #option="slotProps">
-                  <Tag :key="slotProps.option.value"
-                       :severity="allowStateService.getBadgeSeverityFor(slotProps.option.value)"
-                       :value="slotProps.option.label"/>
-                </template>
-              </Dropdown>
+              <InputNumber v-model="filterModel.value" mode="decimal" @keydown.enter="filterCallback()"/>
             </template>
           </Column>
 
           <Column header="Действия" headerStyle="width:10%;min-width:11rem;">
             <template #body="slotProps">
-              <RouterLink :to="'/admin/stage/' + slotProps.data.id">
+              <RouterLink :to="'/admin/criteria/' + slotProps.data.id">
                 <Button class="mr-2" icon="pi pi-eye" rounded severity="success"/>
               </RouterLink>
               <Button class="mr-2" icon="pi pi-pencil" rounded severity="warning"
@@ -533,30 +422,13 @@ const clearFilter = () => {
           </div>
 
           <div class="field">
-            <CalendarInputBlock v-model="calendarStartValue" :submitted="submitted"
-                                label="Начало этапа"/>
+            <InputNumberBlock v-model="model.min" :invalid="submitted && (model.min === null || model.min === undefined || model.min > model.max)"
+                              label="Минимальное значение"/>
           </div>
+
           <div class="field">
-            <CalendarInputBlock v-model="calendarEndValue" :submitted="submitted"
-                                label="Конец этапа"/>
-          </div>
-          <div class="field">
-            <TextInputBlock v-model="model.literal" label="Литерал" disabled max-length="100"/>
-          </div>
-          <div class="field">
-            <TextareaBlock v-model="model.stageResultFormula" label="Формула" disabled/>
-          </div>
-          <div class="field">
-            <ViewStateInputBlock v-model="model.stageVisibility" :is-read-view-only="true"
-                                 :submitted="submitted" label="Видимость этапа участниками"/>
-          </div>
-          <div class="field">
-            <ViewStateInputBlock v-model="model.scoreVisibility" :is-read-view-only="true"
-                                 :submitted="submitted" label="Видимость оценок за этап участниками"/>
-          </div>
-          <div class="field">
-            <ViewStateInputBlock v-model="model.scheduleAccessState" :submitted="submitted"
-                                 label="Доступ к расписанию этапа"/>
+            <InputNumberBlock v-model="model.max" :invalid="submitted && (model.max === null || model.max === undefined || model.min > model.max)"
+                              label="Максимальное значение"/>
           </div>
 
           <template #footer>
@@ -568,7 +440,7 @@ const clearFilter = () => {
         <Dialog v-model:visible="deleteModelDialog" :modal="true" :style="{ width: '700px' }" header="Подтверждение">
           <div class="flex align-items-center justify-content-center">
             <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"/>
-            <span v-if="model">Вы точно хотите удалить <b>{{ model.title }} <small>ID: {{model.id }}</small></b> и <u>все</u> связанные данные?</span>
+            <span v-if="model">Вы точно хотите удалить <b>{{ model.title }} <small>ID: {{ model.id }}</small></b> и <u>все</u> связанные данные?</span>
           </div>
           <template #footer>
             <Button icon="pi pi-times" label="Нет" @click="deleteModelDialog = false"/>

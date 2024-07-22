@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import {createRouter, createWebHistory} from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
 
 const router = createRouter({
@@ -32,6 +32,16 @@ const router = createRouter({
                     path: '/admin/stage/:id',
                     name: 'stage',
                     component: () => import('@/views/pages/StageAdminView.vue')
+                },
+                {
+                    path: '/admin/criterias',
+                    name: 'criterias',
+                    component: () => import('@/views/pages/CriteriaCrud.vue')
+                },
+                {
+                    path: '/admin/criteria/:id',
+                    name: 'criteria',
+                    component: () => import('@/views/pages/CriteriaAdminView.vue')
                 },
                 {
                     path: '/uikit/formlayout',

@@ -8,12 +8,13 @@ import {StageService} from "@/service/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
 import {SeasonService} from "@/service/SeasonService";
 import {ToastService} from "@/service/ToastService";
+import router from "@/router";
+import {FilterMatchMode, FilterOperator} from "primevue/api";
+import {CriteriaService} from "@/service/CriteriaService";
 
 const toast = useToast();
 
 const loading = ref(false);
-
-const dt = ref(null);
 
 const seasonService = new SeasonService();
 const stageService = new StageService();
@@ -24,7 +25,6 @@ const toastService = new ToastService(toast);
 const model = ref({});
 const calendarStartValue = ref(null);
 const calendarEndValue = ref(null);
-const modelDialog = ref(false);
 const deleteModelDialog = ref(false);
 
 const submitted = ref(false);
@@ -36,6 +36,7 @@ onMounted(() => {
   stageService.get(route.params.id).then((data) => {
     createModelClient(data, true);
   });
+  initCriteriasFilters();
 });
 
 const createModelClient = (modelServer, onMounted = false) => {
@@ -79,13 +80,6 @@ const createModelClient = (modelServer, onMounted = false) => {
     loading.value = false;
   });
 };
-
-
-const hideDialog = () => {
-  modelDialog.value = false;
-  submitted.value = false;
-};
-
 const validateInput = () => {
   return (
     model.value &&
@@ -132,26 +126,13 @@ const saveModel = () => {
   } else toastService.showValidationWarn();
 };
 
-const editModel = (editModel) => {
-  model.value = {...editModel};
-  calendarStartValue.value = editModel.start;
-  calendarEndValue.value = editModel.end;
-
-  modelDialog.value = true;
-};
-
-const exportCSV = () => {
-  dt.value.exportCSV();
-};
-
-const confirmDeleteModel = (deleteModel) => {
-  model.value = deleteModel;
+const confirmDeleteModel = () => {
   deleteModelDialog.value = true;
 };
 
-const deleteModel = () => {
+const deleteModel = async () => {
   try {
-    const res = stageService.delete(model.value.id);
+    const res = await stageService.delete(model.value.id);
     if (toastService.checkServerError(res)) return;
   } catch (e) {
     toastService.showClientError(e);
@@ -161,18 +142,84 @@ const deleteModel = () => {
   deleteModelDialog.value = false;
   model.value = {};
   toastService.showDeletedSuccess();
+  await router.push('/admin/stages');
+};
+
+const updateModel = () => {
+  stageService.get(route.params.id).then((data) => {
+    createModelClient(data);
+  });
+};
+
+const criteriasFilters = ref();
+const initCriteriasFilters = () => {
+  criteriasFilters.value = {
+    global: {value: null, matchMode: FilterMatchMode.CONTAINS},
+    id: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
+    title: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.STARTS_WITH}]},
+  };
+};
+
+const deleteCriteriaDialog = ref(false);
+const deleteCriteriasDialog = ref(false);
+const selectedCriteria = ref(null);
+const selectedCriterias = ref(null);
+const confirmDeleteStage = (stage) => {
+  selectedCriteria.value = stage;
+  deleteCriteriaDialog.value = true;
+};
+
+const criteriaService = new CriteriaService();
+const deleteSelectedCriteria = () => {
+  criteriaService.delete(selectedCriteria.value.id)
+    .then((res) => {
+      if (res.err) toastService.showClientError(res);
+      model.value.stages = model.value.stages.filter((stage) => stage.id !== selectedCriteria.value.id);
+      toastService.showDeletedSuccess();
+    })
+    .catch((e) => toastService.showClientError(e))
+    .finally(() => {
+      selectedCriteria.value = null;
+      deleteCriteriaDialog.value = false;
+    });
+}
+
+const deleteSelectedCriterias = async () => {
+  let ex = false;
+  for (const val of selectedCriterias.value) {
+    await criteriaService.delete(val.id)
+      .then((res) => {
+        if (res.err) toastService.showClientError(res);
+        model.value.criterias = model.value.criterias.filter((stage) => stage.id !== val.id);
+      })
+      .catch((e) => {
+        ex = false;
+        toastService.showClientError(e);
+      })
+      .finally(() => {
+        selectedCriteria.value = null;
+        deleteCriteriaDialog.value = false;
+      });
+  }
+  if (ex) { // todo Всунуть в промизы
+    toastService.showClientError(ex);
+  } else {
+    toastService.showDeletedSuccess();
+  }
+  deleteCriteriasDialog.value = false;
+  selectedCriterias.value = null;
 };
 
 </script>
 
 <template>
-  <div v-if="loading" class="grid">
-    <Skeleton class="mb-2" height="2.5em" width="100%"></Skeleton>
+  <div v-if="loading">
+    <SkeletonAdminView title="Редактирование этапа"/>
   </div>
   <div v-else>
     <div class="col-12">
       <div class="card">
-        <h5>Редактирование сезона</h5>
+        <h5>Редактирование этапа</h5>
         <div class="p-fluid formgrid grid">
           <div class="field col-12">
             <CreatedModifiedBlock v-model="model"/>
@@ -237,18 +284,93 @@ const deleteModel = () => {
           </div>
 
           <div class="field col-12">
-            <label for="comment">Этапы</label>
+            <label for="comment">Критерии</label>
+            <DataTable ref="stagesDt" v-model:filters="criteriasFilters" v-model:selection="selectedCriterias"
+                       :globalFilterFields="['id', 'title']" :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+                       :value="model.criterias" dataKey="id" filter-display="menu"
+                       paginator
+                       paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                       show-gridlines sort-field="title"
+                       sort-order="1">
+              <template #header>
+                <div class="p-fluid formgrid grid">
+                  <div class="ml-2 mr-2">
+                    <Button icon="pi pi-filter-slash" label="Сбросить фильтры" outlined type="button"
+                            @click="initCriteriasFilters()"/>
+                  </div>
+                  <div>
+                    <Button :disabled="!selectedCriterias || !selectedCriterias.length" icon="pi pi-trash"
+                            label="Удалить" outlined severity="danger"
+                            type="button" @click="deleteCriteriasDialog = true"/>
+                  </div>
+                </div>
+              </template>
+              <Column headerStyle="width: 3rem" selectionMode="multiple"></Column>
+              <Column dataType="numeric" field="id" header="ID" headerStyle="width:15%; min-width:5rem;"
+                      sortable>
+                <template #body="slotProps">{{ slotProps.data.id }}</template>
+                <template #filter="{ filterModel }">
+                  <InputNumber v-model="filterModel.value" mode="decimal"/>
+                </template>
+              </Column>
+              <Column :sortable="true" field="title" header="Название"
+                      headerStyle="width:80%; min-width:10rem;">
+                <template #body="slotProps">{{ slotProps.data.title }}</template>
+                <template #filter="{ filterModel, filterCallback }">
+                  <InputText v-model="filterModel.value" class="p-column-filter"
+                             placeholder="Искать по названию"
+                             type="text" @keydown.enter="filterCallback()"/>
+                </template>
+              </Column>
+              <Column header="Действия" headerStyle="width:5%;min-width:11rem;">
+                <template #body="slotProps">
+                  <RouterLink :to="'/admin/criteria/' + slotProps.data.id">
+                    <Button class="mr-2" icon="pi pi-eye" rounded severity="success"/>
+                  </RouterLink>
+                  <Button class="mr-2" icon="pi pi-trash" rounded severity="danger"
+                          @click="confirmDeleteStage(slotProps.data)"/>
+                </template>
+              </Column>
+            </DataTable>
           </div>
 
           <div class="field col-12 md:col-4">
             <Button class="sm:mb-2" icon="pi pi-check" label="Сохранить" @click="saveModel"/>
           </div>
           <div class="field col-12 md:col-4">
-            <Button class="mr-2 sm:mb-2" icon="pi pi-refresh" label="Обновить" severity="warning"/>
+            <Button class="mr-2 sm:mb-2" icon="pi pi-refresh" label="Обновить" severity="warning" @click="updateModel"/>
           </div>
           <div class="field col-12 md:col-4">
-            <Button class="mr-2 sm:mb-2" icon="pi pi-trash" label="Удалить" severity="danger"/>
+            <Button class="mr-2 sm:mb-2" icon="pi pi-trash" label="Удалить" severity="danger"
+                    @click="confirmDeleteModel"/>
           </div>
+
+          <Dialog v-model:visible="deleteCriteriaDialog" :modal="true" :style="{ width: '700px' }"
+                  header="Подтверждение">
+            <div class="flex align-items-center justify-content-center">
+              <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"/>
+              <span v-if="model">Вы точно хотите удалить <b>{{ selectedCriteria.title }}
+                <small>ID: {{ selectedCriteria.id }}</small></b> и
+                <u>все</u> связанные данные?</span>
+            </div>
+            <template #footer>
+              <Button icon="pi pi-times" label="Нет" @click="deleteCriteriaDialog = false"/>
+              <Button icon="pi pi-trash" label="Да" severity="danger" text @click="deleteSelectedCriteria"/>
+            </template>
+          </Dialog>
+
+          <Dialog v-model:visible="deleteCriteriasDialog" :modal="true" :style="{ width: '700px' }"
+                  header="Подтверждение">
+            <div class="flex align-items-center justify-content-center">
+              <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"/>
+              <span
+                v-if="model">Вы точно хотите удалить <b>выбранные данные</b> и <u>всё</u>, что связано с ними?</span>
+            </div>
+            <template #footer>
+              <Button icon="pi pi-times" label="Нет" @click="deleteCriteriasDialog = false"/>
+              <Button icon="pi pi-trash" label="Да" severity="danger" text @click="deleteSelectedCriteria"/>
+            </template>
+          </Dialog>
 
           <Dialog v-model:visible="deleteModelDialog" :modal="true" :style="{ width: '700px' }"
                   header="Подтверждение">

@@ -11,14 +11,17 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
-import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
+import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
 import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
@@ -67,10 +70,12 @@ public Set<Criteria> getCriteriasFrom(final Long id) {
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Stage addCriteriaFor(final Long id, final CriteriaDto criteriaDto) {
-    final Stage stage = stageRepository.getById(id);
-    stage.getCriterias().add(criteriaRepository.save(Criteria.from(criteriaDto, stage)));
-    return stageRepository.save(stage);
+public CriteriaFullProj addCriteriaFor(final Long stageId, final CriteriaDto criteriaDto) {
+    final Stage stage = stageRepository.getById(stageId, Stage.class);
+    final Criteria criteria = criteriaRepository.save(Criteria.from(criteriaDto, stage));
+    stage.getCriterias().add(criteria);
+    stageRepository.save(stage);
+    return projectionFactory.createProjection(CriteriaFullProj.class, criteria);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
@@ -103,5 +108,10 @@ public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
     seasonRepository.save(oldSeason);
     seasonRepository.save(newSeason);
     return projectionFactory.createProjection(StageFullProj.class, stageRepository.save(stage));
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
+    return stageRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 }

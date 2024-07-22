@@ -32,6 +32,13 @@ export class StageService {
         }).then((resp) => resp.json());
     }
 
+    getAllForSelect(lazyParams) {
+        return fetchApi('/admin/stage/select', {
+            method: 'POST',
+            body: JSON.stringify(lazyParams)
+        }).then((resp) => resp.json());
+    }
+
     getCriterias(id) {
         return fetchApi('/admin/stage/' + id + '/criterias').then((resp) => resp.json());
     }

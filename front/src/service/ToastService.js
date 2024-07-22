@@ -5,10 +5,15 @@ export class ToastService {
 
   checkServerError(res) {
     if (!res || res.err) {
-      this.showClientError(res);
+      this.showServerError(res);
       return true;
     }
     return false;
+  }
+
+  showServerError(err) {
+    console.error(err);
+    this.toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не изменены', life: 3000});
   }
 
   showClientError(err) {

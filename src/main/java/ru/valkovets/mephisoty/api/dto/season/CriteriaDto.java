@@ -1,9 +1,10 @@
-package ru.valkovets.mephisoty.db.model.season.scoring;
+package ru.valkovets.mephisoty.api.dto.season;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
 import java.io.Serializable;

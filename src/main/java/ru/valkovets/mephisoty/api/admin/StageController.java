@@ -2,21 +2,23 @@ package ru.valkovets.mephisoty.api.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
+import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
+import ru.valkovets.mephisoty.api.lazydata.dto.LazySelectDto;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
-import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
-import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
-import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
+import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
+import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
 import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
@@ -27,7 +29,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/admin/stage")
 @RequiredArgsConstructor
-@Tag(name = "Этапы конкурса")
+@Tag(name = "Этапы сезона конкурса")
 public class StageController {
 private final StageService stageService;
 
@@ -72,6 +74,24 @@ public StageFullProj bindStage(@PathVariable final Long stageId, @PathVariable f
     return stageService.bindStage(seasonId, stageId);
 }
 
+@PostMapping("/select")
+@Operation(summary = "Получить краткую информацию о сезонах")
+public GetAllDto<IdTitleProj> getAllForSelect(@RequestBody @Nullable final LazySelectDto searchParams) {
+    if (searchParams == null) {
+        return GetAllDto.from(
+            stageService.getAllForSelect(0, 24));
+    } else {
+        return GetAllDto.from(
+            stageService.getAllForSelect(searchParams.first(), searchParams.last() - searchParams.first()));
+    }
+}
+
+@PostMapping("/{stageId}/criterias")
+@Operation(summary = "Создать критерий и добавить к сезону")
+public CriteriaFullProj createCriteria(@PathVariable final Long stageId, @RequestBody final CriteriaDto criteriaDto) {
+    return stageService.addCriteriaFor(stageId, criteriaDto);
+}
+
 
 @GetMapping("/{id}/criterias")
 @Operation(summary = "Получить информацию о критериях этапа")
@@ -79,11 +99,6 @@ public Set<Criteria> getCriterias(@PathVariable final Long id) {
     return stageService.getCriteriasFrom(id);
 }
 
-@PostMapping("/{id}/criterias")
-@Operation(summary = "Создать критерий и добавить к этапу")
-public Stage addCriteria(@PathVariable final Long id, @RequestBody final CriteriaDto criteriaDto) {
-    return stageService.addCriteriaFor(id, criteriaDto);
-}
 
 @GetMapping("/{id}/scores")
 @Operation(summary = "Получить информацию об оценках этапа")

@@ -10,6 +10,7 @@ import {ToastService} from "@/service/ToastService";
 import {FilterMatchMode, FilterOperator} from "primevue/api";
 import {StageService} from "@/service/StageService";
 import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
+import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
 
 const toast = useToast();
 
@@ -141,27 +142,15 @@ const updateModel = () => {
   seasonService.get(route.params.id).then((data) => {
     createModelClient(data);
   });
-}
-
-const editSeason = (editSeason) => {
-  model.value = {...editSeason};
-  calendarStartValue.value = editSeason.start;
-  calendarEndValue.value = editSeason.end;
-
-  seasonDialog.value = true;
-};
-
-const exportCSV = () => {
-  dt.value.exportCSV();
 };
 
 const confirmDeleteSeason = () => {
   deleteSeasonDialog.value = true;
 };
 
-const deleteSeason = () => {
+const deleteSeason = async () => {
   try {
-    const res = seasonService.delete(model.value.id);
+    const res = await seasonService.delete(model.value.id);
     if (res == null || res.err) {
       console.error(res);
       toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не удален', life: 3000});
@@ -176,7 +165,7 @@ const deleteSeason = () => {
   deleteSeasonDialog.value = false;
   model.value = {};
   toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон удален', life: 3000});
-  router.push('/admin/seasons');
+  await router.push('/admin/seasons');
 };
 
 const stagesFilters = ref();
@@ -242,7 +231,7 @@ const credsService = new CredsService();
 
 <template>
   <div v-if="loading" class="grid">
-    <Skeleton class="mb-2" height="2.5em" width="100%"></Skeleton>
+    <SkeletonAdminView title="Редактирование сезона"/>
   </div>
   <div v-else>
     <div class="col-12">
@@ -296,7 +285,6 @@ const credsService = new CredsService();
 
           <div class="field col-12">
             <label for="comment">Этапы</label>
-
             <DataTable ref="stagesDt" v-model:filters="stagesFilters" v-model:selection="selectedStages"
                        :globalFilterFields="['id', 'title']" :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
                        :value="model.stages" dataKey="id" filter-display="menu"
