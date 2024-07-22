@@ -7,6 +7,7 @@ import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
 import {StageService} from "@/service/StageService";
 import router from "@/router";
+import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
 
 const toast = useToast();
 
@@ -324,14 +325,8 @@ const viewModel = (id) => {
         <Toolbar class="mb-4">
           <template v-slot:start>
             <div class="my-2">
-              <label for="parentSeason">Родительский сезон: </label>
-              <Dropdown id="parentSeason" v-model="parentSeason" :options="seasonSelectData"
-                        class="p-column-filter" option-label="title" option-value="id"
-                        placeholder="Выберите сезон" style="min-width: 10em; max-width: 20em;" @change="changeSeason">
-                <template #option="slotProps">
-                  <span>{{ slotProps.option.title }} <small>id: {{ slotProps.option.id }}</small></span>
-                </template>
-              </Dropdown>
+              <SelectIdByTitleBlock v-model="parentSeason" :crudService="seasonService" infix="season"
+                                    label="Родительский сезон: " style="min-width: 10em; max-width: 20em;" @change="changeSeason"/>
             </div>
           </template>
           <template v-slot:end>
@@ -359,7 +354,7 @@ const viewModel = (id) => {
           :selectAll="selectAll"
           :totalRecords="totalRecords"
           :value="models"
-          currentPageReportTemplate="Сезоны с {first} по {last} из {totalRecords} всего"
+          currentPageReportTemplate="Записи с {first} по {last} из {totalRecords} всего"
           dataKey="id"
           filter-display="menu"
           lazy
@@ -370,8 +365,7 @@ const viewModel = (id) => {
           @sort="onSort($event)"
           @select-all-change="onSelectAllChange"
           @row-select="onRowSelect"
-          @row-unselect="onRowUnselect"
-        >
+          @row-unselect="onRowUnselect">
           <template #header>
             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
               <h5 class="m-0">Управление этапами</h5>

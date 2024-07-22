@@ -36,6 +36,7 @@ import java.util.Set;
     @NamedAttributeNode("season"),
     @NamedAttributeNode("criterias")
 })
+//@EntityListeners(AuditingEntityListener.class)
 public class Stage extends TdrseEntity {
 
 @JsonBackReference // todo Не будет этого поля вообще выводиться
@@ -44,7 +45,7 @@ public class Stage extends TdrseEntity {
 private Season season;
 
 @Length(max = 100)
-@Column(name = "literal", unique = true, length = 100)
+@Column(name = "literal", length = 100)
 @Nullable
 @Pattern(regexp = ValidationConst.LITERAL_PATTERN)
 //@NotBlank

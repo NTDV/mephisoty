@@ -22,7 +22,8 @@ export class StageService {
     delete(id) {
         return fetchApi('/admin/stage/' + id, {
             method: 'DELETE'
-        }).then((resp) => resp.json());
+        }).then((resp) => resp.text())
+          .then((text) => text == '' ? true : JSON.parse(text));
     }
 
     bindStage(seasonId, stageId) {

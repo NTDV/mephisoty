@@ -18,7 +18,10 @@ import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
-import ru.valkovets.mephisoty.db.projection.special.*;
+import ru.valkovets.mephisoty.db.projection.special.SeasonFullProj;
+import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
+import ru.valkovets.mephisoty.db.projection.special.SeasonStagesShortProj;
+import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 
@@ -84,11 +87,8 @@ public Page<SeasonProj> getAll(final int page, final int size, final Specificati
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<IdTitleProj> getAllForSelect(final long offset, final long limit, final Specification<Season> specification) {
-    return seasonRepository.findBy(Specification.where(specification),
-                                   q -> q.as(IdTitleProj.class)
-                                         .sortBy(Sort.by(Sort.Direction.ASC, "title"))
-                                         .page(new OffsetBasedPageRequest(offset, limit)));
+public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
+    return seasonRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")

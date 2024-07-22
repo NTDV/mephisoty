@@ -19,7 +19,6 @@ import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
-import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
 import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
@@ -96,7 +95,7 @@ public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
     final Season oldSeason = stage.getSeason();
     if (oldSeason.getId().equals(newSeasonId)) return projectionFactory.createProjection(StageFullProj.class, stage);
 
-    final Season newSeason = stageRepository.getById(newSeasonId, Season.class);
+    final Season newSeason = seasonRepository.getById(newSeasonId, Season.class);
     oldSeason.getStages().remove(stage);
     stage.setSeason(newSeason);
     newSeason.getStages().add(stage);

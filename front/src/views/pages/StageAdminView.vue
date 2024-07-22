@@ -1,13 +1,13 @@
 <script setup>
-import {ref, onMounted} from 'vue';
+import {onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {AllowStateService} from '@/service/AllowStateService';
 import {DateTimeService} from '@/service/DateTimeService';
 import {useRoute} from "vue-router";
 import {CredsService} from "@/service/CredsService";
 import {StageService} from "@/service/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
 import {SeasonService} from "@/service/SeasonService";
+import {ToastService} from "@/service/ToastService";
 
 const toast = useToast();
 
@@ -17,9 +17,9 @@ const dt = ref(null);
 
 const seasonService = new SeasonService();
 const stageService = new StageService();
-const allowStateService = new AllowStateService();
 const dateTimeService = new DateTimeService();
 const credsService = new CredsService();
+const toastService = new ToastService(toast);
 
 const model = ref({});
 const calendarStartValue = ref(null);
@@ -29,50 +29,55 @@ const deleteModelDialog = ref(false);
 
 const submitted = ref(false);
 
-const statuses = ref(allowStateService.getBadgeContentViewOnly());
-const allSeasons = ref([]);
-
 const route = useRoute();
 
 onMounted(() => {
   loading.value = true;
-  //seasonService.getAllForSelect().then((data) => allSeasons.value = data);
   stageService.get(route.params.id).then((data) => {
-    model.value = createModelClient(data);
-    const creatorIsEditor = model.value.createdBy === model.value.modifiedBy;
-
-    credsService.getFullName(model.value.createdBy).then((data) => {
-      if (!data.err) model.value.createdBy = data;
-      else console.error(data);
-
-      if (creatorIsEditor) {
-        model.value.modifiedBy = data;
-        loading.value = false;
-      }
-    });
-
-    if (!creatorIsEditor) {
-      credsService.getFullName(model.value.modifiedBy).then((data) => {
-        if (!data.err) model.value.lastModifiedBy = data;
-        else console.error(data);
-
-        loading.value = false;
-      });
-    }
+    createModelClient(data, true);
   });
 });
 
-const createModelClient = (modelServer) => {
+const createModelClient = (modelServer, onMounted = false) => {
   calendarStartValue.value = dateTimeService.getDateFromTimestamp(modelServer.start);
   calendarEndValue.value = dateTimeService.getDateFromTimestamp(modelServer.end);
 
-  return {
+  const newModel = {
     ...modelServer,
     createdAt: dateTimeService.getDateFromTimestamp(modelServer.createdAt),
     modifiedAt: dateTimeService.getDateFromTimestamp(modelServer.modifiedAt),
     start: calendarStartValue.value,
     end: calendarEndValue.value
   };
+
+  return (model.value.createdBy && model.value.createdBy.id == newModel.createdBy ?
+      new Promise((resolve) => resolve(model.value.createdBy)) :
+      credsService.getFullName(newModel.createdBy)
+  ).then((createdData) => {
+    if (createdData.err) throw createdData;
+
+    const creatorIsEditor = newModel.createdBy === newModel.modifiedBy;
+    newModel.createdBy = createdData;
+
+    if (creatorIsEditor) return createdData;
+    else if (model.value.modifiedBy && model.value.modifiedBy.id == newModel.modifiedBy) return model.value.modifiedBy;
+    else if (newModel.modifiedBy) return credsService.getFullName(newModel.modifiedBy);
+  }).then((modifiedData) => {
+    if (!modifiedData) return;
+
+    if (modifiedData.err) throw modifiedData;
+    newModel.modifiedBy = modifiedData;
+  }).catch((e) => {
+    toastService.showAuditError();
+  }).finally(() => {
+    if (onMounted) model.value = newModel;
+    else model.value = {
+      ...newModel,
+      season: modelServer.season.id,
+    }
+
+    loading.value = false;
+  });
 };
 
 
@@ -92,7 +97,7 @@ const validateInput = () => {
     calendarStartValue.value &&
     calendarEndValue.value &&
     // && model.value.modelResultFormula
-    model.value.modelVisibility &&
+    model.value.stageVisibility &&
     model.value.scoreVisibility &&
     model.value.scheduleAccessState
   );
@@ -110,51 +115,21 @@ const createModelDto = () => {
   };
 };
 
-const saveModel = async () => {
+const saveModel = () => {
   submitted.value = true;
 
   if (validateInput()) {
-    if (model.value.id) {
-      try {
-        const res = await stageService.edit(model.value.id, createModelDto());
-        if (res.err) {
-          console.error(res);
-          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не изменены', life: 3000});
-          return;
-        }
-
-        model.value = createModelClient(res);
-        model.value[findModelIndexById(model.value.id)] = model.value;
-        toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные изменен', life: 3000});
-      } catch (e) {
-        console.error(e);
-        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Данные не изменены', life: 3000});
-        return;
-      }
-    } else {
-      try {
-        const res = await stageService.create(createModelDto());
-        if (res.err) {
-          console.error(res);
-          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не сохранены', life: 3000});
-          return;
-        }
-
-        model.value = createModelClient(res);
-        models.value.push(model.value);
-        toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные сохранены', life: 3000});
-      } catch (e) {
-        console.error(e);
-        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Данные не сохранены', life: 3000});
-        return;
-      }
-    }
-
-    modelDialog.value = false;
-    model.value = {};
-  } else {
-    toast.add({severity: 'warn', summary: 'Внимание', detail: 'Неверное заполнение', life: 3000});
-  }
+    stageService.edit(model.value.id, createModelDto())
+      .then((res) => {
+        if (!toastService.checkServerError(res))
+          return stageService.bindStage(model.value.season, model.value.id);
+      })
+      .then((res) => {
+        if (!toastService.checkServerError(res))
+          return createModelClient(res).then(() => toastService.showEditedSuccess());
+      })
+      .catch((e) => toastService.showClientError(e));
+  } else toastService.showValidationWarn();
 };
 
 const editModel = (editModel) => {
@@ -177,20 +152,15 @@ const confirmDeleteModel = (deleteModel) => {
 const deleteModel = () => {
   try {
     const res = stageService.delete(model.value.id);
-    if (res == null || res.err) {
-      console.error(res);
-      toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Данные не удалены', life: 3000});
-      return;
-    }
+    if (toastService.checkServerError(res)) return;
   } catch (e) {
-    console.error(e);
-    toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Данные не удален', life: 3000});
+    toastService.showClientError(e);
     return;
   }
 
   deleteModelDialog.value = false;
   model.value = {};
-  toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные удалены', life: 3000});
+  toastService.showDeletedSuccess();
 };
 
 </script>
@@ -209,8 +179,8 @@ const deleteModel = () => {
           </div>
 
           <div class="field col-12">
-            <SelectIdByTitleBlock v-model="model.season"
-                                  label="Родительский сезон"/>
+            <SelectIdByTitleBlock v-model="model.season" :crudService="seasonService"
+                                  infix="season" label="Родительский сезон"/>
           </div>
 
           <div class="field col-12">
@@ -271,7 +241,7 @@ const deleteModel = () => {
           </div>
 
           <div class="field col-12 md:col-4">
-            <Button class="sm:mb-2" icon="pi pi-check" label="Сохранить"/>
+            <Button class="sm:mb-2" icon="pi pi-check" label="Сохранить" @click="saveModel"/>
           </div>
           <div class="field col-12 md:col-4">
             <Button class="mr-2 sm:mb-2" icon="pi pi-refresh" label="Обновить" severity="warning"/>

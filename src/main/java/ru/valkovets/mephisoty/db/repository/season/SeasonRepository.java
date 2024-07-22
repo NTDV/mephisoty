@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
-import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -26,4 +25,6 @@ public interface SeasonRepository extends BasicRepository<Season> {
 <T> T getById(Long id, final Class<T> type);
 
 <T> Page<T> getAllByOrderByTitleAscIdAsc(Specification<Season> specification, Pageable pageable, Class<T> type);
+
+<T> Page<T> getAllByOrderByTitleAscIdAsc(Pageable pageable, Class<T> type);
 }

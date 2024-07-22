@@ -158,7 +158,7 @@ const saveSeason = async () => {
   if (validateInput()) {
     if (season.value.id) {
       try {
-        const res = await seasonService.edit(season.value.id, createSeasonDto());
+        const res = await seasonService.editShort(season.value.id, createSeasonDto());
         if (res.err) {
           console.error(res);
           toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не изменен', life: 3000});

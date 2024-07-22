@@ -26,7 +26,7 @@ export class SeasonService {
         }).then((resp) => resp.json());
     }
 
-    edit(id, seasonDto) {
+    editShort(id, seasonDto) {
         return fetchApi('/admin/season/' + id, {
             method: 'PUT',
             body: JSON.stringify(seasonDto)

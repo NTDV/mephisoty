@@ -1,6 +1,5 @@
 package ru.valkovets.mephisoty.db.model.superclass;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -11,10 +10,10 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -25,7 +24,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class BasicEntity {
+public class BasicEntity implements Serializable {
 @Id
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 @Column(name = "id", nullable = false)
@@ -42,7 +41,7 @@ private Instant createdAt;
 @Basic(fetch = FetchType.LAZY)
 @PastOrPresent
 @Column(name = "modified_at")
-@LastModifiedDate
+//@LastModifiedDate
 private Instant modifiedAt;
 
 @Basic(fetch = FetchType.LAZY)
@@ -55,7 +54,7 @@ private Long createdBy;
 @Basic(fetch = FetchType.LAZY)
 @Positive
 @Column(name = "modified_by")
-@LastModifiedBy
+//@LastModifiedBy
 private Long modifiedBy;
 
 @NotNull
@@ -86,5 +85,13 @@ public final int hashCode() {
     return this instanceof HibernateProxy ?
            ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() :
            getClass().hashCode();
+}
+
+@PreUpdate
+public void updateModified() {
+    final Credentials user = Credentials.getCurrent();
+
+    if (user != null) modifiedBy = user.getId();
+    modifiedAt = Instant.now();
 }
 }

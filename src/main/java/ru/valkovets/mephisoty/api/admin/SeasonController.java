@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
 import ru.valkovets.mephisoty.api.dto.season.SeasonDto;
@@ -45,22 +44,10 @@ public GetAllDto<SeasonProj> getAll(@RequestBody final DataTablePageEvent search
 public GetAllDto<IdTitleProj> getAllForSelect(@RequestBody @Nullable final LazySelectDto searchParams) {
     if (searchParams == null) {
         return GetAllDto.from(
-            seasonService.getAllForSelect(0, 24, null));
+            seasonService.getAllForSelect(0, 24));
     } else {
-        final Number id = PageableService.tryParseNumber(searchParams.value());
-        final int diff = searchParams.first() == null || searchParams.last() == null ?
-                         0 : (int) (searchParams.last() - searchParams.first());
-
         return GetAllDto.from(
-            seasonService.getAllForSelect(
-                diff == 0 ? 0 : searchParams.first(),
-                diff == 0 ? 24 : diff,
-                StringUtils.isBlank(searchParams.value()) ? null : (root, query, builder) ->
-                    id == null ?
-                    builder.like(root.get("title"), "%" + searchParams.value() + "%") :
-                    builder.or(
-                        builder.like(root.get("title"), "%" + searchParams.value() + "%"),
-                        builder.equal(root.get("id"), searchParams.value()))));
+            seasonService.getAllForSelect(searchParams.first(), searchParams.last() - searchParams.first()));
     }
 }
 
