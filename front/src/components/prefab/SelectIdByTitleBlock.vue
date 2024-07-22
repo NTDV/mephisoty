@@ -78,19 +78,19 @@ const onLazyLoad = (event) => {
 
 <template>
   <label v-if="props.label">{{ props.label }}</label>
-  <div class="flex">
-  <Dropdown class="p-column-filter" style="min-width: 10em; max-width: 20em;"
-            v-model="chosenModel" :options="items"
-            filter
-            option-label="title" option-value="id"
-            placeholder="Выберите элемент" @change="change($event)"
-            :virtualScrollerOptions="{lazy: true, onLazyLoad: onLazyLoad, delay: 20, itemSize: 38, showLoader: false, loading: loading, }">
-    <template #option="slotProps">
-      <span v-if="slotProps.option">{{ slotProps.option.title }} <small>id: {{ slotProps.option.id }}</small></span>
-    </template>
-  </Dropdown>
-    <RouterLink v-if="chosenModel && props.infix" :to="'/admin/' + props.infix + '/' + chosenModel" class="ml-2">
-      <Button class="mr-2" icon="pi pi-eye" rounded severity="success"/>
+  <div class="p-dropdown" style="border: none; box-shadow: none; cursor: default;">
+    <Dropdown v-model="chosenModel" :options="items"
+              :virtualScrollerOptions="{lazy: true, onLazyLoad: onLazyLoad, delay: 20, itemSize: 38, showLoader: false, loading: loading }" class="p-column-filter mr-2"
+              filter
+              option-label="title" option-value="id"
+              placeholder="Выберите элемент" style="min-width: 10em; max-width: 20em;"
+              @change="change($event)">
+      <template #option="slotProps">
+        <span v-if="slotProps.option">{{ slotProps.option.title }} <small>id: {{ slotProps.option.id }}</small></span>
+      </template>
+    </Dropdown>
+    <RouterLink v-if="chosenModel && props.infix" :to="'/admin/' + props.infix + '/' + chosenModel">
+      <Button icon="pi pi-eye" rounded severity="success"/>
     </RouterLink>
   </div>
   <small v-if="props.invalid" class="p-invalid">Неверное значение.</small>
