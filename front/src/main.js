@@ -116,6 +116,7 @@ import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
 import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
 import InputNumberBlock from "@/components/prefab/InputNumberBlock.vue";
 import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
+import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -239,8 +240,11 @@ app.component('TextInputBlock', TextInputBlock);
 app.component('ViewStateInputBlock', ViewStateInputBlock);
 app.component('InputNumberBlock', InputNumberBlock);
 app.component('SkeletonAdminView', SkeletonAdminView);
+app.component('UserNameIdBlock', UserNameIdBlock);
 
 app.mount('#app');
+
+app.config.globalProperties.window = window;
 
 window.$apiHost = 'http://localhost:8080';
 
@@ -267,6 +271,7 @@ function updateOptions(options) {
 
 export default function fetchApi(relativeUrl, options) {
     if (relativeUrl) {
-        return fetch(window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl), updateOptions(options));
+        return fetch(window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl), updateOptions(options))
+          .then(res => res.status === 403 ? router.push('/auth/login?from=' + router.currentRoute.value.fullPath) : res);
     }
 }

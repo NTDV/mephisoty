@@ -16,32 +16,37 @@ const router = createRouter({
                 {
                     path: '/admin/seasons',
                     name: 'seasons',
-                    component: () => import('@/views/pages/SeasonCrud.vue')
+                    component: () => import('@/views/pages/admin/SeasonCrud.vue')
                 },
                 {
                     path: '/admin/season/:id',
                     name: 'season',
-                    component: () => import('@/views/pages/SeasonAdminView.vue')
+                    component: () => import('@/views/pages/admin/SeasonAdminView.vue')
                 },
                 {
                     path: '/admin/stages',
                     name: 'stages',
-                    component: () => import('@/views/pages/StageCrud.vue')
+                    component: () => import('@/views/pages/admin/StageCrud.vue')
                 },
                 {
                     path: '/admin/stage/:id',
                     name: 'stage',
-                    component: () => import('@/views/pages/StageAdminView.vue')
+                    component: () => import('@/views/pages/admin/StageAdminView.vue')
                 },
                 {
                     path: '/admin/criterias',
                     name: 'criterias',
-                    component: () => import('@/views/pages/CriteriaCrud.vue')
+                    component: () => import('@/views/pages/admin/CriteriaCrud.vue')
                 },
                 {
                     path: '/admin/criteria/:id',
                     name: 'criteria',
-                    component: () => import('@/views/pages/CriteriaAdminView.vue')
+                    component: () => import('@/views/pages/admin/CriteriaAdminView.vue')
+                },
+                {
+                    path: '/admin/criteriascores/',
+                    name: 'criteriascores',
+                    component: () => import('@/views/pages/admin/CriteriaScoreTable.vue')
                 },
                 {
                     path: '/uikit/formlayout',

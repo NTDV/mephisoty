@@ -86,7 +86,9 @@ const onLazyLoad = (event) => {
               placeholder="Выберите элемент" style="min-width: 10em; max-width: 20em;"
               @change="change($event)">
       <template #option="slotProps">
-        <span v-if="slotProps.option">{{ slotProps.option.title }} <small>id: {{ slotProps.option.id }}</small></span>
+        <span v-if="slotProps.option">{{ slotProps.option.title }} <small class="greyid">id:&nbsp;{{
+            slotProps.option.id
+          }}</small></span>
       </template>
     </Dropdown>
     <RouterLink v-if="chosenModel && props.infix" :to="'/admin/' + props.infix + '/' + chosenModel">

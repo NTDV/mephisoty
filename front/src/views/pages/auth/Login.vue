@@ -1,42 +1,54 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
-import { ref, computed } from 'vue';
+import {useLayout} from '@/layout/composables/layout';
+import {computed, ref} from 'vue';
 import AppConfig from '@/layout/AppConfig.vue';
+import {useRouter} from "vue-router";
 
+const router = useRouter();
 const { layoutConfig } = useLayout();
 const email = ref('');
 const password = ref('');
 const checked = ref(false);
+const isWrongCreds = ref(false);
 
-async function onSignInClick() {
-    const myHeaders = new Headers();
-    myHeaders.append('Content-Type', 'application/json');
-    myHeaders.append('Accept', '*/*');
+const onSignInClick = () => {
+  if (import.meta.env.PROD &&
+    (email.value.length < 5 || password.value.length < 5 || isWrongCreds.value)) {
+    isWrongCreds.value = true;
+    return;
+  }
 
-    const raw = JSON.stringify({
-        email: email.value,
-        password: password.value
-    });
+  const myHeaders = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+  myHeaders.append('Accept', '*/*');
 
-    const requestOptions = {
-        method: 'POST',
-        headers: myHeaders,
-        body: raw,
-        redirect: 'follow'
-    };
+  const raw = JSON.stringify({
+    email: email.value,
+    password: password.value
+  });
 
-    try {
-        const response = await fetch(window.$apiHost + '/auth/login', requestOptions);
-        const result = await response.json();
-        if (response.status === 200 && result.token) {
-            localStorage.jwt = result.token;
-        } else {
-            // todo Доабвить ошибку
-        }
-        console.log(result.token);
-    } catch (error) {
-        console.error(error);
-    }
+  const requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow'
+  };
+
+  fetch(window.$apiHost + '/auth/login', requestOptions)
+    .then(res => res.json())
+    .then(json => {
+      if (!json) {
+        isWrongCreds.value = true;
+      } else if (json.err) {
+        isWrongCreds.value = true;
+      } else if (json.token) {
+        localStorage.jwt = json.token;
+        const from = router.currentRoute.value.query['from'];
+        if (from) router.push(from);
+        else router.push('/');
+      }
+    })
+    .catch(() => isWrongCreds.value = true);
 }
 
 const logoUrl = computed(() => {
@@ -55,20 +67,26 @@ const logoUrl = computed(() => {
                             <span class="space-font text-900 text-3xl font-medium text-nowrap">Студент года 3.0</span>
                             <span class="space-font text-900 text-3xl font-medium text-nowrap">НИЯУ МИФИ</span>
                         </div>
+                      <div class="display-grid mb-3">
                         <span class="text-600 font-medium">Войдите, чтобы продолжить</span>
+                        <span v-if="isWrongCreds" class="font-medium text-red-600">Неверный логин или пароль.</span>
+                      </div>
                     </div>
 
                     <div>
-                        <label for="email1" class="block text-900 text-xl font-medium mb-2">E-mail</label>
-                        <InputText id="email1" type="text" placeholder="noreply@mephi.ru" class="w-full md:w-30rem mb-5" style="padding: 1rem" v-model="email" />
+                      <label class="block text-900 text-xl font-medium mb-2" for="email">E-mail</label>
+                      <InputText id="email" v-model.trim="email" class="w-full md:w-30rem mb-5" placeholder="noreply@mephi.ru"
+                                 style="padding: 1rem" type="text" @change="isWrongCreds = false"/>
 
-                        <label for="password1" class="block text-900 font-medium text-xl mb-2">Пароль</label>
-                        <Password id="password1" v-model="password" placeholder="*************" :toggleMask="true" class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
+                      <label class="block text-900 font-medium text-xl mb-2" for="password">Пароль</label>
+                      <Password id="password" v-model.trim="password" :inputStyle="{ padding: '1rem' }" class="w-full mb-3"
+                                inputClass="w-full" placeholder="*************" toggleMask
+                                @change="isWrongCreds = false"/>
 
                         <div class="flex align-items-center justify-content-between mb-5 gap-5">
                             <div class="flex align-items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Запомнить меня</label>
+                              <Checkbox id="rememberme" v-model="checked" binary class="mr-2"></Checkbox>
+                              <label for="rememberme">Запомнить меня</label>
                             </div>
                             <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Забыли пароль?</a>
                         </div>

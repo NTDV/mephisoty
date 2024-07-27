@@ -2,6 +2,7 @@ package ru.valkovets.mephisoty.api.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
@@ -9,10 +10,12 @@ import ru.valkovets.mephisoty.api.dto.GetAllDto;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaScoreDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
+import ru.valkovets.mephisoty.api.lazydata.dto.LazySelectDto;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
+import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
-import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
+import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaShortProj;
 import ru.valkovets.mephisoty.db.service.season.scoring.CriteriaService;
 
@@ -68,8 +71,20 @@ public CriteriaFullProj bindStage(@PathVariable final Long criteriaId, @PathVari
 
 @PostMapping("/{criteriaId}/score")
 @Operation(summary = "Создать оценку и добавить к критерию")
-public CriteriaScoreShortProj createScore(@PathVariable final Long criteriaId,
-                                          @RequestBody final CriteriaScoreDto criteriaDto) {
+public CriteriaScoreProj createScore(@PathVariable final Long criteriaId,
+                                     @RequestBody final CriteriaScoreDto criteriaDto) {
   return criteriaService.addScoreFor(criteriaId, criteriaDto);
+}
+
+@PostMapping("/select")
+@Operation(summary = "Получить краткую информацию о критериях")
+public GetAllDto<IdTitleProj> getAllForSelect(@RequestBody @Nullable final LazySelectDto searchParams) {
+  if (searchParams == null) {
+    return GetAllDto.from(
+        criteriaService.getAllForSelect(0, 24));
+  } else {
+    return GetAllDto.from(
+        criteriaService.getAllForSelect(searchParams.first(), searchParams.last() - searchParams.first()));
+  }
 }
 }

@@ -14,7 +14,8 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Table(name = "criteria_score")
+@Table(name = "criteria_score",
+       uniqueConstraints = @UniqueConstraint(columnNames = { "criteria_id", "expert_id", "participant_id" }))
 public class CriteriaScore extends BasicEntity {
 
 @ManyToOne(fetch = FetchType.LAZY, optional = false)

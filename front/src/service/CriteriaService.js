@@ -31,4 +31,11 @@ export class CriteriaService {
       method: 'PUT'
     }).then((resp) => resp.json());
   }
+
+  getAllForSelect(lazyParams) {
+    return fetchApi('/admin/criteria/select', {
+      method: 'POST',
+      body: JSON.stringify(lazyParams)
+    }).then((resp) => resp.json());
+  }
 }

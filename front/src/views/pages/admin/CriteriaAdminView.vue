@@ -14,8 +14,6 @@ const toast = useToast();
 
 const loading = ref(false);
 
-const dt = ref(null);
-
 const stageService = new StageService();
 const criteriaService = new CriteriaService();
 const dateTimeService = new DateTimeService();

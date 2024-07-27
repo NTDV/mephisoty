@@ -10,16 +10,16 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.valkovets.mephisoty.api.dto.userdata.UserRegistrationDto;
+import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.season.schedule.ScheduleRecord;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
-import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
+import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.AchievementScore;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
-import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.settings.ParticipantState;
 
 import java.util.LinkedHashSet;
@@ -41,9 +41,24 @@ public class User extends BasicEntity {
 private File avatar;
 
 @NotNull
-@Enumerated(EnumType.STRING)
+//@Enumerated(EnumType.STRING)
 @Column(name = "state", nullable = false)
-private ParticipantState state;
+private String state;
+
+public static User from(final UserRegistrationDto dto) {
+    return User.builder()
+               .comment(dto.comment())
+               .state(dto.state().name())
+               .firstName(dto.firstName())
+               .secondName(dto.secondName())
+               .thirdName(dto.thirdName())
+               .build();
+}
+
+@Transient
+public ParticipantState getState() {
+    return ParticipantState.valueOf(state);
+}
 
 @NotBlank
 @Length(max = 50)
@@ -127,13 +142,7 @@ private Set<Answer> answers = new LinkedHashSet<>();
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<Answer> answersAsExpert = new LinkedHashSet<>();
 
-public static User from(final UserRegistrationDto dto) {
-    return User.builder()
-               .comment(dto.comment())
-               .state(dto.state())
-               .firstName(dto.firstName())
-               .secondName(dto.secondName())
-               .thirdName(dto.thirdName())
-               .build();
+public void setState(final ParticipantState state) {
+    this.state = state.name();
 }
 }

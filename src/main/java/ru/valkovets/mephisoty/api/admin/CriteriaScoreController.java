@@ -3,13 +3,11 @@ package ru.valkovets.mephisoty.api.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
-import ru.valkovets.mephisoty.api.dto.GetAllDto;
+import ru.valkovets.mephisoty.api.dto.season.CriteriaScoresAllDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
-import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
 import ru.valkovets.mephisoty.db.service.season.scoring.CriteriaScoreService;
 
 @RestController
@@ -21,21 +19,30 @@ private final CriteriaScoreService scoreService;
 
 @PostMapping("/{criteriaId}")
 @Operation(summary = "Получить информацию об оценках экспертов по критерию")
-public GetAllDto<CriteriaScoreShortProj> getAll(@PathVariable final Long criteriaId,
-                                                @RequestBody final DataTablePageEvent searchParams) {
-  // todo Make here table (participant + group) x expert
-  return GetAllDto.from(
-      scoreService.getAll(
-          (searchParams.page() == null
-           ? (int) (searchParams.first() / searchParams.rows())
-           : searchParams.page()),
-          searchParams.rows(),
-          (criteriaId != null && criteriaId != 0
-           ? Specification.allOf(
-              (root, query, builder) ->
-                  builder.equal(root.get("criteria").get("id"), criteriaId),
-              PageableService.parseFilter(searchParams))
-           : PageableService.parseFilter(searchParams)),
-          SortService.getSort(searchParams)));
+public CriteriaScoresAllDto getAll(@PathVariable final Long criteriaId,
+                                   @RequestBody final DataTablePageEvent searchParams) {
+  return scoreService.getAll(
+      searchParams.page() == null ? (int) (searchParams.first() / searchParams.rows()) : searchParams.page(),
+      searchParams.rows(),
+      criteriaId,
+      PageableService.parseFilter(searchParams),
+      SortService.getSortForCriteriaScoreGetAll(searchParams));
+}
+
+@GetMapping("/{criteriaId}/{expertId}/{participantId}")
+@Operation(summary = "Установить оценку")
+public void setScore(@PathVariable final Long criteriaId,
+                     @PathVariable final Long expertId,
+                     @PathVariable final Long participantId,
+                     @RequestParam("score") final Float score) {
+  scoreService.setScore(criteriaId, expertId, participantId, score);
+}
+
+@DeleteMapping("/{criteriaId}/{expertId}/{participantId}")
+@Operation(summary = "Удалить оценку")
+public void delete(@PathVariable final Long criteriaId,
+                   @PathVariable final Long expertId,
+                   @PathVariable final Long participantId) {
+  scoreService.delete(criteriaId, expertId, participantId);
 }
 }

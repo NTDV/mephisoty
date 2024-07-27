@@ -43,3 +43,30 @@ textarea.fixed-resizable {
   max-width: 100%;
   min-width: 100%;
 }
+
+.p-cell-editing {
+  .p-inputnumber {
+    .p-inputnumber-input {
+      width: 100%;
+    }
+  }
+}
+
+.greyid {
+  color: lightgrey !important;
+  font-weight: 200 !important;
+}
+
+.column-text-right {
+  .p-column-header-content {
+    text-align: right;
+    display: block !important;
+  }
+}
+
+.column-text-center {
+  .p-column-header-content {
+    text-align: center;
+    display: block !important;
+  }
+}

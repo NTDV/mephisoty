@@ -30,7 +30,15 @@ import java.util.Set;
     @NamedAttributeNode("createdBy"),
     @NamedAttributeNode("modifiedBy"),
     @NamedAttributeNode("stage"),
-    @NamedAttributeNode("criteriaScores")
+    @NamedAttributeNode(value = "criteriaScores", subgraph = "criteria_scores_full")
+}, subgraphs = {
+    @NamedSubgraph(name = "criteria_scores_full", attributeNodes = {
+        @NamedAttributeNode(value = "participant", subgraph = "app_user_group"),
+        @NamedAttributeNode("expert"),
+    }),
+    @NamedSubgraph(name = "app_user_group", attributeNodes = {
+        @NamedAttributeNode("group")
+    })
 })
 public class Criteria extends TdrEntity {
 

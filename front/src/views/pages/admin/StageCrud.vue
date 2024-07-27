@@ -367,8 +367,7 @@ const clearFilter = () => {
                       @click="clearFilter()"/>
             </div>
           </template>
-          <template #empty> Сезонов не найдено.</template>
-          <template #loading> Загрузка. Пожалуйста, подождите.</template>
+          <template #empty>Не найдено.</template>
 
           <Column headerStyle="width: 3rem" selectionMode="multiple"></Column>
 

@@ -26,4 +26,19 @@ public static Sort getSort(final DataTablePageEvent searchParams) {
         return Sort.unsorted();
     }
 }
+
+public static Sort getSortForCriteriaScoreGetAll(final DataTablePageEvent searchParams) {
+    if (searchParams.multiSortMeta() != null) {
+        final String field = searchParams.multiSortMeta().getFirst().field();
+        final Sort.Direction direction = getDirection(searchParams.multiSortMeta().getFirst().order());
+
+        if ("name".equals(field)) {
+            return Sort.by(
+                new Sort.Order(direction, "secondName"),
+                new Sort.Order(direction, "firstName"),
+                new Sort.Order(direction, "thirdName"));
+        }
+    }
+    return getSort(searchParams);
+}
 }

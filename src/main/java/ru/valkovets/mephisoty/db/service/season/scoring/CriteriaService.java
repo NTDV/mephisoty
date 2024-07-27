@@ -13,13 +13,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaScoreDto;
+import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
-import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
+import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaShortProj;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
@@ -80,23 +82,28 @@ public CriteriaFullProj bind(final Long criteriaId, final Long stageId) {
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public CriteriaScoreShortProj addScoreFor(final Long criteriaId, final CriteriaScoreDto criteriaDto) {
+public CriteriaScoreProj addScoreFor(final Long criteriaId, final CriteriaScoreDto scoreDto) {
   final Criteria criteria = criteriaRepository.findById(criteriaId).orElseThrow();
-  final User expert = criteriaDto.expert() == null ?
+  final User expert = scoreDto.expert() == null ?
                       Credentials.getCurrent().getUser() :
-                      userRepository.findById(criteriaDto.expert()).orElseThrow();
-  final User participant = userRepository.findById(criteriaDto.participant()).orElseThrow();
-  //criteria.addScore(CriteriaScore.from(criteriaDto));
+                      userRepository.findById(scoreDto.expert()).orElseThrow();
+  final User participant = userRepository.findById(scoreDto.participant()).orElseThrow();
+  //criteria.addScore(CriteriaScore.from(scoreDto));
   return projectionFactory.createProjection(
-      CriteriaScoreShortProj.class,
+      CriteriaScoreProj.class,
       scoreRepository.save(
           CriteriaScore
               .builder()
-              .comment(criteriaDto.comment())
-              .score(criteriaDto.score())
+              .comment(scoreDto.comment())
+              .score(scoreDto.score())
               .criteria(criteria)
               .expert(expert)
               .participant(participant)
               .build()));
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
+  return criteriaRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 }

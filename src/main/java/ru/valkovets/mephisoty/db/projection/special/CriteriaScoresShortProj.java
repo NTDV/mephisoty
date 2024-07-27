@@ -8,5 +8,5 @@ import java.util.Set;
  * Projection for {@link Criteria}
  */
 public interface CriteriaScoresShortProj extends CriteriaShortProj {
-Set<CriteriaScoreShortProj> getCriteriaScores();
+Set<CriteriaScoreProj> getCriteriaScores();
 }

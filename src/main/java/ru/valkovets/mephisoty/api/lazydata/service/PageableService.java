@@ -43,25 +43,7 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
                   final Object value = e.getValue();
 
                   return switch (value) {
-                      case final String string -> {
-                          final boolean isName = key.equals("name") || key.endsWith(".name");
-                          if (!isName) {
-                              yield PageableService.<EntityT>useMode(MatchMode.equals, key, string);
-                          } else {
-                              yield (Specification<EntityT>) (
-                                  (root, query, builder) -> {
-                                      final Path<?> prefixPath = getNestedPath(root, key);
-                                      return builder.like(
-                                          builder.lower(
-                                              builder.concat(
-                                                  prefixPath.get("second_name"),
-                                                  builder.concat(
-                                                      prefixPath.get("first_name"),
-                                                      prefixPath.get("third_name")))),
-                                          ("%" + string.toLowerCase() + "%"));
-                                  });
-                          }
-                      }
+                      case final String string -> PageableService.<EntityT>useMode(MatchMode.equals, key, string);
 
                       case final DataTableOperatorFilterMetaData operatorFilterMetaData -> unitSpecs(
                               operatorFilterMetaData.operator(),
@@ -83,9 +65,30 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
               .orElse(null);
 }
 
+@SuppressWarnings("unchecked")
 public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode, final String param, final String... values) {
     return (root, query, builder) -> {
-        final Path<?> prefixPath = getNestedPath(root, param);
+        final boolean isName = param.equals("name") || param.endsWith(".name");
+
+        final String fixedParam;
+        if (isName) {
+            fixedParam = param.substring(0, Math.max(0, param.length() - 5));
+        } else {
+            fixedParam = param;
+        }
+
+        final Path<?> prefixPath = getNestedPath(root, fixedParam);
+        if (isName) {
+            return builder.like(
+                builder.lower(
+                    builder.concat(
+                        prefixPath.get("secondName"),
+                        builder.concat(
+                            prefixPath.get("firstName"),
+                            prefixPath.get("thirdName")))),
+                ("%" + values[0].toLowerCase().replace(" ", "") + "%"));
+        }
+        //(string.toLowerCase() + "%"));
 
         return switch (matchMode) {
             case equals -> builder.equal(prefixPath, values[0]);
@@ -118,7 +121,9 @@ public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode
 }
 
 public static Path<?> getNestedPath(final Root<?> root, final String path) {
-    final String[] paths = path.split("\\.", 5);
+    if (path == null || path.isEmpty()) return root;
+
+    final String[] paths = path.split("\\.", 4);
     Path<?> ret = root.get(paths[0]);
     for (int i = 1; i < paths.length; i++) ret = ret.get(paths[i]);
     return ret;
