@@ -14,6 +14,7 @@ const loading = ref(false);
 const lazyParams = ref({});
 const first = ref(0);
 
+const parentCriteriaId = ref(null);
 const parentCriteria = ref(null);
 
 const criteriaService = new CriteriaService();
@@ -46,7 +47,13 @@ const initFilters = () => {
 };
 
 const changeParent = () => {
-  loadLazyData(true);
+  criteriaService.get(parentCriteriaId.value)
+    .then(res => {
+      if (!toastService.checkServerError(res))
+        parentCriteria.value = res;
+    })
+    .then(() => loadLazyData(true))
+    .catch(e => toastService.showClientError(e));
 }
 
 const loadLazyData = (event) => {
@@ -65,7 +72,7 @@ const loadLazyData = (event) => {
     multiSortMeta: [userSort.value]
   };
 
-  scoreService.getAll(lazyParams.value, parentCriteria.value)
+  scoreService.getAll(lazyParams.value, parentCriteriaId.value)
     .then(data => {
       if (toastService.checkServerError(data)) return;
       scores.value = data.scores;
@@ -97,7 +104,7 @@ const participantStates = ref([
   {value: 'NOT_PARTICIPANT', label: 'Не участник', matchMode: FilterMatchMode.EQUALS}
 ]);
 
-// todo Подсветка и чекбокс <мин >макс, комментарии к оценкам и пометки там, где они есть
+// todo чекбокс только <мин >макс и только пустые, комментарии к оценкам и пометки там, где они есть
 // todo Ссылка на пользователя с редактированием и крудом
 // todo Другие круды....
 
@@ -130,7 +137,7 @@ const flushInputValue = (event) => {
 
   loading.value = true;
   if (newValue == null) {
-    scoreService.delete(parentCriteria.value, expertId, participantId)
+    scoreService.delete(parentCriteriaId.value, expertId, participantId)
       .then(data => {
         if (!toastService.checkServerError(data))
           toastService.showDeletedSuccess();
@@ -138,7 +145,7 @@ const flushInputValue = (event) => {
       .catch(e => toastService.showServerError(e))
       .finally(() => loading.value = false);
   } else {
-    scoreService.setScore(parentCriteria.value, expertId, participantId, newValue)
+    scoreService.setScore(parentCriteriaId.value, expertId, participantId, newValue)
       .then(data => {
         if (!toastService.checkServerError(data))
           toastService.showEditedSuccess();
@@ -161,7 +168,37 @@ const deleteFast = (event, slotProps) => {
   event.stopPropagation();
   selectedExpertsShadow.value = selectedExpertsShadow.value.filter(e => e.id !== slotProps.item.id);
   selectedExperts.value = selectedExpertsShadow.value;
+};
+
+const isRed = (score) => {
+  return score < parentCriteria.value.min || score > parentCriteria.value.max;
 }
+
+const isBlue = (score) => {
+  return score == null;
+}
+
+const getClassForCell = (data) => {
+  // noinspection EqualityComparisonWithCoercionJS
+  const isScore = data.props.field == data.props.key;
+  let red, blue;
+  if (!isScore) {
+    const values = Object.values(data.instance.rowData.scoreByExpertId);
+
+    blue = values.length !== experts.value.length;
+    red = values.some(isRed);
+  } else {
+    const score = data.instance.rowData.scoreByExpertId[data.props.field];
+
+    red = isRed(score);
+    blue = !red && isBlue(score);
+  }
+
+  return {
+    'bg-red-100': red,
+    'bg-blue-50': blue
+  };
+};
 </script>
 
 <template>
@@ -171,7 +208,7 @@ const deleteFast = (event, slotProps) => {
         <Toolbar class="mb-4">
           <template v-slot:start>
             <div class="my-2">
-              <SelectIdByTitleBlock v-model="parentCriteria" :crudService="criteriaService" infix="criteria"
+              <SelectIdByTitleBlock v-model="parentCriteriaId" :crudService="criteriaService" infix="criteria"
                                     label="Родительский критерий: " style="min-width: 10em; max-width: 20em;"
                                     @change="changeParent"/>
             </div>
@@ -183,7 +220,8 @@ const deleteFast = (event, slotProps) => {
           </template>
         </Toolbar>
 
-        <DataTable v-if="parentCriteria && scores" :first="first" :loading="loading" :pt="{table: { style: 'min-width: 10rem' }, column: {bodycell: ({ state }) => ({class: [{ 'pt-0 pb-0': state['d_editing'] }]})}}"
+        <DataTable v-if="parentCriteriaId && scores" :first="first" :loading="loading"
+                   :pt="{table: { style: 'min-width: 10rem; height: fit-content' }, column: {headerCell: { class: 'pt-2 pb-2 pl-2 pr-2'}, bodyCell: (data) => ({class: [{ 'pt-0 pb-0 pl-2 pr-2': true, ...getClassForCell(data) }]})}}"
                    :rows="10" :rowsPerPageOptions="[5, 10, 25, 50, 100, 500, 1000]" :totalRecords="totalParticipants"
                    :value="scores"
                    currentPageReportTemplate="Участники с {first} по {last} из {totalRecords} всего"
@@ -258,8 +296,8 @@ const deleteFast = (event, slotProps) => {
                 <label class="mb-2">Порядок</label>
                 <br>
                 <ToggleButton :model-value="userSort.order === 1"
-                              off-label="Убывание"
-                              on-label="Возрастание" style="word-break: break-word;" @change="userSort.order = userSort.order === 1 ? 2 : 1; loadLazyData();"/>
+                              off-label="Убывание" on-label="Возрастание" style="word-break: break-word;"
+                              @change="userSort.order = userSort.order === 1 ? 2 : 1; loadLazyData();"/>
               </div>
               <div class="col-12 mt-2 md:col-7 md:mb-0">
                 <label class="mb-2">Уровень</label>
@@ -278,21 +316,23 @@ const deleteFast = (event, slotProps) => {
             </template>
             <template #body="{ data }">
               <div class="flex" style="justify-content: end;">
-                <p style="text-align: right; min-width: 6em; max-width: 9em; word-wrap: break-word"><b>
-                  <UserNameIdBlock :user="data.participant" id-left/>
-                </b></p>
+                <p style="text-align: right; min-width: 6em; max-width: 9em; word-wrap: break-word">
+                  <b>
+                    <UserNameIdBlock :user="data.participant" id-left/>
+                  </b>
+                </p>
               </div>
             </template>
             <template #empty>Не найдено.</template>
           </Column>
-          <Column field="participant.group" header="Группа" style="width: 5%;">
+          <Column field="participant.group" header="Группа" style="width: 7%;">
             <template #body="{data}">
               <span v-if="data.participant.group">{{ data.participant.group.title }}</span>
             </template>
           </Column>
-          <Column v-for="expert of selectedExperts" :key="expert.id" :_header="[expert.secondName, expert.firstName, '\n' + expert.thirdName].join(' ')"
-                  :_id="expert.id"
-                  :field="String(expert.id)" style="width: 5%;">
+          <Column v-for="expert of selectedExperts" :key="expert.id"
+                  :_header="[expert.secondName, expert.firstName, '\n' + expert.thirdName].join(' ')"
+                  :_id="expert.id" :field="String(expert.id)" header-style="width: 5%;">
             <template #header="{column}">
               <p class="flex-1" style="writing-mode: vertical-rl; white-space: pre-line; text-align: left;
                         align-content: center; max-height: 150px; word-wrap: break-word;">
@@ -304,7 +344,11 @@ const deleteFast = (event, slotProps) => {
                          style="min-width: 4rem; max-width: 5.5rem;" type="number"/>
             </template>
             <template #body="{data, field}">
-              <span class="flex" style="justify-content: center;">{{ data.scoreByExpertId[field] }}</span>
+              <div v-tooltip="isRed(data.scoreByExpertId[field]) ? 'Оценка вне диапазона критерия: от ' + parentCriteria.min + ' до ' + parentCriteria.max :
+                              isBlue(data.scoreByExpertId[field]) ? 'Отсутствует оценка' : ''" class="flex justify-content-center h-full"
+                   style="align-items: center;">
+                {{ data.scoreByExpertId[field] }}
+              </div>
             </template>
           </Column>
         </DataTable>
