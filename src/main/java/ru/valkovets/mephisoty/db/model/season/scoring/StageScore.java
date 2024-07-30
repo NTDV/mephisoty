@@ -8,8 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.season.Stage;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
 @Entity
@@ -18,7 +18,8 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Table(name = "stage_score")
+@Table(name = "stage_score",
+       uniqueConstraints = @UniqueConstraint(columnNames = { "stage_id", "participant_id" }))
 public class StageScore extends BasicEntity {
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "stage_id", nullable = false)

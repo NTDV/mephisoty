@@ -70,3 +70,15 @@ textarea.fixed-resizable {
     display: block !important;
   }
 }
+
+.p-datatable-thead {
+  z-index: 3;
+}
+
+.p-frozen-column {
+  z-index: 2;
+}
+
+.p-overlay-badge {
+  z-index: 1;
+}

@@ -117,6 +117,7 @@ import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
 import InputNumberBlock from "@/components/prefab/InputNumberBlock.vue";
 import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
 import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
+import ScoreEditorBlock from "@/components/prefab/ScoreEditorBlock.vue";
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -241,6 +242,7 @@ app.component('ViewStateInputBlock', ViewStateInputBlock);
 app.component('InputNumberBlock', InputNumberBlock);
 app.component('SkeletonAdminView', SkeletonAdminView);
 app.component('UserNameIdBlock', UserNameIdBlock);
+app.component('ScoreEditorBlock', ScoreEditorBlock);
 
 app.mount('#app');
 

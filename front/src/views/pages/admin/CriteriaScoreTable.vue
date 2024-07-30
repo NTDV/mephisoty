@@ -104,39 +104,33 @@ const participantStates = ref([
   {value: 'NOT_PARTICIPANT', label: 'Не участник', matchMode: FilterMatchMode.EQUALS}
 ]);
 
-// todo чекбокс только <мин >макс и только пустые, комментарии к оценкам и пометки там, где они есть
+// todo чекбокс только <мин >макс и только пустые
 // todo Ссылка на пользователя с редактированием и крудом
 // todo Другие круды....
 
-const getValueByModel = (model, data) => {
-  if (model.includes('.')) {
-    model = model.split('.');
-    let key = model.shift();
-    return getValueByModel(model.join('.'), data[key]);
+const initInputValue = (event) => {
+  const expertId = event.field;
+  const obj = event.data.scoreByExpertId[expertId];
+  if (obj == null) {
+    oldValue.value = null;
+    event.data.scoreByExpertId[expertId] = {
+      comment: '',
+      score: null
+    };
   } else {
-    return data[model];
+    oldValue.value = {...obj};
   }
-};
-
-const setValueByModel = (model, oldObject, newValue) => {
-  if (model.includes('.')) {
-    model = model.split('.');
-    let key = model.shift();
-    oldObject[key] = setValueByModel(model.join('.'), oldObject[key], newValue);
-  } else {
-    oldObject[model] = newValue;
-  }
-  return oldObject;
 };
 
 const flushInputValue = (event) => {
   const expertId = event.field;
   const newValue = event.newData.scoreByExpertId[expertId];
   const participantId = event.newData.participant.id;
-  if (oldValue.value === newValue) return;
+  if (oldValue.value?.score === newValue?.score && oldValue.value?.comment === newValue?.comment) return;
 
   loading.value = true;
-  if (newValue == null) {
+  if (newValue?.score == null || newValue.score == '') {
+    newValue.comment = '';
     scoreService.delete(parentCriteriaId.value, expertId, participantId)
       .then(data => {
         if (!toastService.checkServerError(data))
@@ -171,11 +165,11 @@ const deleteFast = (event, slotProps) => {
 };
 
 const isRed = (score) => {
-  return score < parentCriteria.value.min || score > parentCriteria.value.max;
+  return score != null && (score < parentCriteria.value.min || score > parentCriteria.value.max);
 }
 
 const isBlue = (score) => {
-  return score == null;
+  return score == null || score == '';
 }
 
 const getClassForCell = (data) => {
@@ -186,9 +180,9 @@ const getClassForCell = (data) => {
     const values = Object.values(data.instance.rowData.scoreByExpertId);
 
     blue = values.length !== experts.value.length;
-    red = values.some(isRed);
+    red = values.some(score => isRed(score?.score));
   } else {
-    const score = data.instance.rowData.scoreByExpertId[data.props.field];
+    const score = data.instance.rowData.scoreByExpertId[data.props.field]?.score;
 
     red = isRed(score);
     blue = !red && isBlue(score);
@@ -229,7 +223,7 @@ const getClassForCell = (data) => {
                    scrollable show-gridlines
                    @page="onPage($event)"
                    @cell-edit-complete="flushInputValue($event)"
-                   @cell-edit-init="oldValue = $event.data.scoreByExpertId[$event.field]">
+                   @cell-edit-init="initInputValue($event)">
           <template #header>
             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-2">
               <h5 class="m-0">Управление этапами</h5>
@@ -340,14 +334,18 @@ const getClassForCell = (data) => {
               </p>
             </template>
             <template #editor="{ data, field }">
-              <InputText v-model.number="data.scoreByExpertId[field]" autofocus max="100" min="0"
-                         style="min-width: 4rem; max-width: 5.5rem;" type="number"/>
+              <ScoreEditorBlock v-model="data.scoreByExpertId[field]"/>
             </template>
             <template #body="{data, field}">
-              <div v-tooltip="isRed(data.scoreByExpertId[field]) ? 'Оценка вне диапазона критерия: от ' + parentCriteria.min + ' до ' + parentCriteria.max :
-                              isBlue(data.scoreByExpertId[field]) ? 'Отсутствует оценка' : ''" class="flex justify-content-center h-full"
+              <div v-tooltip.left="isRed(data.scoreByExpertId[field]?.score) ? 'Оценка вне диапазона критерия: от ' + parentCriteria.min + ' до ' + parentCriteria.max :
+                                   isBlue(data.scoreByExpertId[field]?.score) ? 'Отсутствует оценка' : ''"
+                   class="flex justify-content-center h-full"
                    style="align-items: center;">
-                {{ data.scoreByExpertId[field] }}
+                <span v-if="data.scoreByExpertId[field]?.comment" v-badge.info v-tooltip.right="data.scoreByExpertId[field]?.comment"
+                      class="p-1">
+                  {{ data.scoreByExpertId[field]?.score }}
+                </span>
+                <span v-else>{{ data.scoreByExpertId[field]?.score }}</span>
               </div>
             </template>
           </Column>

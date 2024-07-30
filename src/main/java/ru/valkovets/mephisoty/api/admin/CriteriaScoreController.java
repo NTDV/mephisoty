@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaScoresAllDto;
+import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
@@ -29,12 +30,12 @@ public CriteriaScoresAllDto getAll(@PathVariable final Long criteriaId,
       SortService.getSortForCriteriaScoreGetAll(searchParams));
 }
 
-@GetMapping("/{criteriaId}/{expertId}/{participantId}")
+@PostMapping("/{criteriaId}/{expertId}/{participantId}")
 @Operation(summary = "Установить оценку")
 public void setScore(@PathVariable final Long criteriaId,
                      @PathVariable final Long expertId,
                      @PathVariable final Long participantId,
-                     @RequestParam("score") final Float score) {
+                     @RequestBody final ScoreIdCommentDto score) {
   scoreService.setScore(criteriaId, expertId, participantId, score);
 }
 
