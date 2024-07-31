@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.api.admin;
+package ru.valkovets.mephisoty.api.controller.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +27,7 @@ public CriteriaScoresAllDto getAll(@PathVariable final Long criteriaId,
       searchParams.rows(),
       criteriaId,
       PageableService.parseFilter(searchParams),
-      SortService.getSortForCriteriaScoreGetAll(searchParams));
+      SortService.getSortForScoreGetAll(searchParams));
 }
 
 @PostMapping("/{criteriaId}/{expertId}/{participantId}")

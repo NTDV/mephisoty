@@ -1,16 +1,16 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {DateTimeService} from '@/service/DateTimeService';
+import {DateTimeService} from '@/service/util/DateTimeService';
 import {useRoute} from "vue-router";
-import {CredsService} from "@/service/CredsService";
-import {StageService} from "@/service/StageService";
+import {CredsService} from "@/service/admin/CredsService";
+import {StageService} from "@/service/admin/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {SeasonService} from "@/service/SeasonService";
-import {ToastService} from "@/service/ToastService";
+import {SeasonService} from "@/service/admin/SeasonService";
+import {ToastService} from "@/service/util/ToastService";
 import router from "@/router";
 import {FilterMatchMode, FilterOperator} from "primevue/api";
-import {CriteriaService} from "@/service/CriteriaService";
+import {CriteriaService} from "@/service/admin/CriteriaService";
 
 const toast = useToast();
 
@@ -142,7 +142,7 @@ const deleteModel = async () => {
   deleteModelDialog.value = false;
   model.value = {};
   toastService.showDeletedSuccess();
-  await router.push('/admin/stages');
+  await router.push('/admin/criterias');
 };
 
 const updateModel = () => {

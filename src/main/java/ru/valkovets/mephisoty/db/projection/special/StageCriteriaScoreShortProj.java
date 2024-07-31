@@ -1,16 +1,16 @@
 package ru.valkovets.mephisoty.db.projection.special;
 
-import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
 import ru.valkovets.mephisoty.db.projection.complex.IdCommentProj;
 import ru.valkovets.mephisoty.db.projection.simple.IdProj;
 
 /**
- * Projection for {@link StageScore}
+ * Projection for {@link CriteriaScore}
  */
-public interface StageScoreShortProj extends IdCommentProj {
+public interface StageCriteriaScoreShortProj extends IdCommentProj {
 IdProj getParticipant();
 
-IdProj getStage();
+IdProj getCriteria();
 
-Float getScoreByStageFormula();
+Float getScore();
 }

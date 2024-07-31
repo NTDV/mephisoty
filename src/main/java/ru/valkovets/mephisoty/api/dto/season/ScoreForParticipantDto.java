@@ -6,8 +6,8 @@ import ru.valkovets.mephisoty.db.projection.simple.UserSimpleGroupProj;
 import java.io.Serializable;
 import java.util.Map;
 
-public record CriteriaScoreForParticipantDto(
+public record ScoreForParticipantDto(
     @NotNull UserSimpleGroupProj participant,
-    @NotNull Map<Long, ScoreIdCommentDto> scoreByExpertId
+    @NotNull Map<Long, ScoreIdCommentDto> scoreById
 ) implements Serializable {
 }

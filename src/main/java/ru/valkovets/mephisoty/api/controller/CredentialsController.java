@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.api;
+package ru.valkovets.mephisoty.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
 
-import java.util.Collections;
 import java.util.Map;
 
 @RestController

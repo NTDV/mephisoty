@@ -12,6 +12,9 @@ import java.util.Set;
 public interface CriteriaScoreRepository extends BasicRepository<CriteriaScore> {
 <T> Set<T> getAllByParticipant_IdInAndCriteria_Id(Collection<Long> participantIds, Long criteriaId, Class<T> type);
 
+<T> Set<T> getAllByExpertIdAndParticipant_IdInAndCriteria_IdIn(Long expertId, Collection<Long> participantIds,
+                                                               Collection<Long> criteriaId, Class<T> type);
+
 Optional<CriteriaScore> findByCriteria_IdAndExpert_IdAndParticipant_Id(Long criteriaId, Long expertId, Long participantId);
 
 void deleteByCriteria_IdAndExpert_IdAndParticipant_Id(Long criteriaId, Long expertId, Long participantId);

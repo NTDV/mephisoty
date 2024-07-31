@@ -110,7 +110,8 @@ public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
     return projectionFactory.createProjection(StageFullProj.class, stageRepository.save(stage));
 }
 
-@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN," +
+              "T(ru.valkovets.mephisoty.settings.UserRole).EXPERT)")
 public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
     return stageRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }

@@ -7,17 +7,23 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import ru.valkovets.mephisoty.api.dto.season.CriteriaScoreForParticipantDto;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaScoresAllDto;
+import ru.valkovets.mephisoty.api.dto.season.ScoreForParticipantDto;
 import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
+import ru.valkovets.mephisoty.api.dto.season.StageCriteriasScoresAllDto;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.db.projection.simple.UserSimpleGroupProj;
 import ru.valkovets.mephisoty.db.projection.simple.UserSimpleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
+import ru.valkovets.mephisoty.db.projection.special.CriteriaShortestProj;
+import ru.valkovets.mephisoty.db.projection.special.StageCriteriaScoreShortProj;
+import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaScoreRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.settings.UserRole;
@@ -33,6 +39,8 @@ import java.util.stream.Collectors;
 public class CriteriaScoreService {
 private final CriteriaScoreRepository scoreRepository;
 private final UserRepository userRepository;
+private final ProjectionFactory projectionFactory;
+private final CriteriaRepository criteriaRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public CriteriaScoresAllDto getAll(final int page, final int size, final Long criteriaId,
@@ -55,13 +63,13 @@ public CriteriaScoresAllDto getAll(final int page, final int size, final Long cr
   final long participantsTotal = participantsPage.getTotalElements();
   final int participantsCount = participantsById.size();
 
-  final LinkedHashMap<Long, CriteriaScoreForParticipantDto> criteriaScoresByParticipantId =
+  final LinkedHashMap<Long, ScoreForParticipantDto> criteriaScoresByParticipantId =
       new LinkedHashMap<>(participantsCount);
   for (final UserSimpleGroupProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
     final Long participantId = participant.getId();
     final HashMap<Long, ScoreIdCommentDto> scoreByExpertId =
         new HashMap<>(8);  // todo Уточнить сколько экспертов обычно оценивает одного человека
-    criteriaScoresByParticipantId.put(participantId, new CriteriaScoreForParticipantDto(participant, scoreByExpertId));
+    criteriaScoresByParticipantId.put(participantId, new ScoreForParticipantDto(participant, scoreByExpertId));
   }
 
 
@@ -72,11 +80,65 @@ public CriteriaScoresAllDto getAll(final int page, final int size, final Long cr
     final Long expertId = score.getExpert().getId();
     final ScoreIdCommentDto scoreValue = new ScoreIdCommentDto(score);
 
-    criteriaScoresByParticipantId.get(participantId).scoreByExpertId().put(expertId, scoreValue);
+    criteriaScoresByParticipantId.get(participantId).scoreById().put(expertId, scoreValue);
   }
 
   return new CriteriaScoresAllDto(criteriaScoresByParticipantId.sequencedValues(), experts, participantsTotal);
 }
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN," +
+              "T(ru.valkovets.mephisoty.settings.UserRole).EXPERT)")
+public StageCriteriasScoresAllDto getAllForStage(final int page, final int size, final Long stageId,
+                                                 final Specification<User> participantsFilter,
+                                                 final Sort participantSort) {
+  final Long expertId = Credentials.getCurrent().getId();
+  final LinkedHashMap<Long, CriteriaShortestProj> criterias = criteriaRepository
+      .getAllByStage_IdOrderByTitleAsc(stageId, CriteriaShortestProj.class)
+      .stream()
+      .collect(Collectors.toMap(CriteriaShortestProj::getId,
+                                e -> e,
+                                (u1, u2) -> u1,
+                                LinkedHashMap::new));
+
+  final Page<UserSimpleGroupProj> participantsPage = userRepository.findBy(
+      Specification.where(participantsFilter)
+                   .and((root, query, builder) ->
+                            builder.or(
+                                builder.equal(root.get("credentials").get("role"), UserRole.PARTICIPANT),
+                                builder.equal(root.get("credentials").get("role"), UserRole.ADMIN))),
+      q -> q.sortBy(participantSort == null ? Sort.unsorted() : participantSort)
+            .as(UserSimpleGroupProj.class)
+            .page(PageRequest.of(page, size)));
+
+  final LinkedHashMap<Long, UserSimpleGroupProj> participantsById =
+      participantsPage.get().collect(Collectors.toMap(UserSimpleGroupProj::getId, e -> e, (u1, u2) -> u1, LinkedHashMap::new));
+  final long participantsTotal = participantsPage.getTotalElements();
+  final int participantsCount = participantsById.size();
+
+  final LinkedHashMap<Long, ScoreForParticipantDto> criteriaScoresByParticipantId =
+      new LinkedHashMap<>(participantsCount);
+  for (final UserSimpleGroupProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
+    final Long participantId = participant.getId();
+    final HashMap<Long, ScoreIdCommentDto> scoreByCriteriaId =
+        new HashMap<>(8);  // todo Уточнить сколько критериев обычно у одного этапа
+    criteriaScoresByParticipantId.put(participantId, new ScoreForParticipantDto(participant, scoreByCriteriaId));
+  }
+
+
+  final Set<StageCriteriaScoreShortProj> scores = scoreRepository.getAllByExpertIdAndParticipant_IdInAndCriteria_IdIn(
+      expertId, participantsById.keySet(), criterias.keySet(), StageCriteriaScoreShortProj.class);
+  for (final StageCriteriaScoreShortProj score : scores) {
+    final Long participantId = score.getParticipant().getId();
+    final Long criteriaId = score.getCriteria().getId();
+    final ScoreIdCommentDto scoreValue = new ScoreIdCommentDto(score);
+
+    criteriaScoresByParticipantId.get(participantId).scoreById().put(criteriaId, scoreValue);
+  }
+
+  return new StageCriteriasScoresAllDto(criteriaScoresByParticipantId.sequencedValues(), criterias.sequencedValues(),
+                                        participantsTotal);
+}
+
 
 private List<UserSimpleProj> getAllExperts() {
   return userRepository.findByCredentials_RoleInOrderBySecondNameAscFirstNameAscThirdNameAsc(
@@ -85,6 +147,11 @@ private List<UserSimpleProj> getAllExperts() {
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public CriteriaScore setScore(final Long criteriaId, final Long expertId, final Long participantId,
+                              final ScoreIdCommentDto score) {
+  return _setScore(criteriaId, expertId, participantId, score);
+}
+
+public CriteriaScore _setScore(final Long criteriaId, final Long expertId, final Long participantId,
                               final ScoreIdCommentDto score) {
   final CriteriaScore criteriaScore = scoreRepository
       .findByCriteria_IdAndExpert_IdAndParticipant_Id(criteriaId, expertId, participantId)
@@ -100,9 +167,26 @@ public CriteriaScore setScore(final Long criteriaId, final Long expertId, final 
   return scoreRepository.save(criteriaScore);
 }
 
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).EXPERT)")
+public CriteriaScore setScore(final Long criteriaId, final Long participantId, final ScoreIdCommentDto score) {
+  return _setScore(criteriaId, Credentials.getCurrent().getId(), participantId, score);
+}
+
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 @Transactional
 public void delete(final Long criteriaId, final Long expertId, final Long participantId) {
+  _delete(criteriaId, expertId, participantId);
+}
+
+private void _delete(final Long criteriaId, final Long expertId, final Long participantId) {
   scoreRepository.deleteByCriteria_IdAndExpert_IdAndParticipant_Id(criteriaId, expertId, participantId);
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).EXPERT)")
+@Transactional
+public void delete(final Long criteriaId, final Long participantId) {
+  _delete(criteriaId, Credentials.getCurrent().getId(), participantId);
 }
 }

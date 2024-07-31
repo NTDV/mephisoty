@@ -1,6 +1,7 @@
 package ru.valkovets.mephisoty.api.dto.season;
 
 import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
+import ru.valkovets.mephisoty.db.projection.special.StageCriteriaScoreShortProj;
 import ru.valkovets.mephisoty.db.projection.special.StageScoreShortProj;
 
 public record ScoreIdCommentDto(Long id,
@@ -16,6 +17,12 @@ public ScoreIdCommentDto(final CriteriaScoreShortProj scoreShortProj) {
 public ScoreIdCommentDto(final StageScoreShortProj scoreShortProj) {
   this(scoreShortProj.getId(),
        scoreShortProj.getComment() == null ? "" : scoreShortProj.getComment(),
-       scoreShortProj.getScore());
+       scoreShortProj.getScoreByStageFormula());
+}
+
+public ScoreIdCommentDto(final StageCriteriaScoreShortProj score) {
+  this(score.getId(),
+       score.getComment() == null ? "" : score.getComment(),
+       score.getScore());
 }
 }

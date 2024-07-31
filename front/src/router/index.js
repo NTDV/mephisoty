@@ -49,6 +49,16 @@ const router = createRouter({
                     component: () => import('@/views/pages/admin/CriteriaScoreTable.vue')
                 },
                 {
+                    path: '/admin/seasonstagesscores/',
+                    name: 'seasonstagesscores',
+                    component: () => import('@/views/pages/admin/SeasonStagesScoreTable.vue')
+                },
+                {
+                    path: '/expert/stagecriteriasscores/',
+                    name: 'stagecriteriasscores',
+                    component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

@@ -38,3 +38,9 @@ export function mapReviver(key, value) {
   }
   return value;
 }
+
+export function forEachEntry(obj, callback) {
+  for (const key in obj)
+    if (obj.hasOwnProperty(key))
+      callback(obj[key], key);
+}

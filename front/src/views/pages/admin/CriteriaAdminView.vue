@@ -1,13 +1,13 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {DateTimeService} from '@/service/DateTimeService';
+import {DateTimeService} from '@/service/util/DateTimeService';
 import {useRoute} from "vue-router";
-import {CredsService} from "@/service/CredsService";
-import {StageService} from "@/service/StageService";
+import {CredsService} from "@/service/admin/CredsService";
+import {StageService} from "@/service/admin/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {ToastService} from "@/service/ToastService";
-import {CriteriaService} from "@/service/CriteriaService";
+import {ToastService} from "@/service/util/ToastService";
+import {CriteriaService} from "@/service/admin/CriteriaService";
 import router from "@/router";
 
 const toast = useToast();

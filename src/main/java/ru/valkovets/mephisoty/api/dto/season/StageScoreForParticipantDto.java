@@ -8,6 +8,6 @@ import java.util.Map;
 
 public record StageScoreForParticipantDto(
     @NotNull UserSimpleGroupProj participant,
-    @NotNull Map<Long, Float> scoreByStageId
+    @NotNull Map<Long, ScoreIdCommentDto> scoreByStageId
 ) implements Serializable {
 }

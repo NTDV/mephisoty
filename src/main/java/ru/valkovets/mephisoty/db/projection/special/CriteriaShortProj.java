@@ -6,10 +6,6 @@ import ru.valkovets.mephisoty.db.projection.extended.IdTdrCommentProj;
 /**
  * Projection for {@link Criteria}
  */
-public interface CriteriaShortProj extends IdTdrCommentProj {
+public interface CriteriaShortProj extends CriteriaShortestProj, IdTdrCommentProj {
 String getLiteral();
-
-Float getMax();
-
-Float getMin();
 }

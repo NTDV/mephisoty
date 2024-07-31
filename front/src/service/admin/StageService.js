@@ -39,10 +39,6 @@ export class StageService {
         }).then((resp) => resp.json());
     }
 
-    getCriterias(id) {
-        return fetchApi('/admin/stage/' + id + '/criterias').then((resp) => resp.json());
-    }
-
     addCriteria(id, criteria) {
         return fetchApi('/admin/stage/' + id + '/criterias', {
             method: 'POST',
@@ -50,15 +46,4 @@ export class StageService {
         }).then((resp) => resp.json());
     }
 
-    getScores(id) {
-        return fetchApi('/admin/stage/' + id + '/scores').then((resp) => resp.json());
-    }
-
-    getSchedules(id) {
-        return fetchApi('/admin/stage/' + id + '/schedules').then((resp) => resp.json());
-    }
-
-    getQuestions(id) {
-        return fetchApi('/admin/stage/' + id + '/questions').then((resp) => resp.json());
-    }
 }

@@ -45,12 +45,12 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
             corsConfiguration.setAllowCredentials(true);
             return corsConfiguration;
         }))
-        // Настройка доступа к конечным точкам
         .authorizeHttpRequests(request -> request
-                // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
+            // * - 1 уровень вложенности, ** - любое количество уровней вложенности
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
+            .requestMatchers("/expert/**").hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority())
                 .anyRequest().authenticated())
         .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
         .authenticationProvider(authenticationProvider())

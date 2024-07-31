@@ -40,11 +40,11 @@ export class SeasonService {
     }
 
     getStages(seasonId) {
-        return fetchApi('/admin/season/' + seasonId + '/stages').then((resp) => resp.json());
+      return fetchApi('/admin/season/' + seasonId + '/criterias').then((resp) => resp.json());
     }
 
     addStage(seasonId, stageDto) {
-        return fetchApi('/admin/season/' + seasonId + '/stages', {
+      return fetchApi('/admin/season/' + seasonId + '/criterias', {
             method: 'POST',
             body: JSON.stringify(stageDto)
         }).then((resp) => resp.json());

@@ -1,5 +1,5 @@
 <script setup>
-import {DateTimeService} from "@/service/DateTimeService";
+import {DateTimeService} from "@/service/util/DateTimeService";
 
 const season = defineModel();
 const dateTimeService = new DateTimeService();

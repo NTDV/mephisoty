@@ -1,14 +1,14 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/SeasonService';
-import {AllowStateService} from '@/service/AllowStateService';
-import {DateTimeService} from '@/service/DateTimeService';
+import {SeasonService} from '@/service/admin/SeasonService';
+import {AllowStateService} from '@/service/util/AllowStateService';
+import {DateTimeService} from '@/service/util/DateTimeService';
 import {useRoute, useRouter} from "vue-router";
-import {CredsService} from "@/service/CredsService";
-import {ToastService} from "@/service/ToastService";
+import {CredsService} from "@/service/admin/CredsService";
+import {ToastService} from "@/service/util/ToastService";
 import {FilterMatchMode, FilterOperator} from "primevue/api";
-import {StageService} from "@/service/StageService";
+import {StageService} from "@/service/admin/StageService";
 import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
 import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
 
@@ -124,7 +124,7 @@ const saveModel = () => {
     seasonService.editShort(model.value.id, createModelDto())
       //.then((res) => {
       //  if (!toastService.checkServerError(res))
-      //    return seasonService.bindStage(model.value.season, model.value.id);
+      //    return parentService.bindStage(model.value.season, model.value.id);
       //})
       .then((res) => {
         if (!toastService.checkServerError(res))

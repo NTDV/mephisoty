@@ -9,7 +9,6 @@ import ru.valkovets.mephisoty.db.projection.simple.IdProj;
  */
 public interface CriteriaScoreShortProj extends IdCommentProj {
 IdProj getParticipant();
-
 IdProj getExpert();
 Float getScore();
 }

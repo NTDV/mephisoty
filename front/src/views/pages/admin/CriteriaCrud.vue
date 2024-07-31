@@ -2,11 +2,11 @@
 import {FilterMatchMode, FilterOperator} from 'primevue/api';
 import {onBeforeMount, onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {AllowStateService} from '@/service/AllowStateService';
-import {DateTimeService} from '@/service/DateTimeService';
-import {StageService} from "@/service/StageService";
+import {AllowStateService} from '@/service/util/AllowStateService';
+import {DateTimeService} from '@/service/util/DateTimeService';
+import {StageService} from "@/service/admin/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {CriteriaService} from "@/service/CriteriaService";
+import {CriteriaService} from "@/service/admin/CriteriaService";
 
 const toast = useToast();
 
@@ -348,8 +348,7 @@ const clearFilter = () => {
                       @click="clearFilter()"/>
             </div>
           </template>
-          <template #empty> Сезонов не найдено.</template>
-          <template #loading> Загрузка. Пожалуйста, подождите.</template>
+          <template #empty> Критериев не найдено.</template>
 
           <Column headerStyle="width: 3rem" selectionMode="multiple"></Column>
 
@@ -400,7 +399,7 @@ const clearFilter = () => {
 
         <Dialog v-model:visible="editDialog" :modal="true"
                 :style="{ width: '700px' }" class="p-fluid"
-                header="Информация об этапе">
+                header="Информация о критерии">
           <div class="field">
             <TextareaBlock v-model="model.comment" auto-resize
                            label="Комментарий" maxlength="200"

@@ -8,7 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import ru.valkovets.mephisoty.api.dto.season.StageScoreForParticipantDto;
+import ru.valkovets.mephisoty.api.dto.season.ScoreForParticipantDto;
+import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
 import ru.valkovets.mephisoty.api.dto.season.StageScoresAllDto;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
@@ -56,12 +57,13 @@ public StageScoresAllDto getAll(final int page, final int size, final Long seaso
   final long participantsTotal = participantsPage.getTotalElements();
   final int participantsCount = participantsById.size();
 
-  final LinkedHashMap<Long, StageScoreForParticipantDto> stageScoreByParticipantId = new LinkedHashMap<>(participantsCount);
+  final LinkedHashMap<Long, ScoreForParticipantDto> stageScoreByParticipantId =
+      new LinkedHashMap<>(participantsCount);
   for (final UserSimpleGroupProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
     final Long participantId = participant.getId();
-    final HashMap<Long, Float> scoreByExpertId =
+    final HashMap<Long, ScoreIdCommentDto> scoreByExpertId =
         new HashMap<>(8);  // todo Уточнить сколько экспертов обычно оценивает одного человека
-    stageScoreByParticipantId.put(participantId, new StageScoreForParticipantDto(participant, scoreByExpertId));
+    stageScoreByParticipantId.put(participantId, new ScoreForParticipantDto(participant, scoreByExpertId));
   }
 
   final Set<StageScoreShortProj> scores = scoreRepository.getAllByParticipant_IdInAndStage_IdIn(
@@ -69,9 +71,9 @@ public StageScoresAllDto getAll(final int page, final int size, final Long seaso
   for (final StageScoreShortProj score : scores) {
     final Long participantId = score.getParticipant().getId();
     final Long stageId = score.getStage().getId();
-    final Float scoreValue = score.getScore();
+    final ScoreIdCommentDto scoreValue = new ScoreIdCommentDto(score);
 
-    stageScoreByParticipantId.get(participantId).scoreByStageId().put(stageId, scoreValue);
+    stageScoreByParticipantId.get(participantId).scoreById().put(stageId, scoreValue);
   }
 
   return new StageScoresAllDto(stageScoreByParticipantId.sequencedValues(), stages, participantsTotal);
@@ -79,14 +81,15 @@ public StageScoresAllDto getAll(final int page, final int size, final Long seaso
 
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public StageScore setScore(final Long stageId, final Long participantId, final Float score) {
+public StageScore setScore(final Long stageId, final Long participantId, final ScoreIdCommentDto score) {
   final StageScore stageScore =
       scoreRepository.findByStage_IdAndParticipant_Id(stageId, participantId)
                      .orElse(StageScore.builder()
                                        .stage(Stage.builder().id(stageId).build())
                                        .participant(User.builder().id(participantId).build())
                                        .build());
-  stageScore.setScoreByStageFormula(score);
+  stageScore.setComment(score.comment());
+  stageScore.setScoreByStageFormula(score.score());
   return scoreRepository.save(stageScore);
 }
 

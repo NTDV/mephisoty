@@ -1,9 +1,10 @@
-package ru.valkovets.mephisoty.api.admin;
+package ru.valkovets.mephisoty.api.controller.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
 import ru.valkovets.mephisoty.api.dto.season.StageScoresAllDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
@@ -11,10 +12,10 @@ import ru.valkovets.mephisoty.api.lazydata.service.SortService;
 import ru.valkovets.mephisoty.db.service.season.scoring.StageScoreService;
 
 @RestController
-@RequestMapping("/admin/stagescore")
+@RequestMapping("/admin/seasonstagescore")
 @RequiredArgsConstructor
-@Tag(name = "Оценки по этапам")
-public class StageScoreController {
+@Tag(name = "Оценки по этапам сезона")
+public class SeasonStagesScoreController {
 private final StageScoreService scoreService;
 
 @PostMapping("/{seasonId}")
@@ -26,14 +27,14 @@ public StageScoresAllDto getAll(@PathVariable final Long seasonId,
       searchParams.rows(),
       seasonId,
       PageableService.parseFilter(searchParams),
-      SortService.getSort(searchParams));
+      SortService.getSortForScoreGetAll(searchParams));
 }
 
-@GetMapping("/{stageId}/{participantId}")
+@PostMapping("/{stageId}/{participantId}")
 @Operation(summary = "Установить оценку")
 public void setScore(@PathVariable final Long stageId,
                      @PathVariable final Long participantId,
-                     @RequestParam("score") final Float score) {
+                     @RequestBody final ScoreIdCommentDto score) {
   scoreService.setScore(stageId, participantId, score);
 }
 

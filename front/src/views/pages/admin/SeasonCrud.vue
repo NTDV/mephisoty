@@ -2,9 +2,9 @@
 import {FilterMatchMode, FilterOperator} from 'primevue/api';
 import {onBeforeMount, onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/SeasonService';
-import {AllowStateService} from '@/service/AllowStateService';
-import {DateTimeService} from '@/service/DateTimeService';
+import {SeasonService} from '@/service/admin/SeasonService';
+import {AllowStateService} from '@/service/util/AllowStateService';
+import {DateTimeService} from '@/service/util/DateTimeService';
 import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
 
 const toast = useToast();

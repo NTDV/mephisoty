@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.api.admin;
+package ru.valkovets.mephisoty.api.controller.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

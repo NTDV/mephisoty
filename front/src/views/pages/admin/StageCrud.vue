@@ -2,10 +2,10 @@
 import {FilterMatchMode, FilterOperator} from 'primevue/api';
 import {onBeforeMount, onMounted, ref} from 'vue';
 import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/SeasonService';
-import {AllowStateService} from '@/service/AllowStateService';
-import {DateTimeService} from '@/service/DateTimeService';
-import {StageService} from "@/service/StageService";
+import {SeasonService} from '@/service/admin/SeasonService';
+import {AllowStateService} from '@/service/util/AllowStateService';
+import {DateTimeService} from '@/service/util/DateTimeService';
+import {StageService} from "@/service/admin/StageService";
 import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
 
 const toast = useToast();

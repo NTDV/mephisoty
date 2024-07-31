@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.SequencedCollection;
 
 public record StageScoresAllDto(
-    @NotNull SequencedCollection<StageScoreForParticipantDto> scores,
+    @NotNull SequencedCollection<ScoreForParticipantDto> scores,
     @NotNull SequencedCollection<IdTitleProj> stages,
     @NotNull @PositiveOrZero Long totalParticipants
 ) implements Serializable {

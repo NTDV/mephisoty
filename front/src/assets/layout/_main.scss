@@ -71,6 +71,10 @@ textarea.fixed-resizable {
   }
 }
 
+.p-datatable-loading-overlay {
+  z-index: 4;
+}
+
 .p-datatable-thead {
   z-index: 3;
 }

@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {AllowStateService} from "@/service/AllowStateService";
+import {AllowStateService} from "@/service/util/AllowStateService";
 
 const visibility = defineModel();
 
