@@ -1,12 +1,12 @@
 <script setup>
-import {FilterMatchMode, FilterOperator} from 'primevue/api';
-import {onBeforeMount, onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/admin/SeasonService';
-import {AllowStateService} from '@/service/util/AllowStateService';
-import {DateTimeService} from '@/service/util/DateTimeService';
-import {StageService} from "@/service/admin/StageService";
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { onBeforeMount, onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { SeasonService } from '@/service/admin/SeasonService';
+import { AllowStateService } from '@/service/util/AllowStateService';
+import { DateTimeService } from '@/service/util/DateTimeService';
+import { StageService } from '@/service/admin/StageService';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
 
 const toast = useToast();
 
@@ -210,16 +210,16 @@ const saveModel = async () => {
         const res = await seasonService.addStage(parentSeason.value, createModelDto());
         if (res.err) {
           console.error(res);
-          toast.add({severity: 'error', summary: 'Ошибка сервера', detail: 'Сезон не создан', life: 3000});
+          toast.add({ severity: 'error', summary: 'Ошибка сервера', detail: 'Этап не создан', life: 3000 });
           return;
         }
 
         model.value = createModelClient(res);
         models.value.push(model.value);
-        toast.add({severity: 'success', summary: 'Успешно', detail: 'Сезон добавлен', life: 3000});
+        toast.add({ severity: 'success', summary: 'Успешно', detail: 'Этап добавлен', life: 3000 });
       } catch (e) {
         console.error(e);
-        toast.add({severity: 'error', summary: 'Ошибка клиента', detail: 'Сезон не создан', life: 3000});
+        toast.add({ severity: 'error', summary: 'Ошибка клиента', detail: 'Этап не создан', life: 3000 });
         return;
       }
     }

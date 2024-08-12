@@ -47,6 +47,7 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate6:2.17.0'
+    implementation 'org.apache.commons:commons-csv:1.11.0'
     //implementation 'net.bytebuddy:byte-buddy:1.14.17'
     compileOnly 'org.projectlombok:lombok:1.18.32'
     developmentOnly 'org.springframework.boot:spring-boot-devtools:3.3.2'

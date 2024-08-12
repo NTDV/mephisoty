@@ -14,6 +14,7 @@ import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
 import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ValidationConst;
@@ -119,6 +120,11 @@ private Set<StageSchedule> stageSchedules = new LinkedHashSet<>();
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 private Set<Question> questions = new LinkedHashSet<>();
+
+@NotNull
+@Builder.Default
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
+private Set<Achievement> achievements = new LinkedHashSet<>();
 
 @Transient
 public AllowState getScheduleAccessStateEnum() {

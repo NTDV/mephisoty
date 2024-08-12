@@ -76,6 +76,11 @@ private String secondName;
 @Column(name = "third_name", length = 30)
 private String thirdName = "";
 
+@Transient
+public String getFullName() {
+    return (secondName + " " + firstName + " " + thirdName).trim();
+}
+
 @Nullable
 @ManyToOne(fetch = FetchType.EAGER)
 @JoinColumn(name = "group_id")

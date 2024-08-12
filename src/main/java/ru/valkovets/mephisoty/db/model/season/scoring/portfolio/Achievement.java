@@ -1,17 +1,14 @@
 package ru.valkovets.mephisoty.db.model.season.scoring.portfolio;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.validator.constraints.Length;
+import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-
-import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -25,30 +22,39 @@ public class Achievement extends BasicEntity {
 @JoinColumn(name = "owner_id", nullable = false)
 private User owner;
 
-@Column(name = "recived_at", nullable = false)
-@PastOrPresent
-@NotNull
-private LocalDate receivedAt;
-
-@Length(max = 120)
-@NotBlank
-@Column(name = "title", nullable = false, length = 120)
-private String title;
+@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "stage_id", nullable = false)
+private Stage stage;
 
 @NotNull
-@Length(max = 2000)
-@Builder.Default
-@Column(name = "description", nullable = false, length = 2000)
-private String description = "";
+@Column(name = "type_code", nullable = false)
+private Integer typeCode;
+
+@NotNull
+@Column(name = "criteria_title", nullable = false, length = 255)
+private String criteriaTitle;
+
+@NotNull
+@Column(name = "type_title", nullable = false, length = 500)
+private String typeTitle;
+
+@NotNull
+@Column(name = "description", nullable = false, length = 1500)
+private String description;
+
+@Nullable
+@Column(name = "level_title")
+private String levelTitle;
+
+@Nullable
+@Column(name = "status_title")
+private String statusTitle;
 
 @NotNull
 @PositiveOrZero
 @Builder.Default
 @Column(name = "score", nullable = false)
-private Float pgasScore = 0f;
+private Float totalScore = 0f;
 
-@ManyToOne(fetch = FetchType.EAGER, optional = false)
-@JoinColumn(name = "achievement_type_id", nullable = false)
-@NotNull
-private AchievementType achievementType;
+
 }

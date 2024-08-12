@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.model.userdata;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -32,15 +33,26 @@ import java.util.Collections;
 public class Credentials extends BasicEntity implements UserDetails {
 
 @Length(max = 100)
-@NotBlank
+@Nullable
 @Email
-@Column(name = "email", nullable = false, unique = true, length = 100)
-private String email;
+@Builder.Default
+@Column(name = "email", unique = true, length = 100)
+private String email = "";
 
 @Length(max = 1024)
 @NotBlank
-@Column(name = "password", nullable = false, length = 1024) // todo set length
+@Nullable
+@Column(name = "password", length = 1024) // todo set length
 private String password;
+
+@Length(max = 200)
+@Nullable
+@Column(name = "mephi_login", unique = true, length = 200)
+private String mephi_login;
+
+@Nullable
+@Column(name = "mephi_is_student")
+private Boolean mephi_isStudent;
 
 @NotNull
 @OneToOne(fetch = FetchType.LAZY, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)

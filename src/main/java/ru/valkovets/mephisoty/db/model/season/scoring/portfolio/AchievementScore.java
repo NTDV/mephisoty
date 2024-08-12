@@ -22,10 +22,6 @@ public class AchievementScore extends BasicEntity {
 @NotNull
 private User participant;
 
-@ManyToOne(fetch = FetchType.EAGER, optional = false)
-@JoinColumn(name = "type_id", nullable = false)
-private AchievementType type;
-
 @NotNull
 @PositiveOrZero
 @Builder.Default

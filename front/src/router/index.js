@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
 
 const router = createRouter({
@@ -12,6 +12,11 @@ const router = createRouter({
                     path: '/',
                     name: 'dashboard',
                     component: () => import('@/views/Dashboard.vue')
+                },
+                {
+                    path: '/admin/achievements',
+                    name: 'achievements',
+                    component: () => import('@/views/pages/admin/AchievementsView.vue')
                 },
                 {
                     path: '/admin/seasons',

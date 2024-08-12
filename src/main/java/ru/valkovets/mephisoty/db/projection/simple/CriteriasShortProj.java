@@ -1,6 +1,5 @@
 package ru.valkovets.mephisoty.db.projection.simple;
 
-import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 
