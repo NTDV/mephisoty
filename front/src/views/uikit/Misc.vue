@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const value = ref(0);
 let interval = null;
@@ -114,6 +114,8 @@ onBeforeUnmount(() => {
                 <Tag class="mr-2" severity="success" value="Success"></Tag>
                 <Tag class="mr-2" severity="info" value="Info"></Tag>
                 <Tag class="mr-2" severity="warning" value="Warning"></Tag>
+              <Tag class="mr-2" severity="secondary" value="Warning"></Tag>
+              <Tag class="mr-2" severity="contrast" value="Warning"></Tag>
                 <Tag severity="danger" value="Danger"></Tag>
 
                 <h5>Pills</h5>

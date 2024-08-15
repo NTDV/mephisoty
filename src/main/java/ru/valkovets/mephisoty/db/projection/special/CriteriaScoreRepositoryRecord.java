@@ -1,15 +1,15 @@
 package ru.valkovets.mephisoty.db.projection.special;
 
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleGroupProj;
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleProj;
+import ru.valkovets.mephisoty.db.projection.simple.UserNameIdProj;
+import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 
 import java.util.Objects;
 
 public record CriteriaScoreRepositoryRecord(
     Long id,
     String comment,
-    UserSimpleGroupProj participant,
-    UserSimpleProj expert,
+    UserSelectProj participant,
+    UserNameIdProj expert,
     Float score) implements CriteriaScoreProj {
 @Override
 public boolean equals(final Object obj) {
@@ -24,12 +24,12 @@ public int hashCode() {
 }
 
 @Override
-public UserSimpleGroupProj getParticipant() {
+public UserSelectProj getParticipant() {
   return participant;
 }
 
 @Override
-public UserSimpleProj getExpert() {
+public UserNameIdProj getExpert() {
   return expert;
 }
 

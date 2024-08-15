@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.db.projection.special.NamesProj;
 import ru.valkovets.mephisoty.db.repository.BasicRepository;
+import ru.valkovets.mephisoty.settings.ParticipantState;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Collection;
@@ -25,4 +26,19 @@ Optional<NamesProj> getFullNameByCredentialsId(Long credentialsId);
     "select u from User u where u.group.title in ?2 and trim(concat(u.secondName, ' ', u.firstName, ' ', u.thirdName)) in ?1")
 <T> Set<T> findAllByFullNameAndGroup(Collection<String> fullName, Collection<String> groupTitle, Class<T> type);
 
+default <T> Page<T> findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(final ParticipantState state,
+                                                                               final Pageable pageable, final Class<T> type) {
+  return findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(state.name(), pageable, type);
+}
+
+<T> Page<T> findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(String state, Pageable pageable, Class<T> type);
+
+default <T> Page<T> findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAscThirdNameAsc(final ParticipantState state,
+                                                                                             final Pageable pageable,
+                                                                                             final Class<T> type) {
+  return findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAscThirdNameAsc(state.name(), pageable, type);
+}
+
+<T> Page<T> findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAscThirdNameAsc(String state, Pageable pageable,
+                                                                                     Class<T> type);
 }

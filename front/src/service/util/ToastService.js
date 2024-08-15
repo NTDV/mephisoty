@@ -37,4 +37,9 @@ export class ToastService {
   showDeletedSuccess() {
     this.toast.add({severity: 'success', summary: 'Успешно', detail: 'Данные удалены', life: 3000});
   }
+
+  showAccessError(e) {
+    console.error(e);
+    this.toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Не удается получить доступ', life: 3000 });
+  }
 }

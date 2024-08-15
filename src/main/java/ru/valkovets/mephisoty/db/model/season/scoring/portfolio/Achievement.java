@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.settings.AchievementType;
 
 @Entity
 @Getter
@@ -30,6 +31,15 @@ private Stage stage;
 @Column(name = "type_code", nullable = false)
 private Integer typeCode;
 
+@Nullable
+@Column(name = "thanks_from")
+private String thanksFrom;
+
+@Transient
+public AchievementType getTypeCode() {
+  return AchievementType.values[typeCode];
+}
+
 @NotNull
 @Column(name = "criteria_title", nullable = false, length = 255)
 private String criteriaTitle;
@@ -50,11 +60,14 @@ private String levelTitle;
 @Column(name = "status_title")
 private String statusTitle;
 
+@Transient
+public void setTypeCode(final AchievementType typeCode) {
+  this.typeCode = typeCode.ordinal();
+}
+
 @NotNull
 @PositiveOrZero
 @Builder.Default
 @Column(name = "score", nullable = false)
 private Float totalScore = 0f;
-
-
 }

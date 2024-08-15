@@ -15,7 +15,7 @@ import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleProj;
+import ru.valkovets.mephisoty.db.projection.simple.UserNameIdProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaShortestProj;
 import ru.valkovets.mephisoty.db.projection.special.StageCriteriaScoreShortProj;
@@ -40,7 +40,7 @@ private final CriteriaRepository criteriaRepository;
 public CriteriaScoresAllDto getAll(final int page, final int size, final Long criteriaId,
                                    final Specification<User> participantsFilter,
                                    final Sort participantSort) {
-  final List<UserSimpleProj> experts = getAllExperts();
+  final List<UserNameIdProj> experts = getAllExperts();
 
   final ParticipantsManager.ParticipantsTableResult result = ParticipantsManager
       .getParticipantsTableResult(userRepository, page, size, participantsFilter, participantSort);
@@ -93,9 +93,9 @@ public StageCriteriasScoresAllDto getAllForStage(final int page, final int size,
 }
 
 
-private List<UserSimpleProj> getAllExperts() {
+private List<UserNameIdProj> getAllExperts() {
   return userRepository.findByCredentials_RoleInOrderBySecondNameAscFirstNameAscThirdNameAsc(
-      Set.of(UserRole.ADMIN, UserRole.EXPERT), Pageable.unpaged(), UserSimpleProj.class).toList();
+      Set.of(UserRole.ADMIN, UserRole.EXPERT), Pageable.unpaged(), UserNameIdProj.class).toList();
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")

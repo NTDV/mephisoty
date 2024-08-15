@@ -1,17 +1,20 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from 'vue';
 
-const chosenModel = defineModel();
+const chosenModelId = defineModel();
+const chosenModel = ref(null);
 
 onMounted(() => {
-  if (chosenModel.value) {
+  if (chosenModelId.value) {
+    chosenModel.value = chosenModelId.value;
     items.value.push(chosenModel.value);
-    chosenModel.value = chosenModel.value.id;
+    chosenModelId.value = chosenModel.value.id;
   }
 });
 
 const events = defineEmits(['change']);
 const change = (...args) => {
+  console.log(args);
   events('change', ...args);
 };
 
@@ -19,15 +22,38 @@ const props = defineProps({
   label: String,
   invalid: Boolean,
   crudService: Object,
-  infix: String
+  infix: String,
+  lazyFilter: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const items = ref([]);
 const loading = ref(false);
-let offset = chosenModel.value ? 1 : 0;
+let offset = chosenModelId.value ? 1 : 0;
+let filterValue = null;
 
-const onLazyLoad = (event) => {
-  //if (!event.value || event.value.length >= 4)
+const onFilter = (event) => {
+  if (loading.value) return;
+  loading.value = true;
+  filterValue = event.value;
+  if (chosenModelId.value) {
+    offset = 1;
+    if (chosenModel.value?.id !== chosenModelId.value) {
+      chosenModel.value = items.value.find(model => model.id === chosenModelId.value);
+    }
+    items.value = [];
+    items.value.push(chosenModel.value);
+  } else {
+    items.value = [];
+  }
+  onLazyLoad({ first: 0, last: 1 }, true);
+};
+
+const onLazyLoad = (event, force) => {
+  if (!force && loading.value) return;
+  if (props.lazyFilter) event = { ...event, value: filterValue };
 
   let shouldLoad = items.value.length <= 1;
   if (event.first === 0 && event.last <= 1) event.last = 12;
@@ -56,7 +82,7 @@ const onLazyLoad = (event) => {
         [...items.value] : Array.from({0: items.value[0], length: data.total});
 
       for (let j = 0; j < data.collection.length; j++) {
-        if (data.collection[j].id === chosenModel.value) {
+        if (data.collection[j].id === chosenModelId.value) {
           offset = 0;
         } else {
           _items[event.first + j + offset] = data.collection[j];
@@ -79,19 +105,22 @@ const onLazyLoad = (event) => {
 <template>
   <label v-if="props.label">{{ props.label }}</label>
   <div class="p-dropdown" style="border: none; box-shadow: none; cursor: default;">
-    <Dropdown v-model="chosenModel" :options="items"
-              :virtualScrollerOptions="{lazy: true, onLazyLoad: onLazyLoad, delay: 20, itemSize: 38, showLoader: false, loading: loading }" class="p-column-filter mr-2"
-              filter
+    <Dropdown v-model="chosenModelId" :filter-match-mode="props.lazyFilter ? 'skip' : 'contains'"
+              :options="items"
+              :virtualScrollerOptions="{lazy: true, onLazyLoad: onLazyLoad,
+              delay: 20, itemSize: 38, showLoader: false, loading: loading,
+              orientation: 'vertical', step: 12 }"
+              class="p-column-filter mr-2 min-w-full max-w-fit" filter
               option-label="title" option-value="id"
-              placeholder="Выберите элемент" style="min-width: 10em; max-width: 20em;"
-              @change="change($event)">
+              placeholder="Выберите элемент"
+              @change="change($event)" @filter="onFilter($event)">
       <template #option="slotProps">
-        <span v-if="slotProps.option">{{ slotProps.option.title }} <small class="greyid">id:&nbsp;{{
-            slotProps.option.id
-          }}</small></span>
+        <span v-if="slotProps.option">{{ slotProps.option.title }}
+          <small class="greyid">id:&nbsp;{{ slotProps.option.id }}</small>
+        </span>
       </template>
     </Dropdown>
-    <RouterLink v-if="chosenModel && props.infix" :to="'/admin/' + props.infix + '/' + chosenModel">
+    <RouterLink v-if="chosenModelId && props.infix" :to="'/admin/' + props.infix + '/' + chosenModelId">
       <Button icon="pi pi-eye" rounded severity="success"/>
     </RouterLink>
   </div>

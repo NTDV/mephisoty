@@ -9,8 +9,10 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.valkovets.mephisoty.api.dto.season.ScoreForParticipantDto;
 import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials_;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleGroupProj;
+import ru.valkovets.mephisoty.db.model.userdata.User_;
+import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.settings.UserRole;
 
@@ -23,17 +25,17 @@ public static ParticipantsTableResult getParticipantsTableResult(final UserRepos
                                                                  final int page, final int size,
                                                                  final Specification<User> participantsFilter,
                                                                  final Sort participantSort) {
-  final Page<UserSimpleGroupProj> participantsPage =
+  final Page<UserSelectProj> participantsPage =
       getParticipantsPage(userRepository, page, size, participantsFilter, participantSort);
 
-  final LinkedHashMap<Long, UserSimpleGroupProj> participantsById =
-      participantsPage.get().collect(Collectors.toMap(UserSimpleGroupProj::getId, e -> e, (u1, u2) -> u1, LinkedHashMap::new));
+  final LinkedHashMap<Long, UserSelectProj> participantsById =
+      participantsPage.get().collect(Collectors.toMap(UserSelectProj::getId, e -> e, (u1, u2) -> u1, LinkedHashMap::new));
   final long participantsTotal = participantsPage.getTotalElements();
   final int participantsCount = participantsById.size();
 
   final LinkedHashMap<Long, ScoreForParticipantDto> scoresByParticipantId =
       new LinkedHashMap<>(participantsCount);
-  for (final UserSimpleGroupProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
+  for (final UserSelectProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
     final Long participantId = participant.getId();
     final HashMap<Long, ScoreIdCommentDto> scoreByExpertId =
         new HashMap<>(8);  // todo Уточнить сколько экспертов обычно оценивает одного человека
@@ -43,25 +45,25 @@ public static ParticipantsTableResult getParticipantsTableResult(final UserRepos
   return new ParticipantsTableResult(participantsById, participantsTotal, scoresByParticipantId);
 }
 
-public static Page<UserSimpleGroupProj> getParticipantsPage(final UserRepository userRepository,
-                                                            final int page, final int size,
-                                                            final Specification<User> participantsFilter,
-                                                            final Sort participantSort) {
+public static Page<UserSelectProj> getParticipantsPage(final UserRepository userRepository,
+                                                       final int page, final int size,
+                                                       final Specification<User> participantsFilter,
+                                                       final Sort participantSort) {
   return userRepository.findBy(
       Specification.where(participantsFilter)
                    .and((root, query, builder) -> {
-                     final Join<User, Credentials> credentials = root.join("credentials", JoinType.LEFT);
+                     final Join<User, Credentials> credentials = root.join(User_.credentials, JoinType.LEFT);
                      return builder.or(
-                         builder.isNull(root.get("credentials")),
-                         builder.equal(credentials.get("role"), UserRole.PARTICIPANT),
-                         builder.equal(credentials.get("role"), UserRole.ADMIN));
+                         builder.isNull(root.get(User_.credentials)),
+                         builder.equal(credentials.get(Credentials_.role), UserRole.PARTICIPANT),
+                         builder.equal(credentials.get(Credentials_.role), UserRole.ADMIN));
                    }),
       q -> q.sortBy(participantSort == null ? Sort.unsorted() : participantSort)
-            .as(UserSimpleGroupProj.class)
+            .as(UserSelectProj.class)
             .page(PageRequest.of(page, size)));
 }
 
-public record ParticipantsTableResult(LinkedHashMap<Long, UserSimpleGroupProj> participantsById,
+public record ParticipantsTableResult(LinkedHashMap<Long, UserSelectProj> participantsById,
                                       long participantsTotal,
                                       LinkedHashMap<Long, ScoreForParticipantDto> scoresByParticipantId) {}
 }

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Formula;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.valkovets.mephisoty.api.dto.userdata.UserRegistrationDto;
@@ -45,20 +46,13 @@ private File avatar;
 @Column(name = "state", nullable = false)
 private String state;
 
-public static User from(final UserRegistrationDto dto) {
-    return User.builder()
-               .comment(dto.comment())
-               .state(dto.state().name())
-               .firstName(dto.firstName())
-               .secondName(dto.secondName())
-               .thirdName(dto.thirdName())
-               .build();
-}
-
-@Transient
-public ParticipantState getState() {
-    return ParticipantState.valueOf(state);
-}
+@NotNull
+@Builder.Default
+@Length(max = 50)
+@Column(name = "third_name", length = 50)
+private String thirdName = "";
+@Formula("concat_ws(' ', second_name, first_name, nullif(third_name, ''))")
+private String fullName;
 
 @NotBlank
 @Length(max = 50)
@@ -70,21 +64,36 @@ private String firstName;
 @Column(name = "second_name", nullable = false, length = 50)
 private String secondName;
 
-@NotNull
-@Builder.Default
-@Length(max = 30)
-@Column(name = "third_name", length = 30)
-private String thirdName = "";
+public static User from(final UserRegistrationDto dto) {
+  return User.builder()
+             .comment(dto.comment())
+             .state(dto.state().name())
+             .firstName(dto.firstName())
+             .secondName(dto.secondName())
+             .thirdName(dto.thirdName())
+             .build();
+}
 
 @Transient
-public String getFullName() {
-    return (secondName + " " + firstName + " " + thirdName).trim();
+public ParticipantState getState() {
+  return ParticipantState.valueOf(state);
+}
+
+public void setState(final ParticipantState state) {
+  this.state = state.name();
 }
 
 @Nullable
 @ManyToOne(fetch = FetchType.EAGER)
 @JoinColumn(name = "group_id")
 private Group group;
+
+public String getFullName() {
+  if (fullName == null) {
+    fullName = String.join(" ", secondName, firstName, thirdName).trim();
+  }
+  return fullName;
+}
 
 @JsonIgnore
 @Nullable
@@ -147,7 +156,8 @@ private Set<Answer> answers = new LinkedHashSet<>();
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
 private Set<Answer> answersAsExpert = new LinkedHashSet<>();
 
-public void setState(final ParticipantState state) {
-    this.state = state.name();
+@Transient
+public String tryGetGroupTitle() {
+  return group == null ? null : group.getTitle();
 }
 }

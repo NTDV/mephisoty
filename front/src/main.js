@@ -1,4 +1,4 @@
-import {createApp} from 'vue';
+import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 
@@ -109,20 +109,22 @@ import VirtualScroller from 'primevue/virtualscroller';
 import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
-import CalendarInputBlock from "@/components/prefab/CalendarInputBlock.vue";
-import CreatedModifiedBlock from "@/components/prefab/CreatedModifiedBlock.vue";
-import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
-import TextInputBlock from "@/components/prefab/TextInputBlock.vue";
-import ViewStateInputBlock from "@/components/prefab/ViewStateInputBlock.vue";
-import InputNumberBlock from "@/components/prefab/InputNumberBlock.vue";
-import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
-import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
-import ScoreEditorBlock from "@/components/prefab/ScoreEditorBlock.vue";
+import CalendarInputBlock from '@/components/prefab/CalendarInputBlock.vue';
+import CreatedModifiedBlock from '@/components/prefab/CreatedModifiedBlock.vue';
+import TextareaBlock from '@/components/prefab/TextareaBlock.vue';
+import TextInputBlock from '@/components/prefab/TextInputBlock.vue';
+import ViewStateInputBlock from '@/components/prefab/ViewStateInputBlock.vue';
+import InputNumberBlock from '@/components/prefab/InputNumberBlock.vue';
+import SkeletonAdminView from '@/components/prefab/SkeletonAdminView.vue';
+import UserNameIdBlock from '@/components/prefab/UserNameIdBlock.vue';
+import ScoreEditorBlock from '@/components/prefab/ScoreEditorBlock.vue';
+import axios from 'axios';
+import { FilterService } from 'primevue/api';
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
-    .then((res) => res.json())
-    .then((d) => d.ru);
+  .then((res) => res.json())
+  .then((d) => d.ru);
 
 app.use(router);
 app.use(PrimeVue, { ripple: true, locale: locale });
@@ -250,30 +252,47 @@ app.config.globalProperties.window = window;
 
 window.$apiHost = 'http://localhost:8080';
 
+FilterService.register('skip', (value, filter, filterLocale) => {
+  return true;
+});
+
 function updateOptions(options) {
-    const update = {
-        ...options,
-        follow: true
-    };
+  const update = {
+    ...options,
+    follow: true
+  };
 
-    if (localStorage.jwt) {
-        update.headers = {
-            ...update.headers,
-            Authorization: `Bearer ${localStorage.jwt}`
-        };
-    }
-
+  if (localStorage.jwt) {
     update.headers = {
-        ...update.headers,
-        'Content-Type': 'application/json'
-        //, 'Accept': 'application/json'
+      ...update.headers,
+      Authorization: `Bearer ${localStorage.jwt}`
     };
-    return update;
+  }
+
+  update.headers = {
+    ...update.headers,
+    'Content-Type': 'application/json'
+    //, 'Accept': 'application/json'
+  };
+  return update;
 }
 
-export default function fetchApi(relativeUrl, options) {
-    if (relativeUrl) {
-        return fetch(window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl), updateOptions(options))
-          .then(res => res.status === 403 ? router.push('/auth/login?from=' + router.currentRoute.value.fullPath) : res);
+function getFullUrl(relativeUrl) {
+  return window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl);
+}
+
+export default function fetchApi(relativeUrl, options, isFile = false) {
+  if (relativeUrl) {
+    if (isFile) {
+      return axios.post(getFullUrl(relativeUrl), options, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.jwt}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+    } else {
+      return fetch(getFullUrl(relativeUrl), updateOptions(options))
+        .then(res => res.status === 403 ? router.push('/auth/login?from=' + router.currentRoute.value.fullPath) : res);
     }
+  }
 }

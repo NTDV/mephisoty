@@ -1,8 +1,10 @@
 package ru.valkovets.mephisoty.api.lazydata.dto;
 
+import jakarta.annotation.Nullable;
+
 public record LazySelectDto (
     Long first,
-    Long last
-    //String value
+    Long last,
+    @Nullable String value
 ) {
 }

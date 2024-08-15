@@ -11,6 +11,7 @@ import ru.valkovets.mephisoty.api.lazydata.OperatorMode;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTableFilterMetaData;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTableOperatorFilterMetaData;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
+import ru.valkovets.mephisoty.db.model.userdata.User_;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -18,6 +19,10 @@ import java.util.stream.Stream;
 
 @Service
 public class PageableService {
+private static final String SHADOW_SORT_BY_FULLNAME = "name";
+private static final String SHADOW_SORT_BY_dot_FULLNAME = "." + SHADOW_SORT_BY_FULLNAME;
+private static final String SHADOW_SORT_BY_ALL = "global";
+
 public static Number tryParseNumber(final String value) {
     if (value == null) return null;
     
@@ -37,7 +42,7 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
     return src.filters()
               .entrySet()
               .stream()
-              .filter(e -> e.getValue() != null && !"global".equals(e.getKey()))
+              .filter(e -> e.getValue() != null && !SHADOW_SORT_BY_ALL.equals(e.getKey()))
               .map(e -> {
                   final String key = e.getKey();
                   final Object value = e.getValue();
@@ -68,7 +73,7 @@ public static <EntityT> Specification<EntityT> parseFilter(final DataTablePageEv
 @SuppressWarnings("unchecked")
 public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode, final String param, final String... values) {
     return (root, query, builder) -> {
-        final boolean isName = param.equals("name") || param.endsWith(".name");
+        final boolean isName = param.equals(SHADOW_SORT_BY_FULLNAME) || param.endsWith(SHADOW_SORT_BY_dot_FULLNAME);
 
         final String fixedParam;
         if (isName) {
@@ -82,10 +87,10 @@ public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode
             return builder.like(
                 builder.lower(
                     builder.concat(
-                        prefixPath.get("secondName"),
+                        prefixPath.get(User_.SECOND_NAME),
                         builder.concat(
-                            prefixPath.get("firstName"),
-                            prefixPath.get("thirdName")))),
+                            prefixPath.get(User_.FIRST_NAME),
+                            prefixPath.get(User_.THIRD_NAME)))),
                 ("%" + values[0].toLowerCase().replace(" ", "") + "%"));
         }
         //(string.toLowerCase() + "%"));

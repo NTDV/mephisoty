@@ -2,16 +2,16 @@ package ru.valkovets.mephisoty.db.projection.special;
 
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
 import ru.valkovets.mephisoty.db.projection.complex.IdCommentProj;
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleGroupProj;
-import ru.valkovets.mephisoty.db.projection.simple.UserSimpleProj;
+import ru.valkovets.mephisoty.db.projection.simple.UserNameIdProj;
+import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 
 /**
  * Projection for {@link CriteriaScore}
  */
 public interface CriteriaScoreProj extends IdCommentProj {
-UserSimpleGroupProj getParticipant();
+UserSelectProj getParticipant();
 
-UserSimpleProj getExpert();
+UserNameIdProj getExpert();
 
 Float getScore();
 

@@ -13,6 +13,7 @@ import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.dto.LazySelectDto;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
+import ru.valkovets.mephisoty.db.model.season.Stage_;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
@@ -44,7 +45,7 @@ public GetAllDto<StageShortProj> getAll(@PathVariable final Long seasonId,
                     (seasonId != null && seasonId != 0
                      ? Specification.allOf(
                             (root, query, builder) ->
-                                    builder.equal(root.get("season").get("id"), seasonId),
+                                builder.equal(root.get(Stage_.season).get(Stage_.id), seasonId),
                             PageableService.parseFilter(searchParams))
                      : PageableService.parseFilter(searchParams)),
                     SortService.getSort(searchParams)));

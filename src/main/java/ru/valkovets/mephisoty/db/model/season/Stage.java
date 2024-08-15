@@ -19,7 +19,9 @@ import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -124,7 +126,7 @@ private Set<Question> questions = new LinkedHashSet<>();
 @NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
-private Set<Achievement> achievements = new LinkedHashSet<>();
+private List<Achievement> achievements = new ArrayList<>();
 
 @Transient
 public AllowState getScheduleAccessStateEnum() {
