@@ -120,6 +120,7 @@ import UserNameIdBlock from '@/components/prefab/UserNameIdBlock.vue';
 import ScoreEditorBlock from '@/components/prefab/ScoreEditorBlock.vue';
 import axios from 'axios';
 import { FilterService } from 'primevue/api';
+import AchievementTypeInputBlock from '@/components/prefab/AchievementTypeInputBlock.vue';
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -245,6 +246,7 @@ app.component('InputNumberBlock', InputNumberBlock);
 app.component('SkeletonAdminView', SkeletonAdminView);
 app.component('UserNameIdBlock', UserNameIdBlock);
 app.component('ScoreEditorBlock', ScoreEditorBlock);
+app.component('AchievementTypeInputBlock', AchievementTypeInputBlock);
 
 app.mount('#app');
 

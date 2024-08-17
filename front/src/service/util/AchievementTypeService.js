@@ -1,5 +1,5 @@
 export class AchievementTypeService {
-  content = ['Интегральная', 'Учебная', 'Научная', 'Общественная', 'Спортивная', 'Творческая'];
+  content = ['Итог', 'Учеба', 'Наука', 'Общество', 'Спорт', 'Творчество'];
   severity = ['contrast', 'success', 'danger', 'warning', 'secondary', 'info'];
 
   getBadgeContentAll() {
@@ -9,8 +9,8 @@ export class AchievementTypeService {
 
   getBadgeContentWithoutAll() {
     return this.content
-      .filter((v, i) => i !== 0)
-      .map((v, i) => ({ label: v, value: i }));
+      .map((v, i) => ({ label: v, value: i }))
+      .filter((v, i) => i !== 0);
   }
 
   getBadgeSeverityFor(state) {

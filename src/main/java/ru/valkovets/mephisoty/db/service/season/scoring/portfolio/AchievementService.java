@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.service.season.scoring.portfolio;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +9,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.CsvUploadDto;
+import ru.valkovets.mephisoty.api.dto.season.AchievementDto;
+import ru.valkovets.mephisoty.application.lifecycle.ticker.AchievementScoreTicker;
 import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement_;
@@ -28,15 +32,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AchievementService {
+private final ProjectionFactory projectionFactory;
+
 private final GroupRepository groupRepository;
 private final UserRepository userRepository;
 private final AchievementRepository achievementRepository;
@@ -165,16 +168,55 @@ public List<String> importNew(@NotNull final CsvUploadDto file, final Long stage
                                   .build()))
           .toList());
 
-  return existingUsersByPrototype
-      .values()
-      .parallelStream()
-      .filter(user -> user.getGroup() == null)
-      .map(User::getFullName)
-      .toList();
+  AchievementScoreTicker.addAllForEvaluation(existingUsersByPrototype.values(), stageId);
+
+  return existingUsersByPrototype.values()
+                                 .parallelStream()
+                                 .filter(user -> user.getGroup() == null)
+                                 .map(User::getFullName)
+                                 .toList();
 }
 
-private record UserPrototype(String fullName, String group) {}
-private record AchievementPrototype(String comment, String typeCode, String criteriaTitle, String typeTitle,
-                                    String description, String levelTitle, String statusTitle, String thanksFrom,
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
+public AchievementTableProj edit(final Long id, final AchievementDto dto) {
+  final Achievement achievement = achievementRepository.save(
+      achievementRepository.findById(id).orElseThrow().editFrom(dto));
+  AchievementScoreTicker.addForEvaluation(achievement.getOwner().getId(), achievement.getStage().getId());
+  return projectionFactory.createProjection(AchievementTableProj.class, achievement);
+}
+
+@PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
+public void delete(final Long id) {
+  final Achievement achievement = achievementRepository.findById(id).orElseThrow();
+  AchievementScoreTicker.addForEvaluation(achievement.getOwner().getId(), achievement.getStage().getId());
+  achievementRepository.deleteById(id);
+}
+
+private record UserPrototype(@NotNull String fullName, String group) {
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    final UserPrototype that = (UserPrototype) o;
+
+    if (StringUtils.isEmpty(that.group) || StringUtils.isEmpty(group)) {
+      return Objects.equals(fullName, that.fullName);
+    } else {
+      return Objects.equals(fullName, that.fullName) && Objects.equals(group, that.group);
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return fullName.hashCode();
+  }
+}
+
+private record AchievementPrototype(String comment, String typeCode,
+                                    String criteriaTitle, String typeTitle,
+                                    String description, String levelTitle,
+                                    String statusTitle, String thanksFrom,
                                     String total) {}
 }

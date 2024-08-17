@@ -7,4 +7,11 @@ export class ParticipantsService {
       body: JSON.stringify(lazyParams)
     }).then((resp) => resp.json());
   }
+
+  createAchievement(participantId, stageId, achievementDto) {
+    return fetchApi('/admin/user/' + participantId + '/stage/' + stageId + '/achievement', {
+      method: 'POST',
+      body: JSON.stringify(achievementDto)
+    }).then((resp) => resp.json());
+  }
 }

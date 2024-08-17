@@ -7,17 +7,16 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
+import ru.valkovets.mephisoty.api.dto.season.AchievementDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.LazySelectDto;
 import ru.valkovets.mephisoty.db.model.userdata.Group;
 import ru.valkovets.mephisoty.db.model.userdata.Group_;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.db.model.userdata.User_;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
+import ru.valkovets.mephisoty.db.projection.special.AchievementTableProj;
 import ru.valkovets.mephisoty.db.service.userdata.UserService;
 import ru.valkovets.mephisoty.settings.ParticipantState;
 
@@ -55,5 +54,12 @@ public GetAllDto<IdTitleProj> getAllParticipantsForSelect(@RequestBody @Nullable
                   ("%" + searchParams.value().toLowerCase().replace(" ", "") + "%")));
         }, searchParams.first(), searchParams.last() - searchParams.first()));
   }
+}
+
+@PostMapping("/{participantId}/stage/{stageId}/achievement")
+@Operation(summary = "Создать достижение участника")
+public AchievementTableProj createAchievement(@PathVariable final Long participantId, @PathVariable final Long stageId,
+                                              @RequestBody final AchievementDto dto) {
+  return userService.createAchievement(participantId, stageId, dto);
 }
 }

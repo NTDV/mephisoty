@@ -14,7 +14,6 @@ onMounted(() => {
 
 const events = defineEmits(['change']);
 const change = (...args) => {
-  console.log(args);
   events('change', ...args);
 };
 

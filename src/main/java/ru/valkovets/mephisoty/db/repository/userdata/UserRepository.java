@@ -23,7 +23,7 @@ Optional<NamesProj> getFullNameByCredentialsId(Long credentialsId);
     Collection<UserRole> roles, Pageable pageable, Class<T> type);
 
 @Query(
-    "select u from User u where u.group.title in ?2 and trim(concat(u.secondName, ' ', u.firstName, ' ', u.thirdName)) in ?1")
+    "select u from User u where (u.group is null or u.group.title in ?2) and trim(concat(u.secondName, ' ', u.firstName, ' ', u.thirdName)) in ?1")
 <T> Set<T> findAllByFullNameAndGroup(Collection<String> fullName, Collection<String> groupTitle, Class<T> type);
 
 default <T> Page<T> findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(final ParticipantState state,

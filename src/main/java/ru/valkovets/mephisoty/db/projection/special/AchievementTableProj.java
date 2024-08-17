@@ -19,5 +19,7 @@ String getLevelTitle();
 
 String getStatusTitle();
 
+String getThanksFrom();
+
 Float getTotalScore();
 }

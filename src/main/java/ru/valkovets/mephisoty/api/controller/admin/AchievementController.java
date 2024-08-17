@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.CsvUploadDto;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
+import ru.valkovets.mephisoty.api.dto.season.AchievementDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
@@ -49,4 +50,17 @@ public List<String> importNew(@PathVariable("stageId") final Long stageId, @Mode
 throws IOException {
   return achievementService.importNew(file, stageId);
 }
+
+@PutMapping("/{id}")
+@Operation(summary = "Редактировать достижение")
+public AchievementTableProj edit(@PathVariable final Long id, @RequestBody final AchievementDto dto) {
+  return achievementService.edit(id, dto);
+}
+
+@DeleteMapping("/{id}")
+@Operation(summary = "Удаление этапа")
+public void delete(@PathVariable final Long id) {
+  achievementService.delete(id);
+}
+
 }

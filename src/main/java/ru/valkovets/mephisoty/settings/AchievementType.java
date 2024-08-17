@@ -1,7 +1,7 @@
 package ru.valkovets.mephisoty.settings;
 
 public enum AchievementType {
-  ALL,
+  TOTAL,
 
   STUDYING,
   SCIENCE,
@@ -9,10 +9,10 @@ public enum AchievementType {
   SPORT,
   CULTURE;
 
-public static final AchievementType[] values = values();
+public static final AchievementType[] _VALUES = values();
 
 public static AchievementType getFrom(final String name) {
   final int type = (name.charAt(0) - '0');
-  return type >= 0 && type < values.length ? values[type] : null;
+  return type >= 0 && type < _VALUES.length ? _VALUES[type] : null;
 }
 }

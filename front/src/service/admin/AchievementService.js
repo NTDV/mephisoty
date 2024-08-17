@@ -14,6 +14,21 @@ export class AchievementService {
     form.append('delimiter', delimiter);
     form.append('hasHeader', hasHeader);
 
-    return fetchApi('/admin/achievement/import/' + stageId, form, true);
+    return fetchApi('/admin/achievement/import/' + stageId, form, true)
+      .then((resp) => resp.data);
+  }
+
+  edit(id, achievementDto) {
+    return fetchApi('/admin/achievement/' + id, {
+      method: 'PUT',
+      body: JSON.stringify(achievementDto)
+    }).then((resp) => resp.json());
+  }
+
+  delete(id) {
+    return fetchApi('/admin/achievement/' + id, {
+      method: 'DELETE'
+    }).then((resp) => resp.text())
+      .then((text) => text == '' ? true : JSON.parse(text));
   }
 }
