@@ -1,0 +1,21 @@
+package ru.valkovets.mephisoty.db.projection.special;
+
+import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
+import ru.valkovets.mephisoty.db.projection.simple.IdProj;
+
+/**
+ * Projection for {@link User}
+ */
+public interface UserJwtProj extends IdProj {
+//IdTitleProj getAvatar();
+String getFirstName();
+
+String getSecondName();
+
+String getThirdName();
+
+IdTitleProj getGroup();
+
+String getState();
+}

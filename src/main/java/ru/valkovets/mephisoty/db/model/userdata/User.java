@@ -3,7 +3,6 @@ package ru.valkovets.mephisoty.db.model.userdata;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -21,6 +20,7 @@ import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.AchievementScore;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
+import ru.valkovets.mephisoty.security.credentials.CasUserXml;
 import ru.valkovets.mephisoty.settings.ParticipantState;
 
 import java.util.LinkedHashSet;
@@ -32,12 +32,23 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@Table(name = "app_user")
+@Table(
+    name = "app_user",
+    indexes = {
+        @Index(name = "app_user_fullname_index", columnList = User_.FULL_NAME, unique = false),
+    })
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BasicEntity {
 // todo Везде проставить аннотации + валидации
 
-@ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+@JsonIgnore
+@Nullable
+@OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+@JoinColumn(name = "credentials_id", unique = true)
+private Credentials credentials;
+
+@ManyToOne(fetch = FetchType.LAZY,
+           cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH })
 @JoinColumn(name = "avatar_id")
 private File avatar;
 
@@ -51,28 +62,21 @@ private String state;
 @Length(max = 50)
 @Column(name = "third_name", length = 50)
 private String thirdName = "";
+
+@NotNull
+@Length(max = 50)
+@Builder.Default
+@Column(name = "first_name", nullable = false, length = 50)
+private String firstName = "";
+
+@NotNull
+@Length(max = 50)
+@Builder.Default
+@Column(name = "second_name", nullable = false, length = 50)
+private String secondName = "";
+
 @Formula("concat_ws(' ', second_name, first_name, nullif(third_name, ''))")
 private String fullName;
-
-@NotBlank
-@Length(max = 50)
-@Column(name = "first_name", nullable = false, length = 50)
-private String firstName;
-
-@NotBlank
-@Length(max = 50)
-@Column(name = "second_name", nullable = false, length = 50)
-private String secondName;
-
-public static User from(final UserRegistrationDto dto) {
-  return User.builder()
-             .comment(dto.comment())
-             .state(dto.state().name())
-             .firstName(dto.firstName())
-             .secondName(dto.secondName())
-             .thirdName(dto.thirdName())
-             .build();
-}
 
 @Transient
 public ParticipantState getState() {
@@ -95,11 +99,39 @@ public String getFullName() {
   return fullName;
 }
 
-@JsonIgnore
-@Nullable
-@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-@JoinColumn(name = "credentials_id", unique = true)
-private Credentials credentials;
+public static User from(final UserRegistrationDto dto) {
+  return User.builder()
+             .comment(dto.comment())
+             .state(dto.state().name())
+             .firstName(dto.firstName())
+             .secondName(dto.secondName())
+             .thirdName(dto.thirdName())
+             .build();
+}
+
+public static User from(final CasUserXml.AuthenticationSuccess.Attributes userDataAttributes) {
+  final String[] name = new String[] { "", "", "" };
+  final String[] nameSplit = userDataAttributes.getFullName().split(" ", 3);
+  if (nameSplit.length > 0) name[0] = nameSplit[0];
+  if (nameSplit.length > 1) name[1] = nameSplit[1];
+  if (nameSplit.length > 2) name[2] = nameSplit[2];
+
+  return User.builder()
+             .firstName(name[1])
+             .secondName(name[0])
+             .thirdName(name[2])
+             .state(ParticipantState.PARTICIPANT.name())
+             .build();
+}
+
+public static User newEpmty() {
+  return User.builder()
+             .firstName("")
+             .secondName("")
+             .thirdName("")
+             .state(ParticipantState.NOT_PARTICIPANT.name())
+             .build();
+}
 
 @NotNull
 @Builder.Default

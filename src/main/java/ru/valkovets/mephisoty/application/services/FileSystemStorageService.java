@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.valkovets.mephisoty.application.config.StorageConfig;
-import ru.valkovets.mephisoty.application.services.StorageService;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
@@ -52,14 +51,14 @@ public Path getRootPath() {
 
 @Override
 public File save(final ByteArrayOutputStream stream, final String originalName, final User owner) throws IOException {
-    final File fileEntity = fileRepository.save(File.builder().originalName(originalName).owner(owner).build());
+    final File fileEntity = fileRepository.save(File.builder().title(originalName).owner(owner).build());
     store(stream, fileEntity.getId().toString());
     return fileEntity;
 }
 
 @Override
 public File save(final MultipartFile file, final User owner) throws FileSystemException {
-    final File fileEntity = fileRepository.save(File.builder().originalName(file.getOriginalFilename()).owner(owner).build());
+    final File fileEntity = fileRepository.save(File.builder().title(file.getOriginalFilename()).owner(owner).build());
     store(file, fileEntity.getId().toString());
     return fileEntity;
 }

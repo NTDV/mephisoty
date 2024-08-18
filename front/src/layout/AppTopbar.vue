@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 
@@ -24,9 +24,9 @@ const logoUrl = computed(() => {
 const onTopBarMenuButton = () => {
     topbarMenuActive.value = !topbarMenuActive.value;
 };
-const onSettingsClick = () => {
+const onLogoutClick = () => {
     topbarMenuActive.value = false;
-    router.push('/documentation');
+  router.push('/auth/logout');
 };
 const topbarMenuClasses = computed(() => {
     return {
@@ -62,6 +62,7 @@ const isOutsideClicked = (event) => {
 
 <template>
     <div class="layout-topbar">
+      <div class="flex">
         <router-link to="/" class="layout-topbar-logo">
             <div class="display-grid">
                 <span class="space-font text-nowrap">Студент года 3.0</span>
@@ -72,6 +73,7 @@ const isOutsideClicked = (event) => {
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
             <i class="pi pi-bars"></i>
         </button>
+      </div>
 
         <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
             <i class="pi pi-ellipsis-v"></i>
@@ -79,16 +81,16 @@ const isOutsideClicked = (event) => {
 
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
+              <i class="pi pi-user"></i>
+              <span>Профиль</span>
             </button>
             <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-user"></i>
-                <span>Profile</span>
+              <i class="pi pi-cog"></i>
+              <span>Настройки</span>
             </button>
-            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
-                <i class="pi pi-cog"></i>
-                <span>Settings</span>
+          <button class="p-link layout-topbar-button" @click="onLogoutClick()">
+            <i class="pi pi-sign-out"></i>
+            <span>Выйти</span>
             </button>
         </div>
     </div>

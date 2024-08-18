@@ -10,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
 import ru.valkovets.mephisoty.security.service.JwtService;
 
@@ -45,7 +45,7 @@ protected void doFilterInternal(
     final String username = jwtService.extractUserName(jwt);
 
     if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-        final UserDetails userDetails = credentialsService.userDetailsService().loadUserByUsername(username);
+        final Credentials userDetails = credentialsService.findByMephiLogin(username).orElseThrow();
 
         // Если токен валиден, то аутентифицируем пользователя
         if (jwtService.isTokenValid(jwt, userDetails)) {

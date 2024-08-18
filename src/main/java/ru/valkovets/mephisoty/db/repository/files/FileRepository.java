@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface FileRepository extends BasicRepository<File> {
-List<File> findAllByOriginalName(final String originalName);
+List<File> findAllByTitle(final String title);
 List<File> findAllByOwner(final User owner);
 }

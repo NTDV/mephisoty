@@ -253,6 +253,7 @@ app.mount('#app');
 app.config.globalProperties.window = window;
 
 window.$apiHost = 'http://localhost:8080';
+window.$frontHost = 'http://localhost:5173';
 
 FilterService.register('skip', (value, filter, filterLocale) => {
   return true;
@@ -279,6 +280,23 @@ function updateOptions(options) {
   return update;
 }
 
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('ticket')) {
+  const ticket = urlParams.get('ticket');
+  fetch(window.$apiHost + '/auth/login?ticket=' + ticket)
+    .then(res => res.json())
+    .then(json => {
+      if (json && json.token) {
+        localStorage.jwt = json.token;
+        window.location.replace(window.$frontHost);
+      } else throw new Error('Invalid ticket');
+    })
+    .catch(e => {
+      console.error(e);
+      return router.push('/auth/error');
+    });
+}
+
 function getFullUrl(relativeUrl) {
   return window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl);
 }
@@ -294,7 +312,13 @@ export default function fetchApi(relativeUrl, options, isFile = false) {
       });
     } else {
       return fetch(getFullUrl(relativeUrl), updateOptions(options))
-        .then(res => res.status === 403 ? router.push('/auth/login?from=' + router.currentRoute.value.fullPath) : res);
+        .then(res => {
+          if (res.status === 403) {
+            window.location.href = 'https://auth.mephi.ru/login?service=' + encodeURI(window.$frontHost);
+          } else {
+            return res;
+          }
+        });
     }
   }
 }

@@ -6,9 +6,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
+import ru.valkovets.mephisoty.db.projection.special.UserJwtProj;
 
 import java.security.Key;
 import java.util.Date;
@@ -18,8 +20,11 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
+private final SpelAwareProxyProjectionFactory projectionFactory;
 @Value("${token.signing.key}")
 private String jwtSigningKey = "default";
+
+public JwtService(final SpelAwareProxyProjectionFactory projectionFactory) {this.projectionFactory = projectionFactory;}
 
 /**
  * Извлечение имени пользователя из токена
@@ -39,10 +44,11 @@ public String extractUserName(final String token) {
  */
 public String generateToken(final UserDetails userDetails) {
     final Map<String, Object> claims = new HashMap<>();
-    if (userDetails instanceof final Credentials customUserDetails) {
-        claims.put("id", customUserDetails.getId());
-        claims.put("email", customUserDetails.getEmail());
-        claims.put("role", customUserDetails.getRole());
+    if (userDetails instanceof final Credentials credentials) {
+        claims.put("id", credentials.getId());
+        claims.put("login", credentials.getMephiLogin());
+        claims.put("role", credentials.getRole());
+        claims.put("user", projectionFactory.createProjection(UserJwtProj.class, credentials.getUser()));
     }
     return generateToken(claims, userDetails);
 }

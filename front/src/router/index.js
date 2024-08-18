@@ -64,6 +64,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')
                 },
                 {
+                    path: '/auth/logout',
+                    name: 'logout',
+                    component: () => import('@/views/pages/auth/Logout.vue')
+                },
+                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')

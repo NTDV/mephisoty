@@ -3,19 +3,18 @@ package ru.valkovets.mephisoty.db.model.userdata;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.valkovets.mephisoty.api.dto.userdata.SignUpRequest;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.settings.UserRole;
@@ -36,28 +35,20 @@ public class Credentials extends BasicEntity implements UserDetails {
 @Length(max = 100)
 @Nullable
 @Email
-@Builder.Default
-@Column(name = "email", unique = true, length = 100)
-private String email = "";
-
-@Length(max = 1024)
-@NotBlank
-@Nullable
-@Column(name = "password", length = 1024) // todo set length
-private String password;
+@Column(name = "email", length = 100)
+private String email;
 
 @Length(max = 200)
-@Nullable
+@NotNull
 @Column(name = "mephi_login", unique = true, length = 200)
-private String mephi_login;
+private String mephiLogin;
 
 @Nullable
 @Column(name = "mephi_is_student")
-private Boolean mephi_isStudent;
+private Boolean mephiIsStudent;
 
 @NotNull
-@OneToOne(fetch = FetchType.LAZY, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)
-@LazyToOne(LazyToOneOption.NO_PROXY)
+@OneToOne(fetch = FetchType.EAGER, mappedBy = "credentials", optional = false, cascade = CascadeType.PERSIST)
 private User user;
 
 @NotNull
@@ -71,10 +62,18 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
     return Collections.singleton(role);
 }
 
+public static Credentials from(final SignUpRequest dto) {
+    return Credentials.builder()
+                      .comment(dto.comment())
+                      .email(dto.email())
+                      .user(User.from(dto.user()))
+                      .role(dto.role())
+                      .build();
+}
+
 @Override
-@Transient
-public String getUsername() {
-    return email;
+public String getPassword() {
+    throw new UnsupportedOperationException("Not supported");
 }
 
 @Override
@@ -102,13 +101,9 @@ public static Credentials getCurrent() {
     }
 }
 
-public static Credentials from(final SignUpRequest dto, final PasswordEncoder passwordEncoder) {
-    return Credentials.builder()
-                      .comment(dto.comment())
-                      .email(dto.email())
-                      .password(passwordEncoder.encode(dto.password()))
-                      .user(User.from(dto.user()))
-                      .role(dto.role())
-                      .build();
+@Override
+@Transient
+public String getUsername() {
+    return mephiLogin;
 }
 }

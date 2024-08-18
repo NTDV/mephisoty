@@ -41,4 +41,7 @@ default <T> Page<T> findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAsc
 
 <T> Page<T> findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAscThirdNameAsc(String state, Pageable pageable,
                                                                                      Class<T> type);
+
+@Query("select u from User u where u.fullName = ?1 and u.credentials is null")
+Set<User> findAllByFullNameAndWithoutCredentials(String fullName);
 }

@@ -14,7 +14,10 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 import ru.valkovets.mephisoty.settings.UserRole;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -25,9 +28,9 @@ import java.util.*;
 @Table(name = "file")
 public class File extends BasicEntity {
 @Length(max = 200)
-@Column(name = "original_name", length = 200)
+@Column(name = "title", length = 200)
 @NotBlank
-private String originalName;
+private String title;
 
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "owner_id", nullable = false)

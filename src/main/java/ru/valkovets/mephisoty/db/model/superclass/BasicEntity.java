@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.model.superclass;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -34,26 +35,28 @@ private Long id;
 @Basic(fetch = FetchType.LAZY)
 @PastOrPresent
 @NotNull
+@Builder.Default
 @Column(name = "created_at", nullable = false, updatable = false)
 @CreatedDate
-private Instant createdAt;
+private Instant createdAt = Instant.now();
 
 @Basic(fetch = FetchType.LAZY)
 @PastOrPresent
+@Nullable
 @Column(name = "modified_at")
 //@LastModifiedDate
 private Instant modifiedAt;
 
 @Basic(fetch = FetchType.LAZY)
-@Positive
 //@NotNull
+@Builder.Default
 @Column(name = "created_by", updatable = false)
 @CreatedBy
-private Long createdBy;
+private Long createdBy = 0L;
 
 @Basic(fetch = FetchType.LAZY)
-@Positive
 @Column(name = "modified_by")
+@Nullable
 //@LastModifiedBy
 private Long modifiedBy;
 
@@ -92,6 +95,9 @@ public void updateModified() {
     final Credentials user = Credentials.getCurrent();
 
     if (user != null) modifiedBy = user.getId();
+    else {
+        modifiedBy = 0L;
+    }
     modifiedAt = Instant.now();
 }
 }
