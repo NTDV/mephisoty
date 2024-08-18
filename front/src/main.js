@@ -121,11 +121,31 @@ import ScoreEditorBlock from '@/components/prefab/ScoreEditorBlock.vue';
 import axios from 'axios';
 import { FilterService } from 'primevue/api';
 import AchievementTypeInputBlock from '@/components/prefab/AchievementTypeInputBlock.vue';
+import { getPayload } from '@/service/util/UtilsService';
+import AppTitle from '@/components/prefab/AppTitle.vue';
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
   .then((res) => res.json())
   .then((d) => d.ru);
+
+router.beforeEach(async (to) => {
+  const path = to.path;
+  const role = localStorage.role;
+
+  if (path.startsWith('/admin')) {
+    if (role !== 'ADMIN')
+      return { name: 'accessDenied' };
+
+  } else if (path.startsWith('/expert')) {
+    if (role !== 'EXPERT' && role !== 'ADMIN')
+      return { name: 'accessDenied' };
+
+  } else if (path.startsWith('/participant')) {
+    if (role !== 'PARTICIPANT' && role !== 'ADMIN')
+      return { name: 'accessDenied' };
+  }
+});
 
 app.use(router);
 app.use(PrimeVue, { ripple: true, locale: locale });
@@ -247,6 +267,7 @@ app.component('SkeletonAdminView', SkeletonAdminView);
 app.component('UserNameIdBlock', UserNameIdBlock);
 app.component('ScoreEditorBlock', ScoreEditorBlock);
 app.component('AchievementTypeInputBlock', AchievementTypeInputBlock);
+app.component('AppTitle', AppTitle);
 
 app.mount('#app');
 
@@ -288,12 +309,15 @@ if (urlParams.has('ticket')) {
     .then(json => {
       if (json && json.token) {
         localStorage.jwt = json.token;
+        localStorage.jwt_payload = getPayload(json.token);
+        localStorage.role = JSON.parse(localStorage.jwt_payload).role;
+
         window.location.replace(window.$frontHost);
       } else throw new Error('Invalid ticket');
     })
     .catch(e => {
       console.error(e);
-      return router.push('/auth/error');
+      return router.push('/access');
     });
 }
 
@@ -315,6 +339,8 @@ export default function fetchApi(relativeUrl, options, isFile = false) {
         .then(res => {
           if (res.status === 403) {
             window.location.href = 'https://auth.mephi.ru/login?service=' + encodeURI(window.$frontHost);
+          } else if (res.status >= 400) {
+            router.push('/error');
           } else {
             return res;
           }

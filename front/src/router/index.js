@@ -64,11 +64,6 @@ const router = createRouter({
                     component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')
                 },
                 {
-                    path: '/auth/logout',
-                    name: 'logout',
-                    component: () => import('@/views/pages/auth/Logout.vue')
-                },
-                {
                     path: '/uikit/formlayout',
                     name: 'formlayout',
                     component: () => import('@/views/uikit/FormLayout.vue')
@@ -199,30 +194,33 @@ const router = createRouter({
             ]
         },
         {
+            path: '/logout',
+            name: 'logout',
+            component: () => import('@/views/pages/redirects/Logout.vue')
+        },
+        {
             path: '/landing',
             name: 'landing',
             component: () => import('@/views/pages/Landing.vue')
         },
         {
-            path: '/pages/notfound',
+            path: '/notfound',
             name: 'notfound',
-            component: () => import('@/views/pages/NotFound.vue')
-        },
-
-        {
-            path: '/auth/login',
-            name: 'login',
-            component: () => import('@/views/pages/auth/Login.vue')
+            component: () => import('@/views/pages/redirects/NotFound.vue')
         },
         {
-            path: '/auth/access',
+            path: '/denied',
             name: 'accessDenied',
-            component: () => import('@/views/pages/auth/Access.vue')
+            component: () => import('@/views/pages/redirects/Access.vue')
         },
         {
-            path: '/auth/error',
+            path: '/error',
             name: 'error',
-            component: () => import('@/views/pages/auth/Error.vue')
+            component: () => import('@/views/pages/redirects/Error.vue')
+        },
+        {
+            path: '/:catchAll(.*)',
+            redirect: '/notfound'
         }
     ]
 });

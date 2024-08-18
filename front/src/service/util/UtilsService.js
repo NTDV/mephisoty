@@ -44,3 +44,26 @@ export function forEachEntry(obj, callback) {
     if (obj.hasOwnProperty(key))
       callback(obj[key], key);
 }
+
+export function getPayload(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  return decodeURIComponent(window.atob(base64).split('').map(function(c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
+export function getCurrentUser() {
+  const payload = localStorage.jwt_payload;
+  if (!payload) return null;
+
+  const parsed = JSON.parse(payload);
+  if (!parsed) return null;
+
+  return {
+    ...parsed.user,
+    fullName: `${parsed.user.secondName} ${parsed.user.firstName} ${parsed.user.thirdName}`.trim(),
+    fio: `${parsed.user.secondName} ${parsed.user.firstName[0]}.${
+      parsed.user.thirdName && parsed.user.thirdName !== '' ? ' ' + parsed.user.thirdName[0] + '.' : ''}`
+  };
+}
