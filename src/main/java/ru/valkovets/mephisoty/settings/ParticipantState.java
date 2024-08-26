@@ -6,5 +6,6 @@ public enum ParticipantState {
     DISQUALIFIED,
     FINAL_MEMBER,
     WINNER,
+    PRIZE_WINNER,
     BANNED;
 }

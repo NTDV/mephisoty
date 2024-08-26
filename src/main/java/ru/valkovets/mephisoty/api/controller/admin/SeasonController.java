@@ -16,7 +16,7 @@ import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.SeasonFullProj;
 import ru.valkovets.mephisoty.db.projection.special.SeasonProj;
-import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
+import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
 import ru.valkovets.mephisoty.db.service.season.SeasonService;
 
 import java.util.Set;

@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
@@ -19,10 +20,7 @@ import ru.valkovets.mephisoty.db.model.superclass.TdrseEntity;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ValidationConst;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Getter
@@ -70,42 +68,71 @@ private Set<Criteria> criterias = new LinkedHashSet<>();
 @Builder.Default
 @Column(name = "stage_visibility", nullable = false)
 private String stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+
+@NotNull
+//@Enumerated(EnumType.STRING)
+@Builder.Default
+@Column(name = "apply_visibility", nullable = false)
+private String applyVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+
 @NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "score_visibility", nullable = false)
 private String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+
 @NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "schedule_visibility", nullable = false)
 private String scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
+@NotNull
+@Builder.Default
+
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(name = "stage_files",
+           joinColumns = @JoinColumn(name = "stage_id", referencedColumnName = "id"),
+           inverseJoinColumns = @JoinColumn(name = "file_id", referencedColumnName = "id"))
+private Set<File> files = new LinkedHashSet<>();
+
 public static Stage createFrom(final StageDto stageDto, final Season season) {
-    return Stage.builder()
-                .season(season)
-                .comment(stageDto.comment())
-                .title(stageDto.title())
-                .description(stageDto.description())
-                .rules(stageDto.rules())
-                .start(stageDto.start())
-                .end(stageDto.end())
-                .literal(stageDto.literal())
-                .stageResultFormula(stageDto.stageResultFormula())
-                .stageVisibility(stageDto.stageVisibility().name())
-                .scoreVisibility(stageDto.scoreVisibility().name())
-                .scheduleAccessState(stageDto.scheduleAccessState().name())
-                .build();
+  return Stage.builder()
+              .season(season)
+              .comment(stageDto.comment())
+              .title(stageDto.title())
+              .description(stageDto.description())
+              .rules(stageDto.rules())
+              .start(stageDto.start())
+              .end(stageDto.end())
+              .literal(stageDto.literal())
+              .stageResultFormula(stageDto.stageResultFormula())
+              .stageVisibility(stageDto.stageVisibility().name())
+              .applyVisibility(stageDto.applyVisibility().name())
+              .scoreVisibility(stageDto.scoreVisibility().name())
+              .scheduleAccessState(stageDto.scheduleAccessState().name())
+              .build();
+}
+
+@Transient
+public Long tryGetFileId(final String code) {
+  return files.stream().filter(file -> Objects.equals(file.getCode(), code)).map(File::getId).findFirst().orElse(null);
+}
+
+@Transient
+public Stage addFile(final File file) {
+  if (file != null) files.add(file);
+  return this;
 }
 
 @Transient
 public AllowState getStageVisibilityEnum() {
-    return AllowState.valueOf(stageVisibility);
+  return AllowState.valueOf(stageVisibility);
 }
 
 @Transient
 public AllowState getScoreVisibilityEnum() {
-    return AllowState.valueOf(scoreVisibility);
+  return AllowState.valueOf(scoreVisibility);
 }
 
 @NotNull
@@ -130,21 +157,22 @@ private List<Achievement> achievements = new ArrayList<>();
 
 @Transient
 public AllowState getScheduleAccessStateEnum() {
-    return AllowState.valueOf(scheduleAccessState);
+  return AllowState.valueOf(scheduleAccessState);
 }
 
 public Stage editFrom(final StageDto dto) {
-    setComment(dto.comment());
-    setTitle(dto.title());
-    setDescription(dto.description());
-    setRules(dto.rules());
-    setStart(dto.start());
-    setEnd(dto.end());
-    literal = dto.literal();
-    stageResultFormula = dto.stageResultFormula();
-    stageVisibility = dto.stageVisibility().name();
-    scoreVisibility = dto.scoreVisibility().name();
-    scheduleAccessState = dto.scheduleAccessState().name();
-    return this;
+  setComment(dto.comment());
+  setTitle(dto.title());
+  setDescription(dto.description());
+  setRules(dto.rules());
+  setStart(dto.start());
+  setEnd(dto.end());
+  literal = dto.literal();
+  stageResultFormula = dto.stageResultFormula();
+  stageVisibility = dto.stageVisibility().name();
+  applyVisibility = dto.applyVisibility().name();
+  scoreVisibility = dto.scoreVisibility().name();
+  scheduleAccessState = dto.scheduleAccessState().name();
+  return this;
 }
 }

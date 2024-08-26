@@ -1,16 +1,16 @@
 <script setup>
-import {onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {DateTimeService} from '@/service/util/DateTimeService';
-import {useRoute} from "vue-router";
-import {CredsService} from "@/service/admin/CredsService";
-import {StageService} from "@/service/admin/StageService";
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {SeasonService} from "@/service/admin/SeasonService";
-import {ToastService} from "@/service/util/ToastService";
-import router from "@/router";
-import {FilterMatchMode, FilterOperator} from "primevue/api";
-import {CriteriaService} from "@/service/admin/CriteriaService";
+import { onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { DateTimeService } from '@/service/util/DateTimeService';
+import { useRoute } from 'vue-router';
+import { CredsService } from '@/service/admin/CredsService';
+import { StageService } from '@/service/admin/StageService';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { SeasonService } from '@/service/admin/SeasonService';
+import { ToastService } from '@/service/util/ToastService';
+import router from '@/router';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { CriteriaService } from '@/service/admin/CriteriaService';
 
 const toast = useToast();
 
@@ -92,6 +92,7 @@ const validateInput = () => {
     calendarEndValue.value &&
     // && model.value.modelResultFormula
     model.value.stageVisibility &&
+    model.value.applyVisibility &&
     model.value.scoreVisibility &&
     model.value.scheduleAccessState
   );
@@ -115,11 +116,11 @@ const saveModel = () => {
   if (validateInput()) {
     stageService.edit(model.value.id, createModelDto())
       .then((res) => {
-        if (!toastService.checkServerError(res))
+        if (!toastService.isServerError(res))
           return stageService.bindStage(model.value.season, model.value.id);
       })
       .then((res) => {
-        if (!toastService.checkServerError(res))
+        if (!toastService.isServerError(res))
           return createModelClient(res).then(() => toastService.showEditedSuccess());
       })
       .catch((e) => toastService.showClientError(e));
@@ -133,7 +134,7 @@ const confirmDeleteModel = () => {
 const deleteModel = async () => {
   try {
     const res = await stageService.delete(model.value.id);
-    if (toastService.checkServerError(res)) return;
+    if (toastService.isServerError(res)) return;
   } catch (e) {
     toastService.showClientError(e);
     return;
@@ -271,6 +272,12 @@ const deleteSelectedCriterias = async () => {
           <div class="field col-12 md:col-4">
             <ViewStateInputBlock v-model="model.stageVisibility" :is-read-view-only="true"
                                  :submitted="submitted" label="Видимость этапа участниками"/>
+          </div>
+
+
+          <div class="field col-12 md:col-4">
+            <ViewStateInputBlock v-model="model.applyVisibility" :is-read-view-only="true"
+                                 :submitted="submitted" label="Запись на этап участниками" />
           </div>
 
           <div class="field col-12 md:col-4">

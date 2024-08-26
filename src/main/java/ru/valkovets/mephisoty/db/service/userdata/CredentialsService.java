@@ -14,7 +14,6 @@ import ru.valkovets.mephisoty.security.credentials.CasUserXml;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +56,7 @@ public Credentials createNew(final CasUserXml mephiUser) {
     final User innerUser;
 
     if (isProbablyExpert) {
-        innerUser = User.newEpmty();
+        innerUser = User.newEmpty();
         credentials = Credentials.builder()
                                  .mephiIsStudent(false)
                                  .mephiLogin(userData.getMephiLogin())
@@ -71,15 +70,7 @@ public Credentials createNew(final CasUserXml mephiUser) {
             .role(UserRole.PARTICIPANT)
             .build();
 
-        final Set<User> users = userRepository.findAllByFullNameAndWithoutCredentials(userData.getAttributes().getFullName());
-        if (users.size() > 1) {
-            innerUser = User.from(userData.getAttributes());
-            credentials.setComment("[[Человек с таким ФИО уже был внесен в систему при регистрации данного пользователя]]");
-        } else if (users.size() == 1) {
-            innerUser = users.iterator().next();
-        } else {
-            innerUser = User.from(userData.getAttributes());
-        }
+        innerUser = User.from(userData.getAttributes());
     }
 
     innerUser.setCredentials(credentials);

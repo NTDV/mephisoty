@@ -20,9 +20,9 @@ import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
-import ru.valkovets.mephisoty.db.projection.special.StageFullProj;
-import ru.valkovets.mephisoty.db.projection.special.StageProj;
-import ru.valkovets.mephisoty.db.projection.special.StageShortProj;
+import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
+import ru.valkovets.mephisoty.db.projection.special.stage.StageProj;
+import ru.valkovets.mephisoty.db.projection.special.stage.StageShortProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
 import java.util.Set;
@@ -91,6 +91,18 @@ public GetAllDto<IdTitleProj> getAllForSelect(@RequestBody @Nullable final LazyS
 @Operation(summary = "Создать критерий и добавить к сезону")
 public CriteriaFullProj createCriteria(@PathVariable final Long stageId, @RequestBody final CriteriaDto criteriaDto) {
     return stageService.addCriteriaFor(stageId, criteriaDto);
+}
+
+@PutMapping("/{stageId}/files/{fileId}")
+@Operation(summary = "Добавить файл к этапу")
+public void addFile(@PathVariable final Long stageId, @PathVariable final Long fileId) {
+    stageService.addFile(stageId, fileId);
+}
+
+@DeleteMapping("/{stageId}/files/{fileId}")
+@Operation(summary = "Удалить файл, принадлежащий этапу")
+public void deleteFile(@PathVariable final Long stageId, @PathVariable final Long fileId) {
+    stageService.deleteFile(stageId, fileId);
 }
 
 

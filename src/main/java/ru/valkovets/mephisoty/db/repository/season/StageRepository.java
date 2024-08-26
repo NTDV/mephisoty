@@ -35,4 +35,6 @@ public interface StageRepository extends BasicRepository<Stage> {
 <T> Page<T> getAllByOrderByTitleAscIdAsc(Pageable pageable, Class<T> type);
 
 <T> List<T> getAllBySeason_IdOrderByTitleAsc(Long id, Class<T> type);
+
+<T> List<T> getAllBySeason_IdOrderByIdAsc(Long id, Class<T> type);
 }

@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.application.config;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,11 +44,16 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
         return corsConfiguration;
       }))
       .authorizeHttpRequests(request -> request
+          .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
           // * - 1 уровень вложенности, ** - любое количество уровней вложенности
-          .requestMatchers("/auth/login").permitAll()
-          .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
-          .requestMatchers("/admin/**").hasAuthority(UserRole.ADMIN.getAuthority())
+          .requestMatchers("/admin/**", "/file/all", "creds/**").hasAuthority(UserRole.ADMIN.getAuthority())
           .requestMatchers("/expert/**").hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority())
+          .requestMatchers("/participant/**")
+          .hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.PARTICIPANT.getAuthority())
+          .requestMatchers("/public/**", "/auth/login", "/file/public/*", "/swagger-ui/**", "/swagger-resources/**",
+                           "/v3/api-docs/**").permitAll()
+          .requestMatchers("/file/*")
+          .hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority(), UserRole.PARTICIPANT.getAuthority())
           .anyRequest().denyAll())
       .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
       .authenticationProvider(authenticationProvider(credentialsService))

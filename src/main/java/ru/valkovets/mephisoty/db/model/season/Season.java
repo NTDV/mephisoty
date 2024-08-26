@@ -54,6 +54,16 @@ private String seasonVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name(
 @Column(name = "score_visibility", nullable = false)
 private String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
+@NotNull
+@Builder.Default
+@Column(name = "maximum_score", nullable = false)
+private Float maximumScore = 0f;
+
+@NotNull
+@Builder.Default
+@Column(name = "last_position", nullable = false)
+private Long lastPosition = 0L;
+
 public static Season createFrom(final SeasonDto seasonDto) {
     return Season.builder()
                  .comment(seasonDto.comment())

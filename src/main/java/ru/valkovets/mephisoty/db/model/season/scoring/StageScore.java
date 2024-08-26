@@ -20,6 +20,7 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 @SuperBuilder
 @Table(name = "stage_score",
        uniqueConstraints = @UniqueConstraint(columnNames = { "stage_id", "participant_id" }))
+@NamedEntityGraphs({ @NamedEntityGraph(name = "stageScoreWithStage", attributeNodes = @NamedAttributeNode("stage")) })
 public class StageScore extends BasicEntity {
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "stage_id", nullable = false)

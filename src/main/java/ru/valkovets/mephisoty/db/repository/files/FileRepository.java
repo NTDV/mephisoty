@@ -1,14 +1,14 @@
 package ru.valkovets.mephisoty.db.repository.files;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.files.File;
-import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FileRepository extends BasicRepository<File> {
-List<File> findAllByTitle(final String title);
-List<File> findAllByOwner(final User owner);
+@EntityGraph("file_with_creator")
+Optional<File> findById(Long id);
 }

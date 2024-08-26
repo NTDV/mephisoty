@@ -85,12 +85,7 @@ public static <EntityT> Specification<EntityT> useMode(final MatchMode matchMode
         final Path<?> prefixPath = getNestedPath(root, fixedParam);
         if (isName) {
             return builder.like(
-                builder.lower(
-                    builder.concat(
-                        prefixPath.get(User_.SECOND_NAME),
-                        builder.concat(
-                            prefixPath.get(User_.FIRST_NAME),
-                            prefixPath.get(User_.THIRD_NAME)))),
+                builder.lower(prefixPath.get(User_.FULL_NAME)),
                 ("%" + values[0].toLowerCase().replace(" ", "") + "%"));
         }
         //(string.toLowerCase() + "%"));

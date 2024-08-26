@@ -1,12 +1,12 @@
 <script setup>
-import {FilterMatchMode, FilterOperator} from 'primevue/api';
-import {onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {CriteriaService} from "@/service/admin/CriteriaService";
-import {CriteriaScoreService} from "@/service/admin/CriteriaScoreService";
-import {ToastService} from "@/service/util/ToastService";
-import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { CriteriaService } from '@/service/admin/CriteriaService';
+import { CriteriaScoreService } from '@/service/admin/CriteriaScoreService';
+import { ToastService } from '@/service/util/ToastService';
+import UserNameIdBlock from '@/components/prefab/UserNameIdBlock.vue';
 
 const toast = useToast();
 
@@ -49,7 +49,7 @@ const initFilters = () => {
 const changeParent = () => {
   criteriaService.get(parentCriteriaId.value)
     .then(res => {
-      if (!toastService.checkServerError(res))
+      if (!toastService.isServerError(res))
         parentCriteria.value = res;
     })
     .then(() => loadLazyData(true))
@@ -74,7 +74,7 @@ const loadLazyData = (event) => {
 
   scoreService.getAll(lazyParams.value, parentCriteriaId.value)
     .then(data => {
-      if (toastService.checkServerError(data)) return;
+      if (toastService.isServerError(data)) return;
       scores.value = data.scores;
       experts.value = data.experts.map(expert => {
         return {...expert, name: expert.secondName + ' ' + expert.firstName + ' ' + expert.thirdName}
@@ -133,7 +133,7 @@ const flushInputValue = (event) => {
     newValue.comment = '';
     scoreService.delete(parentCriteriaId.value, expertId, participantId)
       .then(data => {
-        if (!toastService.checkServerError(data))
+        if (!toastService.isServerError(data))
           toastService.showDeletedSuccess();
       })
       .catch(e => toastService.showServerError(e))
@@ -141,7 +141,7 @@ const flushInputValue = (event) => {
   } else {
     scoreService.setScore(parentCriteriaId.value, expertId, participantId, newValue)
       .then(data => {
-        if (!toastService.checkServerError(data))
+        if (!toastService.isServerError(data))
           toastService.showEditedSuccess();
       })
       .catch(e => toastService.showServerError(e))

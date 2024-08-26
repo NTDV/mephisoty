@@ -124,6 +124,11 @@ import AchievementTypeInputBlock from '@/components/prefab/AchievementTypeInputB
 import { getPayload } from '@/service/util/UtilsService';
 import AppTitle from '@/components/prefab/AppTitle.vue';
 
+import Particles from '@tsparticles/vue3';
+import { loadSlim } from '@tsparticles/slim';
+import TextRunner from '@/components/prefab/TextRunner.vue';
+import StagePublicBlock from '@/components/prefab/StagePublicBlock.vue';
+
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
   .then((res) => res.json())
@@ -152,6 +157,11 @@ app.use(PrimeVue, { ripple: true, locale: locale });
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
+app.use(Particles, {
+  init: async (engine) => {
+    await loadSlim(engine);
+  }
+});
 
 app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
@@ -256,7 +266,6 @@ app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
-// todo Import all new here
 app.component('CalendarInputBlock', CalendarInputBlock);
 app.component('CreatedModifiedBlock', CreatedModifiedBlock);
 app.component('TextareaBlock', TextareaBlock);
@@ -268,13 +277,15 @@ app.component('UserNameIdBlock', UserNameIdBlock);
 app.component('ScoreEditorBlock', ScoreEditorBlock);
 app.component('AchievementTypeInputBlock', AchievementTypeInputBlock);
 app.component('AppTitle', AppTitle);
+app.component('TextRunner', TextRunner);
+app.component('StagePublicBlock', StagePublicBlock);
 
 app.mount('#app');
 
 app.config.globalProperties.window = window;
 
-window.$apiHost = 'http://localhost:8080';
-window.$frontHost = 'http://localhost:5173';
+window.$apiHost = 'https://beststudents.mephi.ru:8080';
+window.$frontHost = 'https://localhost:5173';
 
 FilterService.register('skip', (value, filter, filterLocale) => {
   return true;
@@ -310,9 +321,24 @@ if (urlParams.has('ticket')) {
       if (json && json.token) {
         localStorage.jwt = json.token;
         localStorage.jwt_payload = getPayload(json.token);
-        localStorage.role = JSON.parse(localStorage.jwt_payload).role;
+        const creds = JSON.parse(localStorage.jwt_payload);
 
-        window.location.replace(window.$frontHost);
+        localStorage.fio = `${creds.user.secondName} ${creds.user.firstName[0]}.${
+          creds.user.thirdName && creds.user.thirdName !== '' ? ' ' + creds.user.thirdName[0] + '.' : ''}`;
+        localStorage.fullName = `${creds.user.secondName} ${creds.user.firstName} ${creds.user.thirdName}`.trim();
+        localStorage.isNew = creds.user.isNew;
+        localStorage.role = creds.role;
+        localStorage.cred_id = creds.id;
+
+        if (creds.role === 'ADMIN') {
+          window.location.replace(window.$frontHost + '/admin/seasons');
+        } else if (creds.role === 'EXPERT') {
+          window.location.replace(window.$frontHost + '/expert/me');
+        } else if (creds.role === 'PARTICIPANT') {
+          window.location.replace(window.$frontHost + '/participant/me');
+        } else {
+          throw new Error('Invalid role');
+        }
       } else throw new Error('Invalid ticket');
     })
     .catch(e => {

@@ -49,7 +49,7 @@ const flushScores = () => {
   achievementScoreService
     .getFor(parentStage.value, parentParticipant.value)
     .then(data => {
-      if (!toastService.checkServerError(data))
+      if (!toastService.isServerError(data))
         scores.value = data;
     })
     .catch(e => toastService.showClientError(e))
@@ -90,7 +90,7 @@ const uploader = async (event) => {
   loadingFile.value = true;
   achievementService.importNew(event.files[0], delimiter.value, hasHeader.value, parentStage.value)
     .then((e) => {
-      if (!toastService.checkServerError(e))
+      if (!toastService.isServerError(e))
         toast.add({ severity: 'success', summary: 'Успешно', detail: 'Все достижения были добавлены', life: 3000 });
     })
     .catch(e => toastService.showClientError(e))
@@ -347,7 +347,7 @@ const flushExpertValue = (event) => {
   achievementScoreService
     .setExpertScoreFor(event.data.id, event.data.typeCode, event.newValue)
     .then(e => {
-      if (!toastService.checkServerError(e))
+      if (!toastService.isServerError(e))
         event.data.expert = event.newValue;
     })
     .catch(e => {

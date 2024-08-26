@@ -1,14 +1,14 @@
 <script setup>
-import {onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {DateTimeService} from '@/service/util/DateTimeService';
-import {useRoute} from "vue-router";
-import {CredsService} from "@/service/admin/CredsService";
-import {StageService} from "@/service/admin/StageService";
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {ToastService} from "@/service/util/ToastService";
-import {CriteriaService} from "@/service/admin/CriteriaService";
-import router from "@/router";
+import { onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { DateTimeService } from '@/service/util/DateTimeService';
+import { useRoute } from 'vue-router';
+import { CredsService } from '@/service/admin/CredsService';
+import { StageService } from '@/service/admin/StageService';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { ToastService } from '@/service/util/ToastService';
+import { CriteriaService } from '@/service/admin/CriteriaService';
+import router from '@/router';
 
 const toast = useToast();
 
@@ -106,11 +106,11 @@ const saveModel = () => {
   if (validateInput()) {
     criteriaService.edit(model.value.id, createModelDto())
       .then((res) => {
-        if (!toastService.checkServerError(res))
+        if (!toastService.isServerError(res))
           return criteriaService.bind(model.value.stage, model.value.id);
       })
       .then((res) => {
-        if (!toastService.checkServerError(res))
+        if (!toastService.isServerError(res))
           return createModelClient(res).then(() => toastService.showEditedSuccess());
       })
       .catch((e) => toastService.showClientError(e));

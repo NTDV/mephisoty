@@ -3,7 +3,7 @@ export class ToastService {
     this.toast = toast;
   }
 
-  checkServerError(res) {
+  isServerError(res) {
     if (!res || res.err) {
       this.showServerError(res);
       return true;

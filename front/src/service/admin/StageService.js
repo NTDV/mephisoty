@@ -46,4 +46,26 @@ export class StageService {
         }).then((resp) => resp.json());
     }
 
+  addFile(stageId, fileId) {
+    return fetchApi('/admin/stage/' + stageId + '/files/' + fileId, {
+      method: 'PUT'
+    }).then((resp) => resp.json());
+  }
+
+  deleteFile(stageId, fileId) {
+    return fetchApi('/admin/stage/' + stageId + '/files/' + fileId, {
+      method: 'DELETE'
+    }).then((resp) => resp.text())
+      .then((text) => text == '' ? true : JSON.parse(text));
+  }
+
+  getFiles(stageId) {
+    return fetchApi('/public/stages/' + stageId + '/files')
+      .then((resp) => resp.json());
+  }
+
+  getAllPublic() {
+    return fetchApi('/public/stages')
+      .then((resp) => resp.json());
+  }
 }

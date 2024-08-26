@@ -7,6 +7,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.security.access.AccessDeniedException;
+import ru.valkovets.mephisoty.application.services.FileSystemStorageService;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
@@ -14,9 +15,8 @@ import ru.valkovets.mephisoty.db.model.userdata.User;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 import ru.valkovets.mephisoty.settings.UserRole;
 
-import java.util.HashSet;
+import java.nio.file.Path;
 import java.util.LinkedHashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -26,47 +26,83 @@ import java.util.Set;
 @AllArgsConstructor
 @SuperBuilder
 @Table(name = "file")
+@NamedEntityGraph(
+    name = "file_with_creator",
+    attributeNodes = { @NamedAttributeNode("createdBy") }
+)
 public class File extends BasicEntity {
 @Length(max = 200)
-@Column(name = "title", length = 200)
+@Column(name = "original_name", length = 200)
+@Builder.Default
 @NotBlank
-private String title;
+private String originalName = "untitled";
 
-@ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "owner_id", nullable = false)
+@Length(max = 200)
+@Column(name = "code", length = 200)
+@Builder.Default
 @NotNull
-private User owner;
+private String code = "";
 
 @NotNull
 @Builder.Default
-@OneToMany(mappedBy = "avatar", orphanRemoval = true)
-private Set<User> usersWithSuchAvatar = new HashSet<>();
+@OneToMany(fetch = FetchType.LAZY, mappedBy = "avatar", orphanRemoval = true)
+private Set<User> usersWithSuchAvatar = new LinkedHashSet<>();
 
 @NotNull
 @Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "access_policy", nullable = false)
-private FileAccessPolicy accessPolicy = FileAccessPolicy.ADMIN;
+private FileAccessPolicy accessPolicy = FileAccessPolicy.CREATOR_ADMIN;
 
 @NotNull
 @Builder.Default
 @ManyToMany(fetch = FetchType.LAZY, mappedBy = "files")
 private Set<Answer> answers = new LinkedHashSet<>();
 
-public static File tryGetByCurrentUser(final Optional<? extends File> file) throws NoResultException, AccessDeniedException {
-    if (file.isEmpty()) throw new NoResultException("No such file");
-    return tryGetBy(file.get(), Credentials.getCurrent());
+public Path tryGetByCurrentUser(final FileSystemStorageService fileSystemStorageService)
+throws NoResultException, AccessDeniedException {
+  return tryGetBy(this, Credentials.getCurrent(), fileSystemStorageService);
 }
 
-public static File tryGetBy(@NotNull final File file, final Credentials credentials) throws AccessDeniedException {
-    if (credentials == null && file.accessPolicy != FileAccessPolicy.ALL) throw new AccessDeniedException("User can not access the file.");
+public static Path tryGetBy(@NotNull final File file, final Credentials credentials,
+                            final FileSystemStorageService fileSystemStorageService) throws AccessDeniedException {
+  if (canGetBy(file, credentials)) {
+    return fileSystemStorageService.load(String.valueOf(file.getId()));
+  } else {
+    return null;
+  }
+}
 
-    if (file.accessPolicy == FileAccessPolicy.ALL ||
-        file.accessPolicy == FileAccessPolicy.ALL_REGISTERED && credentials.getId() != null ||
-        credentials.getRole() == UserRole.ADMIN ||
-        file.accessPolicy == FileAccessPolicy.AUTHOR_AND_ADMIN && file.owner.equals(credentials.getUser()) ||
-        file.accessPolicy == FileAccessPolicy.EXPERT_AND_ADMIN && credentials.getRole() == UserRole.EXPERT) {
-        return file;
-    } else throw new AccessDeniedException("User can not access the file.");
+public static boolean canGetBy(final File file, final Credentials credentials) {
+  return
+      file != null && (
+          credentials == null && file.accessPolicy == FileAccessPolicy.ALL ||
+
+          credentials != null && (
+              credentials.getRole() == UserRole.ADMIN ||
+              file.accessPolicy == FileAccessPolicy.ALL ||
+              file.accessPolicy == FileAccessPolicy.REGISTERED ||
+
+              file.accessPolicy == FileAccessPolicy.CREATOR_EXPERT_ADMIN
+              && (credentials.getRole() == UserRole.EXPERT ||
+                  credentials.getId().equals(file.getCreatedBy())) ||
+
+              file.accessPolicy == FileAccessPolicy.CREATOR_ADMIN
+              && credentials.getId().equals(file.getCreatedBy())));
+}
+
+public boolean canEditByCurrentUser() {
+  return canEditBy(this, Credentials.getCurrent());
+}
+
+public static boolean canEditBy(final File file, final Credentials credentials) {
+  return
+      file != null && credentials != null && (
+          credentials.getRole() == UserRole.ADMIN ||
+          credentials.getId().equals(file.getCreatedBy()));
+}
+
+public boolean canGetByCurrentUser() {
+  return canGetBy(this, Credentials.getCurrent());
 }
 }

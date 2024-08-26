@@ -3,6 +3,7 @@ import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 import { getCurrentUser } from '@/service/util/UtilsService';
+import AppTitle from '@/components/prefab/AppTitle.vue';
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
@@ -67,27 +68,22 @@ const isOutsideClicked = (event) => {
 <template>
   <div class="layout-topbar">
     <div class="flex">
-      <router-link class="layout-topbar-logo" to="/">
-        <div class="display-grid">
-          <span class="space-font text-nowrap">Студент года 3.0</span>
-          <span class="space-font text-nowrap">НИЯУ МИФИ</span>
-        </div>
-      </router-link>
+      <AppTitle class="text-4xl text-900 layout-topbar-logo" />
 
-      <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
+      <button class="p-link layout-menu-button layout-topbar-button mt-2" @click="onMenuToggle()">
         <i class="pi pi-bars"></i>
       </button>
     </div>
 
     <div v-if="user">
-      <span class="text-900 space-font text-3xl font-medium text-nowrap">{{ user.fullName }}</span>
+      <span class="text-900 space-font text-4xl font-medium text-nowrap">{{ user.fullName }}</span>
       <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
         <i class="pi pi-user"></i>
       </button>
     </div>
     <div v-else>
       <a :href="'https://auth.mephi.ru/login?service=' + encodeURI(window.$frontHost)"
-         class="text-900 space-font text-3xl font-medium text-nowrap">Войти</a>
+         class="text-900 space-font text-4xl font-medium text-nowrap">Войти</a>
     </div>
 
     <div :class="topbarMenuClasses" class="layout-topbar-menu">

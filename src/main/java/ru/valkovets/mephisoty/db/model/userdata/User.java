@@ -5,12 +5,14 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Formula;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import ru.valkovets.mephisoty.api.dto.userdata.UserRegistrationDto;
 import ru.valkovets.mephisoty.db.model.files.File;
+import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.season.schedule.ScheduleRecord;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
@@ -27,16 +29,18 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
+@Accessors(chain = true)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @Table(
-    name = "app_user",
-    indexes = {
-        @Index(name = "app_user_fullname_index", columnList = User_.FULL_NAME, unique = false),
-    })
+    name = "app_user"
+    //,indexes = {
+    //    @Index(name = "app_user_fullname_index", columnList = User_.FULL_NAME, unique = false),
+    //}
+    )
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BasicEntity {
 // todo Везде проставить аннотации + валидации
@@ -54,33 +58,68 @@ private File avatar;
 
 @NotNull
 //@Enumerated(EnumType.STRING)
+@Builder.Default
 @Column(name = "state", nullable = false)
-private String state;
-
+private String state = ParticipantState.NOT_PARTICIPANT.name();
 @NotNull
 @Builder.Default
 @Length(max = 50)
-@Column(name = "third_name", length = 50)
+@Column(name = "third_name", length = 100)
 private String thirdName = "";
-
 @NotNull
 @Length(max = 50)
 @Builder.Default
-@Column(name = "first_name", nullable = false, length = 50)
+@Column(name = "first_name", nullable = false, length = 100)
 private String firstName = "";
-
 @NotNull
 @Length(max = 50)
 @Builder.Default
-@Column(name = "second_name", nullable = false, length = 50)
+@Column(name = "second_name", nullable = false, length = 100)
 private String secondName = "";
+@NotNull
+@Builder.Default
+@Column(name = "is_new", nullable = false)
+private Boolean isNew = true;
 
 @Formula("concat_ws(' ', second_name, first_name, nullif(third_name, ''))")
 private String fullName;
+@NotNull
+@Builder.Default
+@Column(name = "vk_nick", nullable = true, length = 255)
+private String vkNick = "";
+@NotNull
+@Builder.Default
+@Column(name = "tg_nick", nullable = true, length = 255)
+private String tgNick = "";
+@NotNull
+@Builder.Default
+@Column(name = "phone_number", nullable = true)
+private String phoneNumber = "";
+@NotNull
+@Builder.Default
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(name = "user_stages",
+           joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+           inverseJoinColumns = @JoinColumn(name = "stage_id", referencedColumnName = "id"))
+private Set<Stage> chosenStages = new LinkedHashSet<>();
+
+public static User newEmpty() {
+  return User.builder()
+             .firstName("")
+             .secondName("")
+             .thirdName("")
+             .state(ParticipantState.NOT_PARTICIPANT.name())
+             .build();
+}
 
 @Transient
 public ParticipantState getState() {
   return ParticipantState.valueOf(state);
+}
+
+@Transient
+public Long tryGetAvatarId() {
+  return avatar == null ? null : avatar.getId();
 }
 
 public void setState(final ParticipantState state) {
@@ -91,13 +130,6 @@ public void setState(final ParticipantState state) {
 @ManyToOne(fetch = FetchType.EAGER)
 @JoinColumn(name = "group_id")
 private Group group;
-
-public String getFullName() {
-  if (fullName == null) {
-    fullName = String.join(" ", secondName, firstName, thirdName).trim();
-  }
-  return fullName;
-}
 
 public static User from(final UserRegistrationDto dto) {
   return User.builder()
@@ -124,19 +156,12 @@ public static User from(final CasUserXml.AuthenticationSuccess.Attributes userDa
              .build();
 }
 
-public static User newEpmty() {
-  return User.builder()
-             .firstName("")
-             .secondName("")
-             .thirdName("")
-             .state(ParticipantState.NOT_PARTICIPANT.name())
-             .build();
+@Transient
+public boolean isBanned() {
+  final ParticipantState participantState = getState();
+  return participantState == ParticipantState.BANNED ||
+         participantState == ParticipantState.DISQUALIFIED;
 }
-
-@NotNull
-@Builder.Default
-@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", orphanRemoval = true)
-private Set<File> files = new LinkedHashSet<>();
 
 @NotNull
 @Builder.Default

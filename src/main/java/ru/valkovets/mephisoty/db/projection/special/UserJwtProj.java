@@ -15,6 +15,8 @@ String getSecondName();
 
 String getThirdName();
 
+Boolean getIsNew();
+
 IdTitleProj getGroup();
 
 String getState();

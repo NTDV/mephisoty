@@ -26,6 +26,8 @@ Optional<NamesProj> getFullNameByCredentialsId(Long credentialsId);
     "select u from User u where (u.group is null or u.group.title in ?2) and trim(concat(u.secondName, ' ', u.firstName, ' ', u.thirdName)) in ?1")
 <T> Set<T> findAllByFullNameAndGroup(Collection<String> fullName, Collection<String> groupTitle, Class<T> type);
 
+Set<User> findAllByFullNameAndGroup_TitleAndCredentialsIsNull(String fullName, String groupTitle);
+
 default <T> Page<T> findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(final ParticipantState state,
                                                                                final Pageable pageable, final Class<T> type) {
   return findAllByStateOrderBySecondNameAscFirstNameAscThirdNameAsc(state.name(), pageable, type);

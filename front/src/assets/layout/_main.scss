@@ -86,3 +86,99 @@ textarea.fixed-resizable {
 .p-overlay-badge {
   z-index: 1;
 }
+
+.top-30 {
+  top: 30%;
+}
+
+.undersquare-1 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-1:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: 0.2em;
+  top: 1.05em;
+  width: 2em;
+  height: 0.3em;
+  background-color: var(--primary-color);
+}
+
+.undersquare-2 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-2:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: 0.2em;
+  top: 1.05em;
+  width: 2em;
+  height: 0.3em;
+  background-color: var(--primary-colors-2);
+}
+
+.undersquare-3 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-3:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: 0.2em;
+  top: 1.05em;
+  width: 2em;
+  height: 0.3em;
+  background-color: var(--primary-colors-3);
+}
+
+.undersquare-4 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-4:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: 0.2em;
+  top: 1.05em;
+  width: 2em;
+  height: 0.3em;
+  background-color: var(--primary-colors-4);
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-colors-1) 100%);
+}
+
+.text-primary-colors-1 {
+  color: var(--primary-colors-1) !important;
+}
+
+.text-primary-colors-2 {
+  color: var(--primary-colors-2) !important;
+}
+
+.text-primary-colors-3 {
+  color: var(--primary-colors-3) !important;
+}
+
+.text-primary-colors-4 {
+  color: var(--primary-colors-4) !important;
+}
+
+.border-primary-colors-1 {
+  border-color: var(--primary-colors-1) !important;
+}

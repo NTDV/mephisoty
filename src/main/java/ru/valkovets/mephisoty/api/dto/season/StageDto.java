@@ -25,6 +25,7 @@ public record StageDto(@NotNull @Length(max = 200) String comment,
                        @Pattern(regexp = ValidationConst.LITERAL_PATTERN) @Length(max = 100) String literal,
                        @Pattern(regexp = ValidationConst.FORMULA_PATTERN) @Length(max = 1000) String stageResultFormula,
                        @NotNull AllowState stageVisibility,
+                       @NotNull AllowState applyVisibility,
                        @NotNull AllowState scoreVisibility,
                        @NotNull AllowState scheduleAccessState)
         implements Serializable {

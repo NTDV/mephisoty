@@ -136,6 +136,7 @@ public List<String> importNew(@NotNull final CsvUploadDto file, final Long stage
                           if (split.length > 2) parts[2] = split[2];
 
                           return User.builder()
+                                     .isNew(false)
                                      .state(ParticipantState.PARTICIPANT.name())
                                      .secondName(parts[0]).firstName(parts[1]).thirdName(parts[2])
                                      .group(existingGroupByTitle.get(userPrototype.group))

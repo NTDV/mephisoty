@@ -73,6 +73,7 @@ const initFilters = () => {
     start: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     end: {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.DATE_IS}]},
     stageVisibility: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
+    applyVisibility: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     scoreVisibility: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]},
     scheduleAccessState: {operator: FilterOperator.OR, constraints: [{value: null, matchMode: FilterMatchMode.EQUALS}]}
   };
@@ -138,6 +139,7 @@ const openNew = () => {
   }
   model.value = {
     stageVisibility: allowStateService.defaultState,
+    applyVisibility: allowStateService.defaultState,
     scoreVisibility: allowStateService.defaultState,
     scheduleAccessState: allowStateService.defaultState
   };
@@ -163,6 +165,7 @@ const validateInput = () => {
     calendarEndValue.value &&
     // && season.value.seasonResultFormula
     model.value.stageVisibility &&
+    model.value.applyVisibility &&
     model.value.scoreVisibility &&
     model.value.scheduleAccessState
   );
@@ -179,6 +182,7 @@ const createModelDto = () => {
     literal: model.value.literal,
     stageResultFormula: model.value.stageResultFormula,
     stageVisibility: model.value.stageVisibility,
+    applyVisibility: model.value.applyVisibility,
     scoreVisibility: model.value.scoreVisibility,
     scheduleAccessState: model.value.scheduleAccessState
   };
@@ -455,6 +459,26 @@ const clearFilter = () => {
             </template>
           </Column>
 
+          <Column :showFilterMatchModes="false" :sortable="true" field="applyVisibility"
+                  header="Запись на этап участниками" headerStyle="width:16%; min-width:13rem;">
+            <template #body="slotProps">
+              <Tag :severity="allowStateService.getBadgeSeverityFor(slotProps.data.applyVisibility)">
+                {{ allowStateService.getBadgeContentFor(slotProps.data.applyVisibility) }}
+              </Tag>
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+              <Dropdown v-model="filterModel.value" :options="statuses" class="p-column-filter"
+                        option-value="value" optionLabel="label" placeholder="Выберите один" showClear
+                        @keydown.enter="filterCallback()">
+                <template #option="slotProps">
+                  <Tag :key="slotProps.option.value"
+                       :severity="allowStateService.getBadgeSeverityFor(slotProps.option.value)"
+                       :value="slotProps.option.label" />
+                </template>
+              </Dropdown>
+            </template>
+          </Column>
+
           <Column :showFilterMatchModes="false" :sortable="true" field="scoreVisibility"
                   header="Видимость оценок участниками" headerStyle="width:16%; min-width:13rem;">
             <template #body="slotProps">
@@ -548,6 +572,10 @@ const clearFilter = () => {
           <div class="field">
             <ViewStateInputBlock v-model="model.stageVisibility" :is-read-view-only="true"
                                  :submitted="submitted" label="Видимость этапа участниками"/>
+          </div>
+          <div class="field">
+            <ViewStateInputBlock v-model="model.applyVisibility" :is-read-view-only="true"
+                                 :submitted="submitted" label="Запись на этап участниками" />
           </div>
           <div class="field">
             <ViewStateInputBlock v-model="model.scoreVisibility" :is-read-view-only="true"
