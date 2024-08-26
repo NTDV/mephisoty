@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import ParticipantTopbar from './ParticipantTopbar.vue';
+import AppFooter from './../AppFooter.vue';
 import { useLayout } from '@/layout/composables/layout';
 
 const { layoutConfig, layoutState } = useLayout();

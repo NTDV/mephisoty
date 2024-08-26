@@ -25,10 +25,8 @@ import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
-import ru.valkovets.mephisoty.db.model.userdata.Group;
-import ru.valkovets.mephisoty.db.model.userdata.Group_;
-import ru.valkovets.mephisoty.db.model.userdata.User;
-import ru.valkovets.mephisoty.db.model.userdata.User_;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
+import ru.valkovets.mephisoty.db.model.userdata.*;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 import ru.valkovets.mephisoty.db.projection.special.AchievementTableProj;
@@ -43,10 +41,12 @@ import ru.valkovets.mephisoty.db.repository.userdata.GroupRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.settings.AllowState;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service

@@ -1,13 +1,17 @@
 package ru.valkovets.mephisoty.db.model.files;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.security.access.AccessDeniedException;
 import ru.valkovets.mephisoty.application.services.FileSystemStorageService;
+import ru.valkovets.mephisoty.db.model.season.Stage;
 import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
@@ -17,6 +21,7 @@ import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity

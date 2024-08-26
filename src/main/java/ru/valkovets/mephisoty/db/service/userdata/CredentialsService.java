@@ -14,6 +14,7 @@ import ru.valkovets.mephisoty.security.credentials.CasUserXml;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

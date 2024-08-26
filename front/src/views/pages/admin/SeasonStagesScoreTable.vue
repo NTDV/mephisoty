@@ -1,12 +1,12 @@
 <script setup>
-import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import { onMounted, ref } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
-import { ToastService } from '@/service/util/ToastService';
-import UserNameIdBlock from '@/components/prefab/UserNameIdBlock.vue';
-import { SeasonService } from '@/service/admin/SeasonService';
-import { SeasonStagesScoreService } from '@/service/admin/SeasonStagesScoreService';
+import {FilterMatchMode, FilterOperator} from 'primevue/api';
+import {onMounted, ref} from 'vue';
+import {useToast} from 'primevue/usetoast';
+import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
+import {ToastService} from "@/service/util/ToastService";
+import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
+import {SeasonService} from "@/service/admin/SeasonService";
+import {SeasonStagesScoreService} from "@/service/admin/SeasonStagesScoreService";
 
 const toast = useToast();
 

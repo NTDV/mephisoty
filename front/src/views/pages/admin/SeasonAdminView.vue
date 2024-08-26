@@ -1,16 +1,16 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import { SeasonService } from '@/service/admin/SeasonService';
-import { AllowStateService } from '@/service/util/AllowStateService';
-import { DateTimeService } from '@/service/util/DateTimeService';
-import { useRoute, useRouter } from 'vue-router';
-import { CredsService } from '@/service/admin/CredsService';
-import { ToastService } from '@/service/util/ToastService';
-import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import { StageService } from '@/service/admin/StageService';
-import TextareaBlock from '@/components/prefab/TextareaBlock.vue';
-import SkeletonAdminView from '@/components/prefab/SkeletonAdminView.vue';
+import {onMounted, ref} from 'vue';
+import {useToast} from 'primevue/usetoast';
+import {SeasonService} from '@/service/admin/SeasonService';
+import {AllowStateService} from '@/service/util/AllowStateService';
+import {DateTimeService} from '@/service/util/DateTimeService';
+import {useRoute, useRouter} from "vue-router";
+import {CredsService} from "@/service/admin/CredsService";
+import {ToastService} from "@/service/util/ToastService";
+import {FilterMatchMode, FilterOperator} from "primevue/api";
+import {StageService} from "@/service/admin/StageService";
+import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
+import SkeletonAdminView from "@/components/prefab/SkeletonAdminView.vue";
 
 const toast = useToast();
 

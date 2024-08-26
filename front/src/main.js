@@ -284,8 +284,8 @@ app.mount('#app');
 
 app.config.globalProperties.window = window;
 
-window.$apiHost = 'https://beststudents.mephi.ru:8080';
-window.$frontHost = 'https://localhost:5173';
+window.$apiHost = 'http://localhost:8080';
+window.$frontHost = 'http://localhost:5173';
 
 FilterService.register('skip', (value, filter, filterLocale) => {
   return true;
