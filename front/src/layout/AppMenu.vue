@@ -34,11 +34,6 @@ const model = ref([
       <app-menu-item v-if="!item.separator" :index="i" :item="item"></app-menu-item>
       <li v-if="item.separator" class="menu-separator"></li>
     </template>
-    <li>
-      <a href="https://www.primefaces.org/primeblocks-vue/#/" target="_blank">
-        <img alt="Prime Blocks" class="w-full mt-3" src="/layout/images/banner-primeblocks.png"/>
-      </a>
-    </li>
   </ul>
 </template>
 

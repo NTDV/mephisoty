@@ -6,8 +6,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.validator.constraints.Length;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.files.File;
+import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
 import ru.valkovets.mephisoty.db.model.userdata.User;
 
 import java.util.LinkedHashSet;
@@ -28,11 +28,13 @@ private Question question;
 
 @Length(max = 120)
 @Column(name = "short", length = 120)
-private String shortAnswer;
+@Builder.Default
+private String shortAnswer = "";
 
 @Length(max = 4000)
 @Column(name = "rich", length = 4000)
-private String richAnswer;
+@Builder.Default
+private String richAnswer = "";
 
 @NotNull
 @Builder.Default
@@ -47,12 +49,12 @@ private Set<File> files = new LinkedHashSet<>();
 @NotNull
 private User participant;
 
-@ManyToOne(fetch = FetchType.LAZY, optional = false)
-@JoinColumn(name = "expert_id", nullable = false)
-@NotNull
+@ManyToOne(fetch = FetchType.LAZY, optional = true)
+@JoinColumn(name = "expert_id", nullable = true)
 private User expert;
 
 @Column(name = "score")
 @PositiveOrZero
-private Float score;
+@Builder.Default
+private Float score = 0f;
 }

@@ -4,18 +4,15 @@ import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
 import ru.valkovets.mephisoty.security.credentials.MephiAuthenticationProvider;
@@ -49,15 +46,17 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
       .authorizeHttpRequests(request -> request
           .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
           // * - 1 уровень вложенности, ** - любое количество уровней вложенности
-          .requestMatchers("/admin/**", "/file/all", "creds/**").hasAuthority(UserRole.ADMIN.getAuthority())
-          .requestMatchers("/expert/**").hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority())
-          .requestMatchers("/participant/**")
+          .requestMatchers("/api/admin/**", "/api/file/all", "/api/creds/**").hasAuthority(UserRole.ADMIN.getAuthority())
+          .requestMatchers("/api/expert/**").hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority())
+          .requestMatchers("/api/participant/**")
           .hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.PARTICIPANT.getAuthority())
-          .requestMatchers("/public/**", "/auth/login", "/file/public/*", "/swagger-ui/**", "/swagger-resources/**",
-                           "/v3/api-docs/**").permitAll()
-          .requestMatchers("/file/*")
-          .hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority(), UserRole.PARTICIPANT.getAuthority())
-          .anyRequest().denyAll())
+          .requestMatchers("/api/public/**", "/api/auth/login", "/api/file/public/*", "/api/swagger-ui/**",
+                           "/api/swagger-resources/**",
+                           "/api/v3/api-docs/**").permitAll()
+          .requestMatchers("/api/file/*").hasAnyAuthority(UserRole.ADMIN.getAuthority(), UserRole.EXPERT.getAuthority(),
+                                                          UserRole.PARTICIPANT.getAuthority())
+          .requestMatchers("/api/**").denyAll()
+          .requestMatchers("/**").permitAll())
       .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
       .authenticationProvider(authenticationProvider(credentialsService))
       .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

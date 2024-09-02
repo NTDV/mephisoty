@@ -8,17 +8,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.config.annotation.web.AbstractRequestMatcherRegistry;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcherEditor;
-import org.springframework.security.web.util.matcher.RequestMatchers;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
@@ -39,12 +32,15 @@ private final CredentialsService credentialsService;
 protected boolean shouldNotFilter(final HttpServletRequest request) {
   final String servletPath = request.getServletPath();
   return "GET".equals(request.getMethod()) && (
-      servletPath.startsWith("/auth/login") ||
-      servletPath.startsWith("/public/") ||
-      servletPath.startsWith("/file/public/") ||
-      servletPath.startsWith("/swagger-ui/") ||
-      servletPath.startsWith("/swagger-resources/") ||
-      servletPath.startsWith("/v3/api-docs/"));
+      !servletPath.startsWith("/api") ||
+
+      servletPath.startsWith("/api/auth/login") ||
+      servletPath.startsWith("/api/public/") ||
+      servletPath.startsWith("/api/file/public/") ||
+
+      servletPath.startsWith("/api/swagger-ui/") ||
+      servletPath.startsWith("/api/swagger-resources/") ||
+      servletPath.startsWith("/api/v3/api-docs/"));
 }
 
 @Override

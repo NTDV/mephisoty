@@ -22,7 +22,7 @@ import ru.valkovets.mephisoty.db.service.season.SeasonService;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/admin/season")
+@RequestMapping("/api/admin/season")
 @RequiredArgsConstructor
 @Tag(name = "Сезоны конкурса")
 public class SeasonController {

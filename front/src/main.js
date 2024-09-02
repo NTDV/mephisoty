@@ -128,6 +128,7 @@ import Particles from '@tsparticles/vue3';
 import { loadSlim } from '@tsparticles/slim';
 import TextRunner from '@/components/prefab/TextRunner.vue';
 import StagePublicBlock from '@/components/prefab/StagePublicBlock.vue';
+import FilesEditor from '@/components/prefab/FilesEditor.vue';
 
 const app = createApp(App);
 const locale = await fetch('/locale/ru.json')
@@ -279,13 +280,16 @@ app.component('AchievementTypeInputBlock', AchievementTypeInputBlock);
 app.component('AppTitle', AppTitle);
 app.component('TextRunner', TextRunner);
 app.component('StagePublicBlock', StagePublicBlock);
+app.component('FilesEditor', FilesEditor);
 
 app.mount('#app');
 
 app.config.globalProperties.window = window;
 
-window.$apiHost = 'http://localhost:8080';
-window.$frontHost = 'http://localhost:5173';
+window.$apiHost = 'https://beststudents.mephi.ru/api';
+window.$frontHost = 'https://beststudents.mephi.ru';
+//window.$apiHost = 'http://100.97.110.74:80/api';
+//window.$frontHost = 'http://100.97.110.74:5173';
 
 FilterService.register('skip', (value, filter, filterLocale) => {
   return true;

@@ -8,7 +8,7 @@ import ru.valkovets.mephisoty.api.dto.season.AchievementScoreDto;
 import ru.valkovets.mephisoty.db.service.season.scoring.portfolio.AchievementScoreService;
 
 @RestController
-@RequestMapping("/admin/achievementscore")
+@RequestMapping("/api/admin/achievementscore")
 @RequiredArgsConstructor
 @Tag(name = "Управление балами за достижения")
 public class AchievementScoreController {

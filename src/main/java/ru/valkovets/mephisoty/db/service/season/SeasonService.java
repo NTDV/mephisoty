@@ -88,6 +88,7 @@ public Page<SeasonProj> getAll(final int page, final int size, final Specificati
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
+  if (offset < 0 || limit < 1) return Page.empty();
     return seasonRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 

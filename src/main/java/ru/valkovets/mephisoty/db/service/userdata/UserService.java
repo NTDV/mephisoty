@@ -12,6 +12,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import ru.valkovets.mephisoty.api.dto.VideoUploadDto;
 import ru.valkovets.mephisoty.api.dto.season.AchievementDto;
 import ru.valkovets.mephisoty.api.dto.userdata.ParticipantMeDto;
 import ru.valkovets.mephisoty.api.dto.userdata.StageMeDto;
@@ -22,36 +23,42 @@ import ru.valkovets.mephisoty.application.services.FileSystemStorageService;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
+import ru.valkovets.mephisoty.db.model.season.qa.Answer;
+import ru.valkovets.mephisoty.db.model.season.qa.Question;
+import ru.valkovets.mephisoty.db.model.season.schedule.ScheduleRecord;
+import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.model.season.scoring.portfolio.Achievement;
-import ru.valkovets.mephisoty.db.model.superclass.BasicEntity;
-import ru.valkovets.mephisoty.db.model.userdata.*;
+import ru.valkovets.mephisoty.db.model.userdata.Group;
+import ru.valkovets.mephisoty.db.model.userdata.Group_;
+import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.model.userdata.User_;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 import ru.valkovets.mephisoty.db.projection.special.AchievementTableProj;
-import ru.valkovets.mephisoty.db.repository.UtilsRepository;
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonScoreRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
+import ru.valkovets.mephisoty.db.repository.season.qa.AnswerRepository;
+import ru.valkovets.mephisoty.db.repository.season.schedule.ScheduleRecordRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.StageScoreRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.portfolio.AchievementRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.GroupRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.settings.AllowState;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static ru.valkovets.mephisoty.settings.ParticipantState.PARTICIPANT;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+private final FileSystemStorageService fileService;
+
 private final UserRepository userRepository;
 private final StageRepository stageRepository;
 private final SpelAwareProxyProjectionFactory projectionFactory;
@@ -61,16 +68,18 @@ private final SeasonScoreRepository seasonScoreRepository;
 private final SeasonRepository seasonRepository;
 private final GroupRepository groupRepository;
 private final FileRepository fileRepository;
-private final UtilsRepository utilsRepository;
-private final FileSystemStorageService fileSystemStorageService;
+private final ScheduleRecordRepository scheduleRecordRepository;
+private final AnswerRepository answerRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public Page<IdTitleProj> getAllForSelect(final Specification<User> specification, final long page, final long size) {
+public Page<IdTitleProj> getAllForSelect(final Specification<User> specification, final long offset, final long limit) {
+  if (offset < 0 || limit < 1) return Page.empty();
+
   return userRepository
       .findBy(Specification.where(specification),
               q -> q.sortBy(Sort.by(Sort.Direction.ASC, User_.GROUP + "." + Group_.TITLE, User_.FULL_NAME))
                     .as(UserSelectProj.class)
-                    .page(new OffsetBasedPageRequest(page, size)))
+                    .page(new OffsetBasedPageRequest(offset, limit)))
       .map(IdTitleFromUser::new);
 }
 
@@ -117,8 +126,10 @@ public ParticipantMeDto getMeFor(final Long userId) {
   }
 
 
-  final StageMeDto portfolioStage = stageScoreRepository.findByStage_IdAndParticipant_Id(Init._2024_PORTFOLIO_STAGE_ID, userId)
-                                                        .map(StageMeDto::from).orElse(null);
+  final StageMeDto portfolioStage = stageScoreRepository
+      .findByStage_IdAndParticipant_Id(Init._2024_PORTFOLIO_STAGE_ID, userId)
+      .map(StageMeDto::from)
+      .orElse(null);
 
 
   final Map<Boolean, List<Stage>> finalAndNonFinal = user.getChosenStages()
@@ -133,12 +144,28 @@ public ParticipantMeDto getMeFor(final Long userId) {
   final List<StageMeDto> appliedDtos = finalAndNonFinal.get(false)
                                                        .stream()
                                                        .map(stage -> stage.getScoreVisibility().equals(AllowState.YES) ?
-                                                                     appliedStageScoresByStageId.getOrDefault(stage.getId(),
-                                                                                                              new StageScore(
-                                                                                                                  stage, user,
-                                                                                                                  0f)) :
+                                                                     appliedStageScoresByStageId.getOrDefault(
+                                                                         stage.getId(), new StageScore(stage, user, 0f)) :
                                                                      new StageScore(stage, user, null))
-                                                       .map(StageMeDto::from)
+                                                       .map(stageScore -> {
+                                                         final String additionalInfo =
+                                                             switch (stageScore.getStage().getId().intValue()) {
+                                                               case 1 -> ""; // Матбои
+                                                               case 2 -> ""; // Хакатон
+                                                               case 3 -> ""; // ЧГК
+                                                               case 4 -> ""; // Веревочный парк
+                                                               case 5 -> ""; // Бег
+                                                               case 6 -> answerRepository.getStateForVideo(userId); // Видео
+                                                               case 7 -> scheduleRecordRepository.getStateForDictant(
+                                                                   userId); // Диктант
+                                                               case 8 -> ""; // Соц
+                                                               case 9 -> ""; // Наука
+                                                               case 10 -> ""; // Портфолио
+                                                               default -> "";
+                                                             };
+
+                                                         return StageMeDto.from(stageScore, additionalInfo);
+                                                       })
                                                        .toList();
 
   final List<StageMeDto> appliedFinalDtos = finalAndNonFinal.get(true)
@@ -151,7 +178,10 @@ public ParticipantMeDto getMeFor(final Long userId) {
                                                             .map(StageMeDto::from)
                                                             .toList();
 
-  return ParticipantMeDto.from(user, portfolioStage,
+  final Long lastPosition = userRepository.countAllByState(PARTICIPANT.name());
+
+  return ParticipantMeDto.from(user, lastPosition,
+                               portfolioStage,
                                appliedDtos, appliedFinalDtos,
                                seasonScore, seasonFinalScore,
                                season, seasonFinal);
@@ -190,8 +220,12 @@ public void updateMeFor(final Long id, final ParticipantMeDto participantMeDto) 
 
       final Set<User> users = userRepository.findAllByFullNameAndGroup_TitleAndCredentialsIsNull(fullName, upperTitle);
       if (users.size() == 1) {
-        userRepository.delete(user);
-        user = users.iterator().next();
+        //userRepository.delete(user);
+        final User newUser = users.iterator().next();
+        user.setComment("[[replaced with " + newUser.getId() + " ]]\n" + user.getComment());
+        userRepository.save(user);
+
+        user = newUser;
         isChanged = true;
       }
 
@@ -200,10 +234,8 @@ public void updateMeFor(final Long id, final ParticipantMeDto participantMeDto) 
 
         user.setGroup(groupRepository
                           .findByTitle(upperTitle)
-                          .orElse(groupRepository.save(
-                              Group.builder()
-                                   .title(upperTitle)
-                                   .build())));
+                          .orElseGet(() -> groupRepository.save(
+                              Group.builder().title(upperTitle).build())));
       }
     }
 
@@ -251,6 +283,60 @@ public void updateMeFor(final Long id, final ParticipantMeDto participantMeDto) 
     user.setIsNew(false);
     userRepository.save(user);
   }
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).PARTICIPANT)")
+@Transactional
+public void chooseDictantDate(final Long userId, final Long dateId) {
+  if (dateId == null || dateId < 1 || dateId > 2) throw new IllegalArgumentException("dateId must be 1 or 2");
+
+  final User user = userRepository.findById(userId).orElseThrow();
+  final Set<ScheduleRecord> scheduleRecords =
+      scheduleRecordRepository.findAllByParticipant_IdAndStageSchedule_IdIn(userId, List.of(1L, 2L));
+  if (scheduleRecords.size() > 1) throw new IllegalStateException("Нельзя выбрать несколько дат одновременно");
+
+  final ScheduleRecord scheduleRecord = scheduleRecords
+      .stream()
+      .findAny()
+      .orElseGet(() -> ScheduleRecord
+          .builder()
+          .participant(user)
+          .build());
+
+  if (scheduleRecord.getStageSchedule() != null && dateId.equals(scheduleRecord.getStageSchedule().getId())) return;
+  scheduleRecordRepository.save(scheduleRecord.setStageSchedule(StageSchedule.builder().id(dateId).build()));
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).PARTICIPANT)")
+@Transactional
+public void uploadVideo(final Long userId, final VideoUploadDto videoUploadDto) {
+  if (videoUploadDto.fileId() == null && StringUtils.isBlank(videoUploadDto.url())) {
+    throw new IllegalArgumentException("file or url must be not null");
+  }
+
+  final User user = userRepository.findById(userId).orElseThrow();
+  final Set<Answer> answers = answerRepository.findAllByParticipant_IdAndQuestion_Id(userId, 1L);
+  if (answers.size() > 1) throw new IllegalStateException("Нельзя выбрать несколько видео одновременно");
+
+  final Answer answer = answers
+      .stream()
+      .findAny()
+      .orElseGet(() -> Answer
+          .builder()
+          .question(Question.builder().id(1L).build())
+          .participant(user)
+          .build());
+
+  if (StringUtils.isNotBlank(videoUploadDto.url())) answer.setShortAnswer(videoUploadDto.url());
+  if (videoUploadDto.fileId() != null) {
+    final File file = fileRepository.findById(videoUploadDto.fileId()).orElseThrow();
+    if (file.tryGetByCurrentUser(fileService) == null) throw new AccessDeniedException("Access denied");
+    answer.setFiles(new HashSet<>(List.of(file)));
+  }
+
+  answerRepository.save(answer);
 }
 
 @SuppressWarnings("LombokGetterMayBeUsed")

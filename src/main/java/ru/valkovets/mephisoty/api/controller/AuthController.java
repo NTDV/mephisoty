@@ -11,7 +11,7 @@ import ru.valkovets.mephisoty.api.dto.userdata.JwtAuthenticationResponse;
 import ru.valkovets.mephisoty.security.service.AuthenticationService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
 public class AuthController {

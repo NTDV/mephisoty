@@ -5,12 +5,15 @@ import { MeService } from '@/service/participant/MeService';
 import { useToast } from 'primevue/usetoast';
 import { ToastService } from '@/service/util/ToastService';
 import { FileService } from '@/service/admin/FileService';
+import { findIndexById } from '@/service/util/UtilsService';
+import { DateTimeService } from '@/service/util/DateTimeService';
 
 const toast = useToast();
 
 const toastService = new ToastService(toast);
 const meService = new MeService();
 const fileService = new FileService();
+const dateTimeService = new DateTimeService();
 
 onBeforeMount(() => {
   meService.getMe()
@@ -121,6 +124,44 @@ const uploader = async (event) => {
     });
 };
 
+const videoDto = ref({ url: null, fileId: null });
+const isUploading = ref(false);
+
+const uploaderVideo = async (event) => {
+  if (isUploading.value) return;
+  videoDto.value.fileId = '';
+  isUploading.value = true;
+  fileService.upload(event.files[0])
+    .then(res => {
+      if (!toastService.isServerError(res)) {
+        videoDto.value.fileId = res.id;
+      }
+    }).finally(() => {
+    isUploading.value = false;
+  });
+};
+
+const submitVideo = () => {
+  meService.uploadVideo(videoDto.value)
+    .then((res) => {
+      if (!toastService.isServerError(res)) {
+        user.value.appliedStages[findIndexById(user.value.appliedStages, 6)].additionalInfo = 'sent';
+        videoDto.value = {};
+      }
+    })
+    .catch(() => toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Видео не загружено', life: 3000 }));
+};
+
+const chooseDictantDate = (date) => {
+  meService.chooseDictantDate(date)
+    .then((res) => {
+      if (!toastService.isServerError(res)) {
+        user.value.appliedStages[findIndexById(user.value.appliedStages, 7)].additionalInfo = date === 1 ? '05.09.2024 18:00' : '11.09.2024 18:00';
+      }
+    })
+    .catch(() => toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Видео не загружено', life: 3000 }));
+};
+
 const getMyState = () => {
   switch (user.value.state) {
     case 'PARTICIPANT':
@@ -161,6 +202,9 @@ const particlesOption = ref({
     size: { value: { min: 0.2, max: 2 } }
   }
 });
+
+const uploadVideoPanel = ref(null);
+const chooseDictantDatePanel = ref(null);
 </script>
 
 <template>
@@ -229,7 +273,8 @@ const particlesOption = ref({
             <div class="field">
               <label class="mb-0">Сменить изображение профиля</label>
               <FileUpload :maxFileSize="5 * (8 * 1024 * 1024)" :multiple="false"
-                          accept="image/*" cancel-label="Отмена" choose-label="Выбрать файл" customUpload
+                          accept="image/png, image/jpg, image/jpeg, .pdf" cancel-label="Отмена"
+                          choose-label="Выбрать файл" customUpload
                           mode="basic" name="file" upload-label="Импортировать" @uploader="uploader" />
             </div>
 
@@ -275,16 +320,16 @@ const particlesOption = ref({
             <div class="relative">
               <table class="total-table">
                 <tr>
-                  <td class="undersquare-4">Этапы</td>
+                  <td class="undersquare-4-alt">Этапы</td>
                   <td>{{ user.appliedStages.length }}/9</td>
                 </tr>
                 <tr>
                   <td class="undersquare-2">Рейтинг</td>
-                  <td>{{ user.place }}/{{ user.lastPosition }}</td>
+                  <td>{{ user.place ?? '??' }}/{{ user.lastPosition }}</td>
                 </tr>
                 <tr>
                   <td class="undersquare-1">Баллы</td>
-                  <td>{{ user.score }}/{{ user.maximumScore }}</td>
+                  <td>{{ user.score ?? '??' }}/{{ user.maximumScore }}</td>
                 </tr>
               </table>
             </div>
@@ -313,24 +358,41 @@ const particlesOption = ref({
 
         <div class="grid m-0">
           <template v-for="stage in user.appliedStages">
-            <div class="card py-1 col-12 lg:col-6 xxl:col-4 font-semibold">
-              <p>{{ stage.title }}</p>
+            <div class="col-12 lg:col-6 xxl:col-4 pl-0">
+              <div class="card py-1 font-semibold h-full">
+                <p class="">{{ stage.title }}</p>
 
-              <a v-if="stage.protocol" :href="window.$apiHost + '/file/' + stage.protocol"
-                 class="flex align-items-center -mt-3 mb-4">
-                <i class="text-primary-colors-4 pi pi-file-pdf text-2xl mr-1 font-100"></i>
-                <span class="text-primary">Протокол этапа</span>
-              </a>
-              <a v-else class="flex align-items-center -mt-3 mb-4">
-                <i class="text-primary-colors-1 pi pi-file text-xl lg:text-2xl mr-1 font-100"></i>
-                <span class="text-primary-colors-1">Протокол не готов</span>
-              </a>
-              <div>
-                <span class="mr-4">Баллы за этап</span>
-                <div class="inline-block absolute text-center" style="margin-top: -2.55em;">
-                  <img class="w-full" src="/assets/images/atom_alt.svg" />
-                  <div class="absolute top-50 left-50" style="transform: translate(-50%, -50%)">
-                    <span class="text-2xl text-primary-colors-1">{{ stage.score ?? '??' }}</span>
+                <p v-if="stage.id === 5" class="-mt-3"><a href="https://t.me/run_mephi_bot">ТГ-бот для отчетов</a></p>
+                <p v-else-if="stage.id === 6" class="-mt-3">
+                  <span v-if="stage.additionalInfo === 'multiple'"
+                        class="text-red-600">Указано больше одного видео!</span>
+                  <span v-else-if="stage.additionalInfo === 'sent'" class="text-green-600">Видео отправлено</span>
+                  <span v-else class="text-primary-colors-4 cursor-pointer" @click="uploadVideoPanel.toggle">Загрузить видео</span>
+                </p>
+                <p v-else-if="stage.id === 7" class="-mt-3">
+                  <span v-if="stage.additionalInfo === 'multiple'"
+                        class="text-red-600">Выбрано больше одной даты!</span>
+                  <span v-else-if="stage.additionalInfo !== null"
+                        class="text-green-600">{{ stage.additionalInfo }}</span>
+                  <span v-else class="text-primary-colors-4 cursor-pointer" @click="chooseDictantDatePanel.toggle">Выбрать дату</span>
+                </p>
+
+                <a v-if="stage.protocol" :href="window.$apiHost + '/file/' + stage.protocol"
+                   class="flex align-items-center -mt-3 mb-4">
+                  <i class="text-primary-colors-4 pi pi-file-pdf text-2xl mr-1 font-100"></i>
+                  <span class="text-primary">Протокол этапа</span>
+                </a>
+                <a v-else class="flex align-items-center -mt-3 mb-4">
+                  <i class="text-primary-colors-1 pi pi-file text-xl lg:text-2xl mr-1 font-100"></i>
+                  <span class="text-primary-colors-1">Протокол не готов</span>
+                </a>
+                <div>
+                  <span class="mr-4">Баллы за этап</span>
+                  <div class="inline-block absolute text-center" style="margin-top: -2.55em;">
+                    <img class="w-full" src="/assets/images/atom_alt.svg" />
+                    <div class="absolute top-50 left-50" style="transform: translate(-50%, -50%)">
+                      <span class="text-2xl text-primary-colors-1">{{ stage.score ?? '??' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -340,10 +402,45 @@ const particlesOption = ref({
       </div>
 
       <a v-if="user.appliedStages.length !== 9"
-         class="font-light text-xl lg:text-2xl mb-4 text-primary-colors-1 border-round-2xl border-2 border-primary-colors-1 px-3 py-2"
-         href="/#stages">Зарегистрироваться
-        на этапы</a>
+         class="font-light text-lg sm:text-xl text-nowrap lg:text-2xl mb-4 text-primary-colors-1 border-round-2xl border-2 border-primary-colors-1 px-3 py-2"
+         href="/#stages">Зарегистрироваться на этапы</a>
     </div>
+
+    <OverlayPanel ref="uploadVideoPanel" appendTo="body" class="border-round-2xl max-w-full md:max-w-30rem"
+                  style="max-width: 50%">
+      <div class="md:text-lg lg:text-xl p-3">
+        <div class="field">
+          <label class="mb-0">Загрузите файл до 1 Гб</label>
+          <FileUpload v-if="!isUploading" :maxFileSize="1024 * (8 * 1024 * 1024)" :multiple="false"
+                      accept=".mp4, .mov, .wmv, .webm, .avi" cancel-label="Отмена" choose-label="Выбрать файл"
+                      customUpload
+                      mode="basic" name="file" upload-label="Загрузить" @uploader="uploaderVideo" />
+          <ProgressSpinner v-else :style="{ width: '25px', height: '25px' }" class="block" stroke-width="10" />
+        </div>
+        <div class="field">
+          <label class="mb-0">Или предоставьте ссылку</label>
+          <InputText v-model.trim="videoDto.url" placeholder="https://ya.disk/..." />
+        </div>
+        <div class="field">
+          <Button :disabled="isUploading || videoDto.url == null && videoDto.fileId == null" @click="submitVideo">
+            Отправить
+          </Button>
+        </div>
+      </div>
+    </OverlayPanel>
+
+    <OverlayPanel ref="chooseDictantDatePanel" appendTo="body" class="border-round-2xl max-w-full md:max-w-30rem"
+                  style="max-width: 50%">
+      <div class="md:text-lg lg:text-xl p-3">
+        <label>Выберите удобную дату</label>
+        <div class="field mt-2">
+          <Button class="w-full text-center" outlined @click="chooseDictantDate(1)">05 сентября в 18:00</Button>
+        </div>
+        <div class="field">
+          <Button class="w-full text-center" outlined @click="chooseDictantDate(2)">11 сентября в 18:00</Button>
+        </div>
+      </div>
+    </OverlayPanel>
   </div>
 </template>
 

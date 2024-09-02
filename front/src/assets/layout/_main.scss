@@ -10,7 +10,7 @@ html {
 body {
     font-family: var(--font-family);
     color: var(--text-color);
-    background-color: var(--surface-ground);
+  background-color: #f8fafc;
     margin: 0;
     padding: 0;
     min-height: 100%;
@@ -35,7 +35,7 @@ a {
 }
 
 .text-nowrap {
-    text-wrap: nowrap;
+  text-wrap: nowrap !important;
 }
 
 textarea.fixed-resizable {
@@ -152,11 +152,45 @@ textarea.fixed-resizable {
   content: "";
   display: inline-block;
   position: absolute;
+  left: -0.4em;
+  top: 0.75em;
+  width: 1.5em;
+  height: 0.3em;
+  background-color: var(--primary-colors-4);
+}
+
+.undersquare-4-alt {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-4-alt:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
   left: 0.2em;
   top: 1.05em;
   width: 2em;
   height: 0.3em;
   background-color: var(--primary-colors-4);
+}
+
+.undersquare-3-alt-2 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-3-alt-2:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: -0.4em;
+  top: 1em;
+  width: 2.1em;
+  height: 0.3em;
+  background-color: var(--primary-colors-3);
 }
 
 .bg-primary-gradient {

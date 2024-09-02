@@ -12,7 +12,7 @@ import ru.valkovets.mephisoty.db.service.userdata.CredentialsService;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/creds")
+@RequestMapping("/api/creds")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация пользователей")
 public class CredentialsController {

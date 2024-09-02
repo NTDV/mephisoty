@@ -21,7 +21,7 @@ import ru.valkovets.mephisoty.db.projection.special.CriteriaShortProj;
 import ru.valkovets.mephisoty.db.service.season.scoring.CriteriaService;
 
 @RestController
-@RequestMapping("/admin/criteria")
+@RequestMapping("/api/admin/criteria")
 @RequiredArgsConstructor
 @Tag(name = "Критерии оценки этапа сезона конкурса")
 public class CriteriaController {

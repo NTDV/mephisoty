@@ -104,6 +104,7 @@ public CriteriaScoreProj addScoreFor(final Long criteriaId, final CriteriaScoreD
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
+  if (offset < 0 || limit < 1) return Page.empty();
   return criteriaRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 }

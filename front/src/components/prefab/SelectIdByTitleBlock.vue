@@ -51,7 +51,7 @@ const onFilter = (event) => {
 };
 
 const onLazyLoad = (event, force) => {
-  if (!force && loading.value) return;
+  if (event.first < 0 || !force && loading.value) return;
   if (props.lazyFilter) event = { ...event, value: filterValue };
 
   let shouldLoad = items.value.length <= 1;

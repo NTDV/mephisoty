@@ -14,7 +14,7 @@ import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
 @RestController
-@RequestMapping("/expert/stage")
+@RequestMapping("/api/expert/stage")
 @RequiredArgsConstructor
 @Tag(name = "Этапы сезона конкурса")
 public class StageExpertController {

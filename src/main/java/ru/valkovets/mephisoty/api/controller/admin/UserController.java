@@ -21,7 +21,7 @@ import ru.valkovets.mephisoty.db.service.userdata.UserService;
 import ru.valkovets.mephisoty.settings.ParticipantState;
 
 @RestController
-@RequestMapping("/admin/user")
+@RequestMapping("/api/admin/user")
 @RequiredArgsConstructor
 @Tag(name = "Пользователи системы")
 public class UserController {

@@ -32,27 +32,30 @@ const apply = () => {
 </script>
 
 <template>
-  <div class="col-12 md:col-6 lg:col-4">
+  <div class="col-12 md:col-6 xl:col-4 text-center xl:text-left">
     <span
-      :class="'space-font text-2xl md:text-3xl xl:text-4xl pre ' + (stageModel.id > 3 && stageModel.id < 6 ? 'text-white' : 'text-primary-4')">{{ title
-      }}</span>
+      :class="'space-font text-2xl md:text-3xl xl:text-4xl pre ' + (stageModel.id > 3 && stageModel.id < 7 ? 'text-white' : 'text-primary-4')">
+      {{ title }}</span>
 
-    <div class="grid mt-2 xl:mt-4">
-      <div class="col-12 xl:col-6">
-        <div class="border-round-2xl border-1 border-white-alpha-90 py-3 px-2 text-center cursor-pointer"
+    <div class="flex justify-content-center xl:justify-content-start mt-2 xl:mt-4">
+      <div class="mr-4 sm:mr-2">
+        <div
+          class="w-fit border-round-2xl border-1 border-white-alpha-90 py-3 px-4 xl:px-3 xxl:px-4 text-center cursor-pointer"
              @click="aboutPanel.toggle">
           <a class="text-white text-lg md:text-xl lg:text-2xl">Подробнее</a>
         </div>
       </div>
 
-      <div v-if="stageModel.applyVisibility !== 'DISALLOW_ALL_FOR_PARTICIPANTS'" class="col-12 xl:col-6" @click="apply">
-        <div class="border-round-2xl border-1 border-white-alpha-90 py-3 px-2 text-center cursor-pointer">
+      <div v-if="stageModel.applyVisibility !== 'DISALLOW_ALL_FOR_PARTICIPANTS'" class="" @click="apply">
+        <div
+          class="w-fit border-round-2xl border-1 border-white-alpha-90 py-3 px-4 xl:px-3 xxl:px-4 text-center cursor-pointer">
           <a class="text-white text-lg md:text-xl lg:text-2xl">Участвовать</a>
         </div>
       </div>
 
-      <div v-else class="col-12 xl:col-6">
-        <div class="border-round-2xl border-1 border-white-alpha-90 py-3 px-2 text-center cursor-pointer"
+      <div v-else class="">
+        <div
+          class="w-fit border-round-2xl border-1 border-white-alpha-90 py-3 px-4 xl:px-3 xxl:px-4 text-center cursor-pointer"
              @click="canNotApplyPanel.toggle">
           <a class="text-white text-lg md:text-xl lg:text-2xl">Участвовать</a>
         </div>
@@ -64,9 +67,12 @@ const apply = () => {
                 style="max-width: 50%">
     <div class="font-light md:text-lg lg:text-xl text-white p-3 pre mb-2" v-html="stageModel.description">
     </div>
-    <div v-if="reglament" class="border-round-2xl border-1 border-white-alpha-90 py-3 px-2 text-center cursor-pointer">
-      <a :href="window.$apiHost + '/file/public/' + reglament.id" class="text-white text-lg md:text-xl lg:text-2xl">Регламент
-        этапа</a>
+
+    <div class="flex justify-content-center">
+      <a v-if="reglament" :href="window.$apiHost + '/file/public/' + reglament.id"
+         class="block w-fit text-white text-lg md:text-xl lg:text-2xl border-round-2xl border-1 border-white-alpha-90 py-3 px-2 text-center cursor-pointer">
+        Регламент этапа
+      </a>
     </div>
   </OverlayPanel>
 

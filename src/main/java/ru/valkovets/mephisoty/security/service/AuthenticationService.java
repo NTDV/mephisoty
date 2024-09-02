@@ -42,7 +42,8 @@ private static MephiAuthenticationToken getSpringAuthToken(final String ticket) 
     try (final HttpClient client = HttpClient.newHttpClient()) {
         final String resp = client
             .send(HttpRequest.newBuilder().uri(
-                                 new URI("https://auth.mephi.ru/serviceValidate?ticket=" + ticket + "&service=http://localhost:5173"))
+                                 new URI("https://auth.mephi.ru/serviceValidate?ticket=" + ticket + "&service=https://beststudents.mephi.ru"))
+                             //new URI("https://auth.mephi.ru/serviceValidate?ticket=" + ticket + "&service=100.97.110.74:5173"))
                              .timeout(java.time.Duration.ofMillis(700))
                              .GET().build(), HttpResponse.BodyHandlers.ofString())
             .body();

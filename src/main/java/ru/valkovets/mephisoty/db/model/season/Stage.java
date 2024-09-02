@@ -35,7 +35,8 @@ import java.util.*;
     @NamedAttributeNode("createdBy"),
     @NamedAttributeNode("modifiedBy"),
     @NamedAttributeNode("season"),
-    @NamedAttributeNode("criterias")
+    @NamedAttributeNode("criterias"),
+    @NamedAttributeNode("files")
 })
 //@EntityListeners(AuditingEntityListener.class)
 public class Stage extends TdrseEntity {
@@ -89,7 +90,6 @@ private String scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.na
 
 @NotNull
 @Builder.Default
-
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(name = "stage_files",
            joinColumns = @JoinColumn(name = "stage_id", referencedColumnName = "id"),

@@ -16,6 +16,8 @@ import java.util.Set;
 
 @Repository
 public interface UserRepository extends BasicRepository<User> {
+Long countAllByState(String state);
+
 @Query("select new ru.valkovets.mephisoty.db.projection.special.NamesProj(u.firstName, u.secondName, u.thirdName) from User u where u.credentials.id = ?1")
 Optional<NamesProj> getFullNameByCredentialsId(Long credentialsId);
 

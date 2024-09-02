@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +25,12 @@ import ru.valkovets.mephisoty.db.service.files.FileService;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/api/file")
 @RequiredArgsConstructor
 @Tag(name = "Файлы системы")
 public class FileController {
@@ -101,11 +103,14 @@ public ResponseEntity<StreamingResponseBody> getPublic(@PathVariable final Long 
       } else {
         final StreamingResponseBody responseBody = outputStream -> Files.copy(path, outputStream);
 
+        final ContentDisposition contentDisposition = ContentDisposition
+            .builder("attachment").filename(file.getOriginalName(), StandardCharsets.UTF_8).build();
+
         return ResponseEntity
             .ok()
+            .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+            .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"" + file.getOriginalName() + "\"")
             .body(responseBody);
       }
     } else {

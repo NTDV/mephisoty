@@ -94,11 +94,11 @@ const loadLazyData = (event) => {
   })
 };
 
-const createModelClient = (seasonServer) => {
+const createModelClient = (modelServer) => {
   return {
-    ...seasonServer,
-    start: dateTimeService.getDateFromTimestamp(seasonServer.start),
-    end: dateTimeService.getDateFromTimestamp(seasonServer.end)
+    ...modelServer,
+    start: dateTimeService.getDateFromTimestamp(modelServer.start),
+    end: dateTimeService.getDateFromTimestamp(modelServer.end)
   };
 };
 

@@ -23,14 +23,12 @@ import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageShortProj;
-import ru.valkovets.mephisoty.db.projection.special.file.FileProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
-import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/admin/stage")
+@RequestMapping("/api/admin/stage")
 @RequiredArgsConstructor
 @Tag(name = "Этапы сезона конкурса")
 public class StageController {

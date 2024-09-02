@@ -1,16 +1,17 @@
 <script setup>
-import {onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {DateTimeService} from '@/service/util/DateTimeService';
-import {useRoute} from "vue-router";
-import {CredsService} from "@/service/admin/CredsService";
-import {StageService} from "@/service/admin/StageService";
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {SeasonService} from "@/service/admin/SeasonService";
-import {ToastService} from "@/service/util/ToastService";
-import router from "@/router";
-import {FilterMatchMode, FilterOperator} from "primevue/api";
-import {CriteriaService} from "@/service/admin/CriteriaService";
+import { onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { DateTimeService } from '@/service/util/DateTimeService';
+import { useRoute } from 'vue-router';
+import { CredsService } from '@/service/admin/CredsService';
+import { StageService } from '@/service/admin/StageService';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { SeasonService } from '@/service/admin/SeasonService';
+import { ToastService } from '@/service/util/ToastService';
+import router from '@/router';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { CriteriaService } from '@/service/admin/CriteriaService';
+import FilesEditor from '@/components/prefab/FilesEditor.vue';
 
 const toast = useToast();
 
@@ -288,6 +289,10 @@ const deleteSelectedCriterias = async () => {
           <div class="field col-12 md:col-4">
             <ViewStateInputBlock v-model="model.scheduleAccessState" :submitted="submitted"
                                  label="Доступ к расписанию этапа"/>
+          </div>
+
+          <div class="field col-12">
+            <FilesEditor v-model="model.files" label="Связанные файлы" />
           </div>
 
           <div class="field col-12">

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/achievement")
+@RequestMapping("/api/admin/achievement")
 @RequiredArgsConstructor
 @Tag(name = "Управление достижениями")
 public class AchievementController {

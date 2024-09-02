@@ -75,8 +75,9 @@ const isOutsideClicked = (event) => {
       </button>
     </div>
 
-    <div v-if="user">
-      <span class="text-900 space-font text-4xl font-medium text-nowrap">{{ user.fullName }}</span>
+    <div v-if="user" class="text-overflow-ellipsis overflow-hidden align-items-center flex">
+      <span class="text-900 space-font md:inline-block text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium
+                 text-nowrap text-overflow-ellipsis overflow-hidden">{{ user.fullName }}</span>
       <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
         <i class="pi pi-user"></i>
       </button>
@@ -87,10 +88,6 @@ const isOutsideClicked = (event) => {
     </div>
 
     <div :class="topbarMenuClasses" class="layout-topbar-menu">
-      <button class="p-link layout-topbar-button" @click="onTopBarMenuButton()">
-        <i class="pi pi-cog"></i>
-        <span>Настройки</span>
-      </button>
       <button class="p-link layout-topbar-button" @click="onLogoutClick()">
         <i class="pi pi-sign-out"></i>
         <span>Выйти</span>
@@ -99,4 +96,4 @@ const isOutsideClicked = (event) => {
   </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss"></style>

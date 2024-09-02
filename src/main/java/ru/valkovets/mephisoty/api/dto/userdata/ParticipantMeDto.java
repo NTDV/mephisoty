@@ -1,12 +1,12 @@
 package ru.valkovets.mephisoty.api.dto.userdata;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.scoring.SeasonScore;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.ParticipantState;
 
 import java.io.Serializable;
@@ -46,7 +46,8 @@ public record ParticipantMeDto(
     Float maximumScoreFinal
 ) implements Serializable {
 
-public static ParticipantMeDto from(@NotNull final User participant, @Nullable final StageMeDto portfolioStage,
+public static ParticipantMeDto from(@NotNull final User participant, @NotNull final Long lastPosition,
+                                    @Nullable final StageMeDto portfolioStage,
                                     @NotNull final List<StageMeDto> appliedStages,
                                     @NotNull final List<StageMeDto> appliedFinalStages,
                                     @Nullable final SeasonScore seasonScore, @Nullable final SeasonScore seasonFinalScore,
@@ -78,15 +79,20 @@ public static ParticipantMeDto from(@NotNull final User participant, @Nullable f
       .appliedStages(appliedStages)
       .appliedFinalStages(appliedFinalStages)
 
-      .place(seasonScore != null ? seasonScore.getPlace() : 0)
-      .score(seasonScore != null ? seasonScore.getScoreBySeasonFormula() : 0)
-      .lastPosition(season.getLastPosition())
-      .maximumScore(season.getMaximumScore())
+      .place(
+          season.getScoreVisibility().equals(AllowState.NO.name()) ? null : seasonScore != null ? seasonScore.getPlace() : 0)
+      .score(season.getScoreVisibility().equals(AllowState.NO.name()) ? null : seasonScore != null
+                                                                               ? seasonScore.getScoreBySeasonFormula() : 0)
+      .lastPosition(lastPosition)
+      .maximumScore(90f)
 
-      .placeFinal(seasonFinalScore != null ? seasonFinalScore.getPlace() : 0)
-      .scoreFinal(seasonFinalScore != null ? seasonFinalScore.getScoreBySeasonFormula() : 0)
-      .lastPositionFinal(seasonFinal.getLastPosition())
-      .maximumScoreFinal(seasonFinal.getMaximumScore())
+      .placeFinal(seasonFinal.getScoreVisibility().equals(AllowState.NO.name()) ? null : seasonFinalScore != null
+                                                                                         ? seasonFinalScore.getPlace() : 0)
+      .scoreFinal(seasonFinal.getScoreVisibility().equals(AllowState.NO.name()) ? null : seasonFinalScore != null
+                                                                                         ? seasonFinalScore.getScoreBySeasonFormula()
+                                                                                         : 0)
+      .lastPositionFinal(100L)
+      .maximumScoreFinal(100f)
 
       .build();
 }

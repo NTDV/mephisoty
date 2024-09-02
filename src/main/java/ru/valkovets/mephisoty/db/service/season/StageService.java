@@ -24,11 +24,11 @@ import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
+import ru.valkovets.mephisoty.db.projection.special.file.FileProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StagePublicProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageShortProj;
-import ru.valkovets.mephisoty.db.projection.special.file.FileProj;
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
@@ -38,7 +38,6 @@ import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -125,7 +124,8 @@ public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
 @PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN," +
               "T(ru.valkovets.mephisoty.settings.UserRole).EXPERT)")
 public Page<IdTitleProj> getAllForSelect(final long offset, final long limit) {
-    return stageRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
+  if (offset < 0 || limit < 1) return Page.empty();
+  return stageRepository.getAllByOrderByTitleAscIdAsc(new OffsetBasedPageRequest(offset, limit), IdTitleProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")

@@ -6,5 +6,4 @@ import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
 @Repository
 public interface QuestionRepository extends BasicRepository<Question> {
-
 }

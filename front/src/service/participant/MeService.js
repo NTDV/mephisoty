@@ -21,4 +21,20 @@ export class MeService {
       .then(data => data === '')
       .catch(e => false);
   }
+
+  uploadVideo(videoUploadDto) {
+    return fetchApi('/participant/video/upload', {
+      method: 'POST',
+      body: JSON.stringify(videoUploadDto)
+    }).then((resp) => resp.text())
+      .then(data => data === '')
+      .catch(e => false);
+  }
+
+  chooseDictantDate(dateId) {
+    return fetchApi('/participant/dictant/' + dateId)
+      .then((resp) => resp.text())
+      .then(data => data === '')
+      .catch(e => false);
+  }
 }

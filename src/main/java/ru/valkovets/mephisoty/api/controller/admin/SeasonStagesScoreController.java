@@ -12,7 +12,7 @@ import ru.valkovets.mephisoty.api.lazydata.service.SortService;
 import ru.valkovets.mephisoty.db.service.season.scoring.StageScoreService;
 
 @RestController
-@RequestMapping("/admin/seasonstagescore")
+@RequestMapping("/api/admin/seasonstagescore")
 @RequiredArgsConstructor
 @Tag(name = "Оценки по этапам сезона")
 public class SeasonStagesScoreController {
