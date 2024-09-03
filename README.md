@@ -1,1 +1,1 @@
-# https://beststudents.mephi.ru/
+# ![Dynamic JSON Badge of server state](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fbeststudents.mephi.ru%2Factuator%2Fhealth&query=%24.status&style=flat&label=Server%20state) https://beststudents.mephi.ru/ 
