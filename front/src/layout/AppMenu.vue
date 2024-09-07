@@ -20,6 +20,14 @@ const model = ref([
     ]
   },
   {
+    label: 'Конкурс',
+    items: [
+      { label: 'Участники', icon: 'pi pi-fw pi-user', to: '/admin/stages/participants' },
+      { label: 'Видео визитки', icon: 'pi pi-fw pi-video', to: '/admin/stages/video' },
+      { label: 'Диктант победы', icon: 'pi pi-fw pi-pencil', to: '/admin/stages/dictant' }
+    ]
+  },
+  {
     label: 'Экспертиза',
     items: [
       {label: 'Баллы по критериям', icon: 'pi pi-fw pi-hashtag', to: '/expert/stagecriteriasscores'},

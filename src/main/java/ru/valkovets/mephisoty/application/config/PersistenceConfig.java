@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.application.config;
 
+import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -11,7 +12,8 @@ import ru.valkovets.mephisoty.security.audition.AuditorAwareImpl;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = "ru.valkovets.mephisoty.db.repository")
+@EnableJpaRepositories(basePackages = "ru.valkovets.mephisoty.db.repository",
+                       repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
 @EnableJpaAuditing(auditorAwareRef="auditorProvider")
 public class PersistenceConfig {
 private final SpelAwareProxyProjectionFactory projectionFactory = new SpelAwareProxyProjectionFactory();

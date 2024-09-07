@@ -10,7 +10,7 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
-import ru.valkovets.mephisoty.db.projection.special.UserJwtProj;
+import ru.valkovets.mephisoty.db.projection.special.user.UserJwtProj;
 
 import java.security.Key;
 import java.util.Date;

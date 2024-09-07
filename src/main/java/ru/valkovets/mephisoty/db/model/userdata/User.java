@@ -41,6 +41,15 @@ import java.util.Set;
     //    @Index(name = "app_user_fullname_index", columnList = User_.FULL_NAME, unique = false),
     //}
     )
+@NamedEntityGraphs({
+    @NamedEntityGraph(name = "user_table_proj",
+                      attributeNodes = {
+                          @NamedAttributeNode("avatar"),
+                          @NamedAttributeNode("group"),
+                          @NamedAttributeNode("credentials"),
+                          @NamedAttributeNode("chosenStages"),
+                      })
+})
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BasicEntity {
 // todo Везде проставить аннотации + валидации

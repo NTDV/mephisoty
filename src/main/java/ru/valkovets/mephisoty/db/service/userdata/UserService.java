@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.db.service.userdata;
 
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -37,6 +38,7 @@ import ru.valkovets.mephisoty.db.model.userdata.User_;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.simple.UserSelectProj;
 import ru.valkovets.mephisoty.db.projection.special.AchievementTableProj;
+import ru.valkovets.mephisoty.db.projection.special.user.UserTableProj;
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonScoreRepository;
@@ -52,6 +54,8 @@ import ru.valkovets.mephisoty.settings.AllowState;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.valkovets.mephisoty.application.lifecycle.Init._2024_DICTANT_STAGE_ID;
+import static ru.valkovets.mephisoty.application.lifecycle.Init._2024_VIDEO_STAGE_ID;
 import static ru.valkovets.mephisoty.settings.ParticipantState.PARTICIPANT;
 
 @Service
@@ -291,10 +295,19 @@ public void updateMeFor(final Long id, final ParticipantMeDto participantMeDto) 
 public void chooseDictantDate(final Long userId, final Long dateId) {
   if (dateId == null || dateId < 1 || dateId > 2) throw new IllegalArgumentException("dateId must be 1 or 2");
 
+  final boolean canEdit = stageRepository.findById(_2024_DICTANT_STAGE_ID)
+                                         .orElseThrow()
+                                         .getScheduleAccessStateEnum()
+                                         .isCanEdit();
+
   final User user = userRepository.findById(userId).orElseThrow();
   final Set<ScheduleRecord> scheduleRecords =
       scheduleRecordRepository.findAllByParticipant_IdAndStageSchedule_IdIn(userId, List.of(1L, 2L));
   if (scheduleRecords.size() > 1) throw new IllegalStateException("Нельзя выбрать несколько дат одновременно");
+
+  if (!canEdit && scheduleRecords.size() == 1) {
+    throw new AccessDeniedException("Нельзя сменить дату");
+  }
 
   final ScheduleRecord scheduleRecord = scheduleRecords
       .stream()
@@ -316,9 +329,18 @@ public void uploadVideo(final Long userId, final VideoUploadDto videoUploadDto) 
     throw new IllegalArgumentException("file or url must be not null");
   }
 
+  final boolean canEdit = stageRepository.findById(_2024_VIDEO_STAGE_ID)
+                                         .orElseThrow()
+                                         .getScheduleAccessStateEnum()
+                                         .isCanEdit();
+
   final User user = userRepository.findById(userId).orElseThrow();
   final Set<Answer> answers = answerRepository.findAllByParticipant_IdAndQuestion_Id(userId, 1L);
   if (answers.size() > 1) throw new IllegalStateException("Нельзя выбрать несколько видео одновременно");
+
+  if (!canEdit && answers.size() == 1) {
+    throw new AccessDeniedException("Нельзя сменить дату");
+  }
 
   final Answer answer = answers
       .stream()
@@ -337,6 +359,17 @@ public void uploadVideo(final Long userId, final VideoUploadDto videoUploadDto) 
   }
 
   answerRepository.save(answer);
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
+public Page<UserTableProj> getAllForStages(final long offset, final long limit,
+                                           final Specification<User> specification,
+                                           final Sort sort) {
+  return userRepository.findAll(Specification.where(specification),
+                                new OffsetBasedPageRequest(offset, limit, sort),
+                                NamedEntityGraph.loading("user_table_proj"))
+                       .map(user -> projectionFactory.createProjection(UserTableProj.class, user));
 }
 
 @SuppressWarnings("LombokGetterMayBeUsed")

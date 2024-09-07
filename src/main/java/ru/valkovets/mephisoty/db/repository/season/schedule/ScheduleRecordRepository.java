@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.season.schedule.ScheduleRecord;
 import ru.valkovets.mephisoty.db.repository.BasicRepository;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +21,8 @@ default String getStateForDictant(@NonNull final Long userId) {
   } else if (records.size() > 2) {
     return "multiple";
   } else {
-    return records.iterator().next().getStageSchedule().getStart().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    return records.iterator().next().getStageSchedule().getStart().atZoneSameInstant(ZoneId.of("Europe/Moscow"))
+                  .toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
   }
 }
 

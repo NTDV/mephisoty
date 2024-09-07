@@ -37,7 +37,7 @@ public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws E
       // Своего рода отключение CORS (разрешение запросов со всех доменов)
       .cors(cors -> cors.configurationSource(request -> {
         final var corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+        corsConfiguration.setAllowedOriginPatterns(List.of("https://beststudents.mephi.ru", "http://localhost:5173"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);

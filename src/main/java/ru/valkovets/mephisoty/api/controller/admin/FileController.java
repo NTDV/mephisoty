@@ -17,6 +17,7 @@ import ru.valkovets.mephisoty.api.dto.file.FileUploadDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
+import ru.valkovets.mephisoty.application.Transliterator;
 import ru.valkovets.mephisoty.application.services.FileSystemStorageService;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.projection.special.file.FileFullProj;
@@ -25,7 +26,6 @@ import ru.valkovets.mephisoty.db.service.files.FileService;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -75,11 +75,17 @@ public ResponseEntity<StreamingResponseBody> get(@PathVariable final Long fileId
     } else {
       final StreamingResponseBody responseBody = outputStream -> Files.copy(path, outputStream);
 
+      final ContentDisposition contentDisposition = ContentDisposition
+          .inline()
+          .filename(Transliterator.translit(file.getOriginalName()))
+          //.filename(file.getOriginalName(), StandardCharsets.UTF_8)
+          .build();
+
       return ResponseEntity
           .ok()
+          .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+          .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
           .contentType(MediaType.APPLICATION_OCTET_STREAM)
-          .header(HttpHeaders.CONTENT_DISPOSITION,
-                  "attachment; filename=\"" + file.getOriginalName() + "\"")
           .body(responseBody);
     }
 
@@ -104,7 +110,10 @@ public ResponseEntity<StreamingResponseBody> getPublic(@PathVariable final Long 
         final StreamingResponseBody responseBody = outputStream -> Files.copy(path, outputStream);
 
         final ContentDisposition contentDisposition = ContentDisposition
-            .builder("attachment").filename(file.getOriginalName(), StandardCharsets.UTF_8).build();
+            .inline()
+            .filename(Transliterator.translit(file.getOriginalName()))
+            //.filename(file.getOriginalName(), StandardCharsets.UTF_8)
+            .build();
 
         return ResponseEntity
             .ok()

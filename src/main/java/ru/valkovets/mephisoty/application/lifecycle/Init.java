@@ -17,6 +17,9 @@ import java.util.List;
 public class Init implements SmartInitializingSingleton {
 public static final Long _2024_SEASON_ID = 1L;
 public static final Long _2024_SEASON_FINAL_ID = 2L;
+
+public static final Long _2024_VIDEO_STAGE_ID = 6L;
+public static final Long _2024_DICTANT_STAGE_ID = 7L;
 public static final Long _2024_PORTFOLIO_STAGE_ID = 10L;
 
 private final SeasonRepository seasonRepository;

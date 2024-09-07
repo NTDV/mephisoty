@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.db.projection.special;
+package ru.valkovets.mephisoty.db.projection.special.user;
 
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.projection.simple.IdProj;

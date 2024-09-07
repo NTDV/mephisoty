@@ -1,4 +1,4 @@
-package ru.valkovets.mephisoty.db.projection.special;
+package ru.valkovets.mephisoty.db.projection.special.user;
 
 public record NamesProj(String firstName, String getSecondName, String getThirdName) {
 public static NamesProj EMPTY = new NamesProj("Unknown user!", "", "");

@@ -91,6 +91,21 @@ const router = createRouter({
           component: () => import('@/views/pages/admin/SeasonStagesScoreTable.vue')
         },
         {
+          path: '/admin/stages/participants/',
+          name: 'participants',
+          component: () => import('@/views/pages/admin/stages/ParticipantCrud.vue')
+        },
+        {
+          path: '/admin/stages/video/',
+          name: 'video',
+          component: () => import('@/views/pages/admin/stages/VideoCrud.vue')
+        },
+        {
+          path: '/admin/stages/dictant/',
+          name: 'dictant',
+          component: () => import('@/views/pages/admin/stages/DictantCrud.vue')
+        },
+        {
           path: '/expert/stagecriteriasscores/',
           name: 'stagecriteriasscores',
           component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')

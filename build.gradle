@@ -67,6 +67,7 @@ dependencies {
     implementation 'org.jctools:jctools-core:4.0.3'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.2'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.2'
+    implementation 'com.cosium.spring.data:spring-data-jpa-entity-graph:3.2.2'
     runtimeOnly 'org.postgresql:postgresql:42.7.3'
     testImplementation 'org.springframework.amqp:spring-rabbit-test:3.1.5'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:3.0.1'

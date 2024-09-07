@@ -7,14 +7,13 @@ import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.userdata.SignUpRequest;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
-import ru.valkovets.mephisoty.db.projection.special.NamesProj;
+import ru.valkovets.mephisoty.db.projection.special.user.NamesProj;
 import ru.valkovets.mephisoty.db.repository.userdata.CredentialsRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.security.credentials.CasUserXml;
 import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

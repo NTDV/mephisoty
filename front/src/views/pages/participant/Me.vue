@@ -7,6 +7,7 @@ import { ToastService } from '@/service/util/ToastService';
 import { FileService } from '@/service/admin/FileService';
 import { findIndexById } from '@/service/util/UtilsService';
 import { DateTimeService } from '@/service/util/DateTimeService';
+import { ParticipantStateService } from '@/service/util/ParticipantStateService';
 
 const toast = useToast();
 
@@ -14,6 +15,7 @@ const toastService = new ToastService(toast);
 const meService = new MeService();
 const fileService = new FileService();
 const dateTimeService = new DateTimeService();
+const participantStateService = new ParticipantStateService();
 
 onBeforeMount(() => {
   meService.getMe()
@@ -163,24 +165,7 @@ const chooseDictantDate = (date) => {
 };
 
 const getMyState = () => {
-  switch (user.value.state) {
-    case 'PARTICIPANT':
-      return 'Участник конкурса';
-    case 'NOT_PARTICIPANT':
-      return 'Не участник';
-    case 'DISQUALIFIED':
-      return 'Дисквалифицирован';
-    case 'FINAL_MEMBER':
-      return 'Участник суперфинала';
-    case 'WINNER':
-      return 'Победитель конкурса';
-    case 'PRIZE_WINNER':
-      return 'Лауреат конкурса';
-    case 'Banned':
-      return 'Заблокирован';
-    default:
-      return 'Неизвестный статус';
-  }
+  return participantStateService.getContentFor(user.value.state);
 };
 
 const particlesOption = ref({
@@ -365,14 +350,14 @@ const chooseDictantDatePanel = ref(null);
                 <p v-if="stage.id === 5" class="-mt-3"><a href="https://t.me/run_mephi_bot">ТГ-бот для отчетов</a></p>
                 <p v-else-if="stage.id === 6" class="-mt-3">
                   <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Указано больше одного видео!</span>
+                        class="text-red-600">Ошибка: Указано больше одного видео!</span>
                   <span v-else-if="stage.additionalInfo === 'sent'" class="text-green-600">Видео отправлено</span>
                   <span v-else class="text-primary-colors-4 cursor-pointer" @click="uploadVideoPanel.toggle">Загрузить видео</span>
                 </p>
                 <p v-else-if="stage.id === 7" class="-mt-3">
                   <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Выбрано больше одной даты!</span>
-                  <span v-else-if="stage.additionalInfo !== null"
+                        class="text-red-600">Ошибка: Выбрано больше одной даты!</span>
+                  <span v-else-if="stage.additionalInfo !== null" @click="chooseDictantDatePanel.toggle"
                         class="text-green-600">{{ stage.additionalInfo }}</span>
                   <span v-else class="text-primary-colors-4 cursor-pointer" @click="chooseDictantDatePanel.toggle">Выбрать дату</span>
                 </p>
@@ -410,8 +395,8 @@ const chooseDictantDatePanel = ref(null);
                   style="max-width: 50%">
       <div class="md:text-lg lg:text-xl p-3">
         <div class="field">
-          <label class="mb-0">Загрузите файл до 1 Гб</label>
-          <FileUpload v-if="!isUploading" :maxFileSize="1024 * (8 * 1024 * 1024)" :multiple="false"
+          <label class="mb-0">Загрузите файл до 200 Мб</label>
+          <FileUpload v-if="!isUploading" :maxFileSize="201 * (8 * 1024 * 1024)" :multiple="false"
                       accept=".mp4, .mov, .wmv, .webm, .avi" cancel-label="Отмена" choose-label="Выбрать файл"
                       customUpload
                       mode="basic" name="file" upload-label="Загрузить" @uploader="uploaderVideo" />
