@@ -46,55 +46,48 @@ public class Stage extends TdrseEntity {
 @JoinColumn(name = "season_id", nullable = false)
 private Season season;
 
-@Length(max = 100)
+//@NotBlank
 @Column(name = "literal", length = 100)
 @Nullable
-@Pattern(regexp = ValidationConst.LITERAL_PATTERN)
-//@NotBlank
-private String literal;
+private @Length(max = 100)
+@Pattern(regexp = ValidationConst.LITERAL_PATTERN) String literal;
 
-@Length(max = 1000)
 @Column(name = "formula", length = 1000)
-@Pattern(regexp = ValidationConst.FORMULA_PATTERN)
-private String stageResultFormula; // math + Stage criterias + AchievmentTypes (only total?)
+private @Length(max = 1000)
+@Pattern(regexp = ValidationConst.FORMULA_PATTERN) String stageResultFormula;
+    // math + Stage criterias + AchievmentTypes (only total?)
 
 @JsonManagedReference
-@NotNull
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
 @Builder.Default
-private Set<Criteria> criterias = new LinkedHashSet<>();
+private @NotNull Set<Criteria> criterias = new LinkedHashSet<>();
 
-@NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "stage_visibility", nullable = false)
-private String stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+private @NotNull String stageVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
-@NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "apply_visibility", nullable = false)
-private String applyVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+private @NotNull String applyVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
-@NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "score_visibility", nullable = false)
-private String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+private @NotNull String scoreVisibility = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
-@NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "schedule_visibility", nullable = false)
-private String scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
+private @NotNull String scheduleAccessState = AllowState.DISALLOW_ALL_FOR_PARTICIPANTS.name();
 
-@NotNull
 @Builder.Default
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(name = "stage_files",
            joinColumns = @JoinColumn(name = "stage_id", referencedColumnName = "id"),
            inverseJoinColumns = @JoinColumn(name = "file_id", referencedColumnName = "id"))
-private Set<File> files = new LinkedHashSet<>();
+private @NotNull Set<File> files = new LinkedHashSet<>();
 
 public static Stage createFrom(final StageDto stageDto, final Season season) {
   return Stage.builder()
@@ -135,25 +128,21 @@ public AllowState getScoreVisibilityEnum() {
   return AllowState.valueOf(scoreVisibility);
 }
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
-private Set<StageScore> stageScoresForParticipants = new LinkedHashSet<>();
+private @NotNull Set<StageScore> stageScoresForParticipants = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
-private Set<StageSchedule> stageSchedules = new LinkedHashSet<>();
+private @NotNull Set<StageSchedule> stageSchedules = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
-private Set<Question> questions = new LinkedHashSet<>();
+private @NotNull Set<Question> questions = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "stage", orphanRemoval = true)
-private List<Achievement> achievements = new ArrayList<>();
+private @NotNull List<Achievement> achievements = new ArrayList<>();
 
 @Transient
 public AllowState getScheduleAccessStateEnum() {

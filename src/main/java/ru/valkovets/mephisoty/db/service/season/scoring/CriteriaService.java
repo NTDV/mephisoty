@@ -47,12 +47,12 @@ public Page<CriteriaShortProj> getAll(final int page, final int size,
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public CriteriaFullProj getById(@NotNull @Positive final Long id) {
+public CriteriaFullProj getById(final @NotNull @Positive Long id) {
   return criteriaRepository.getById(id, CriteriaFullProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public CriteriaShortProj edit(@NotNull @Positive final Long id, final CriteriaDto dto) {
+public CriteriaShortProj edit(final @NotNull @Positive Long id, final CriteriaDto dto) {
   return projectionFactory.createProjection(CriteriaShortProj.class,
                                             criteriaRepository.save(
                                                 criteriaRepository.findById(id)
@@ -61,7 +61,7 @@ public CriteriaShortProj edit(@NotNull @Positive final Long id, final CriteriaDt
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
-public void delete(@NotNull @Positive final Long id) {
+public void delete(final @NotNull @Positive Long id) {
   criteriaRepository.deleteById(id);
 }
 

@@ -2,7 +2,6 @@ package ru.valkovets.mephisoty.db.model.superclass;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -16,20 +15,18 @@ import org.hibernate.validator.constraints.Length;
 @NoArgsConstructor
 public class TdrEntity extends BasicEntity {
 
-@NotBlank
-@Length(max = 120)
+@Builder.Default
 @Column(name = "title", nullable = false, length = 120)
-private String title;
+private @NotNull
+@Length(max = 120) String title = "";
 
-@NotNull
-@Length(max = 50000)
 @Builder.Default
 @Column(name = "description", nullable = false, length = 50000)
-private String description = "";
+private @NotNull
+@Length(max = 50000) String description = "";
 
-@NotNull
-@Length(max = 50000)
 @Builder.Default
 @Column(name = "rules", nullable = false, length = 50000)
-private String rules = "";
+private @NotNull
+@Length(max = 50000) String rules = "";
 }

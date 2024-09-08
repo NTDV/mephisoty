@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.api.dto.season.StageScheduleDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.dto.LazySelectDto;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
@@ -23,6 +24,7 @@ import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageShortProj;
+import ru.valkovets.mephisoty.db.projection.special.stageSchedule.StageScheduleViewProj;
 import ru.valkovets.mephisoty.db.service.season.StageService;
 
 import java.util.Set;
@@ -88,7 +90,7 @@ public GetAllDto<IdTitleProj> getAllForSelect(@RequestBody @Nullable final LazyS
 }
 
 @PostMapping("/{stageId}/criterias")
-@Operation(summary = "Создать критерий и добавить к сезону")
+@Operation(summary = "Создать критерий и добавить к этапу")
 public CriteriaFullProj createCriteria(@PathVariable final Long stageId, @RequestBody final CriteriaDto criteriaDto) {
     return stageService.addCriteriaFor(stageId, criteriaDto);
 }
@@ -103,6 +105,13 @@ public void addFile(@PathVariable final Long stageId, @PathVariable final Long f
 @Operation(summary = "Удалить файл, принадлежащий этапу")
 public void deleteFile(@PathVariable final Long stageId, @PathVariable final Long fileId) {
     stageService.deleteFile(stageId, fileId);
+}
+
+@PostMapping("/{stageId}/schedule")
+@Operation(summary = "Создать элемент расписания и добавить к этапу")
+public StageScheduleViewProj createStageSchedule(@PathVariable final Long stageId,
+                                                 @RequestBody final StageScheduleDto scheduleDto) {
+    return stageService.addStageSchedule(stageId, scheduleDto);
 }
 
 

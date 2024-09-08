@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
+import ru.valkovets.mephisoty.api.dto.season.StageScheduleDto;
 import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.Season;
@@ -29,9 +30,11 @@ import ru.valkovets.mephisoty.db.projection.special.stage.StageFullProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StagePublicProj;
 import ru.valkovets.mephisoty.db.projection.special.stage.StageShortProj;
+import ru.valkovets.mephisoty.db.projection.special.stageSchedule.StageScheduleViewProj;
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
+import ru.valkovets.mephisoty.db.repository.season.schedule.StageScheduleRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
@@ -49,76 +52,77 @@ private final StageRepository stageRepository;
 private final CriteriaRepository criteriaRepository;
 private final SeasonRepository seasonRepository;
 private final FileRepository fileRepository;
+private final StageScheduleRepository stageScheduleRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification, final Sort sort) {
-    return stageRepository.findBy(Specification.where(specification),
-                                  q -> q.sortBy(sort == null ? Sort.unsorted() : sort)
-                                        .as(StageShortProj.class)
-                                        .page(PageRequest.of(page, size)));
+  return stageRepository.findBy(Specification.where(specification),
+                                q -> q.sortBy(sort == null ? Sort.unsorted() : sort)
+                                      .as(StageShortProj.class)
+                                      .page(PageRequest.of(page, size)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public StageProj edit(@NotNull @Positive final Long id, final StageDto dto) {
-    return projectionFactory.createProjection(StageProj.class,
-                                              stageRepository.save(stageRepository.findById(id).orElseThrow()
-                                                                                  .editFrom(dto)));
+  return projectionFactory.createProjection(StageProj.class,
+                                            stageRepository.save(stageRepository.findById(id).orElseThrow()
+                                                                                .editFrom(dto)));
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public StageFullProj getById(@NotNull @Positive final Long id) {
-    return stageRepository.getById(id, StageFullProj.class);
+  return stageRepository.getById(id, StageFullProj.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public void delete(final Long id) {
-    stageRepository.deleteById(id);
+  stageRepository.deleteById(id);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<Criteria> getCriteriasFrom(final Long id) {
-    return stageRepository.getCriteriasFrom(id, Criteria.class);
+  return stageRepository.getCriteriasFrom(id, Criteria.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public CriteriaFullProj addCriteriaFor(final Long stageId, final CriteriaDto criteriaDto) {
-    final Stage stage = stageRepository.getById(stageId, Stage.class);
-    final Criteria criteria = criteriaRepository.save(Criteria.from(criteriaDto, stage));
-    stage.getCriterias().add(criteria);
-    stageRepository.save(stage);
-    return projectionFactory.createProjection(CriteriaFullProj.class, criteria);
+  final Stage stage = stageRepository.getById(stageId, Stage.class);
+  final Criteria criteria = criteriaRepository.save(Criteria.from(criteriaDto, stage));
+  stage.getCriterias().add(criteria);
+  stageRepository.save(stage);
+  return projectionFactory.createProjection(CriteriaFullProj.class, criteria);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<StageScore> getStageScoresFrom(final Long id) {
-    return stageRepository.getStageScoresFrom(id, StageScore.class);
+  return stageRepository.getStageScoresFrom(id, StageScore.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<StageSchedule> getStageScheduleFrom(final Long id) {
-    return stageRepository.getStageScheduleFrom(id, StageSchedule.class);
+  return stageRepository.getStageScheduleFrom(id, StageSchedule.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Set<Question> getQuestionsFrom(final Long id) {
-    return stageRepository.getQuestionsFrom(id, Question.class);
+  return stageRepository.getQuestionsFrom(id, Question.class);
 }
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 @Transactional
 public StageFullProj bindStage(final Long newSeasonId, final Long stageId) {
-    final Stage stage = stageRepository.getById(stageId, Stage.class);
-    final Season oldSeason = stage.getSeason();
-    if (oldSeason.getId().equals(newSeasonId)) return projectionFactory.createProjection(StageFullProj.class, stage);
+  final Stage stage = stageRepository.getById(stageId, Stage.class);
+  final Season oldSeason = stage.getSeason();
+  if (oldSeason.getId().equals(newSeasonId)) return projectionFactory.createProjection(StageFullProj.class, stage);
 
-    final Season newSeason = seasonRepository.getById(newSeasonId, Season.class);
-    oldSeason.getStages().remove(stage);
-    stage.setSeason(newSeason);
-    newSeason.getStages().add(stage);
+  final Season newSeason = seasonRepository.getById(newSeasonId, Season.class);
+  oldSeason.getStages().remove(stage);
+  stage.setSeason(newSeason);
+  newSeason.getStages().add(stage);
 
-    seasonRepository.save(oldSeason);
-    seasonRepository.save(newSeason);
-    return projectionFactory.createProjection(StageFullProj.class, stageRepository.save(stage));
+  seasonRepository.save(oldSeason);
+  seasonRepository.save(newSeason);
+  return projectionFactory.createProjection(StageFullProj.class, stageRepository.save(stage));
 }
 
 @PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN," +
@@ -176,5 +180,11 @@ public List<StagePublicProj> getAllPublic(final Long i) {
         return projectionFactory.createProjection(StagePublicProj.class, stage);
       })
       .toList();
+}
+
+public StageScheduleViewProj addStageSchedule(final Long stageId, final StageScheduleDto scheduleDto) {
+  final Stage stage = stageRepository.getById(stageId, Stage.class);
+  final StageSchedule schedule = StageSchedule.from(scheduleDto, stage);
+  return projectionFactory.createProjection(StageScheduleViewProj.class, stageScheduleRepository.save(schedule));
 }
 }

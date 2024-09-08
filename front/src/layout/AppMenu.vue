@@ -17,12 +17,14 @@ const model = ref([
       {label: 'Критерии', icon: 'pi pi-fw pi-table', to: '/admin/criterias'},
       {label: 'Баллы критерия', icon: 'pi pi-fw pi-hashtag', to: '/admin/criteriascores'},
       {label: 'Баллы за этапы сезона', icon: 'pi pi-fw pi-hashtag', to: '/admin/seasonstagesscores'},
+      { label: 'Расписание этапа', icon: 'pi pi-fw pi-calendar', to: '/admin/stageschedules' }
     ]
   },
   {
     label: 'Конкурс',
     items: [
       { label: 'Участники', icon: 'pi pi-fw pi-user', to: '/admin/stages/participants' },
+      { label: 'Веревочный парк', icon: 'pi pi-fw pi-directions', to: '/admin/stages/wirepark' },
       { label: 'Видео визитки', icon: 'pi pi-fw pi-video', to: '/admin/stages/video' },
       { label: 'Диктант победы', icon: 'pi pi-fw pi-pencil', to: '/admin/stages/dictant' }
     ]

@@ -37,4 +37,16 @@ export class MeService {
       .then(data => data === '')
       .catch(e => false);
   }
+
+  chooseWireparkDate(dateId) {
+    return fetchApi('/participant/wirepark/' + dateId)
+      .then((resp) => resp.text())
+      .then(data => data === '')
+      .catch(e => false);
+  }
+
+  getWireparkDates() {
+    return fetchApi('/participant/wirepark/dates')
+      .then((resp) => resp.json());
+  }
 }

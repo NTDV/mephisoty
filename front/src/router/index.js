@@ -109,6 +109,16 @@ const router = createRouter({
           path: '/expert/stagecriteriasscores/',
           name: 'stagecriteriasscores',
           component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')
+        },
+        {
+          path: '/admin/stageschedules/',
+          name: 'stageschedules',
+          component: () => import('@/views/pages/admin/StageScheduleCrud.vue')
+        },
+        {
+          path: '/admin/stages/wirepark/',
+          name: 'wirepark',
+          component: () => import('@/views/pages/admin/stages/WireparkCrud.vue')
         }
       ]
     },

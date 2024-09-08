@@ -7,7 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.valkovets.mephisoty.api.dto.VideoUploadDto;
 import ru.valkovets.mephisoty.api.dto.userdata.ParticipantMeDto;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
+import ru.valkovets.mephisoty.db.projection.special.stageSchedule.StageSchedulePublicProj;
 import ru.valkovets.mephisoty.db.service.userdata.UserService;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/participant")
@@ -20,6 +25,18 @@ private final UserService userService;
 @Operation(summary = "Записаться на этап")
 public void applyToStage(@PathVariable final Long stageId) {
   userService.applyToStage(Credentials.getCurrent().getId(), stageId);
+}
+
+@GetMapping("/wirepark/dates")
+@Operation(summary = "Доступные даты на Веревочный парк")
+public Map<LocalDate, List<StageSchedulePublicProj>> getWireparkDates() {
+  return userService.getWireparkDates();
+}
+
+@GetMapping("/wirepark/{dateId}")
+@Operation(summary = "Выбрать дату на Веревочный парк")
+public void chooseWireparkDate(@PathVariable final Long dateId) {
+  userService.chooseWireparkDate(Credentials.getCurrent().getId(), dateId);
 }
 
 @GetMapping("/dictant/{dateId}")

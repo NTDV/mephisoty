@@ -29,23 +29,20 @@ public class BasicEntity implements Serializable {
 @Id
 @GeneratedValue(strategy = GenerationType.SEQUENCE)
 @Column(name = "id", nullable = false)
-@Positive
-private Long id;
+private @Positive Long id;
 
 @Basic(fetch = FetchType.LAZY)
-@PastOrPresent
-@NotNull
 @Builder.Default
 @Column(name = "created_at", nullable = false, updatable = false)
 @CreatedDate
-private Instant createdAt = Instant.now();
+private @PastOrPresent
+@NotNull Instant createdAt = Instant.now();
 
+//@LastModifiedDate
 @Basic(fetch = FetchType.LAZY)
-@PastOrPresent
 @Nullable
 @Column(name = "modified_at")
-//@LastModifiedDate
-private Instant modifiedAt;
+private @PastOrPresent Instant modifiedAt;
 
 @Basic(fetch = FetchType.LAZY)
 //@NotNull
@@ -60,11 +57,10 @@ private Long createdBy = 0L;
 //@LastModifiedBy
 private Long modifiedBy;
 
-@NotNull
-@Length(max = 200)
 @Builder.Default
 @Column(name = "comment", nullable = false, length = 200)
-private String comment = "";
+private @NotNull
+@Length(max = 200) String comment = "";
 
 @Override
 public final boolean equals(final Object o) {
@@ -94,10 +90,11 @@ public final int hashCode() {
 public void updateModified() {
     final Credentials user = Credentials.getCurrent();
 
-    if (user != null) modifiedBy = user.getId();
-    else {
-        modifiedBy = 0L;
-    }
+  if (user != null) modifiedBy = user.getId();
+  else {
+    modifiedBy = 0L;
+  }
+
     modifiedAt = Instant.now();
 }
 }

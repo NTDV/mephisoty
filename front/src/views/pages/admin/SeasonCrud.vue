@@ -1,11 +1,11 @@
 <script setup>
-import {FilterMatchMode, FilterOperator} from 'primevue/api';
-import {onBeforeMount, onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import {SeasonService} from '@/service/admin/SeasonService';
-import {AllowStateService} from '@/service/util/AllowStateService';
-import {DateTimeService} from '@/service/util/DateTimeService';
-import TextareaBlock from "@/components/prefab/TextareaBlock.vue";
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { onBeforeMount, onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { SeasonService } from '@/service/admin/SeasonService';
+import { AllowStateService } from '@/service/util/AllowStateService';
+import { DateTimeService } from '@/service/util/DateTimeService';
+import TextareaBlock from '@/components/prefab/TextareaBlock.vue';
 
 const toast = useToast();
 
@@ -481,7 +481,7 @@ const viewSeason = (id) => {
           </div>
 
           <div class="field">
-            <TextareaBlock v-model="season.description" label="Правила"/>
+            <TextareaBlock v-model="season.rules" label="Правила" />
           </div>
 
           <div class="field">

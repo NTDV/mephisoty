@@ -15,13 +15,11 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TdrseEntity extends TdrEntity {
-@NotNull
 @Builder.Default
 @Column(name = "start_at")
-private OffsetDateTime start = OffsetDateTime.now();
+private @NotNull OffsetDateTime start = OffsetDateTime.now();
 
-@NotNull
 @Builder.Default
 @Column(name = "end_at")
-private OffsetDateTime end = OffsetDateTime.now();
+private @NotNull OffsetDateTime end = OffsetDateTime.now();
 }
