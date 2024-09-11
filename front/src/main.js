@@ -337,7 +337,7 @@ if (urlParams.has('ticket')) {
         if (creds.role === 'ADMIN') {
           window.location.replace(window.$frontHost + '/admin/seasons');
         } else if (creds.role === 'EXPERT') {
-          window.location.replace(window.$frontHost + '/expert/me');
+          window.location.replace(window.$frontHost);
         } else if (creds.role === 'PARTICIPANT') {
           window.location.replace(window.$frontHost + '/participant/me');
         } else {

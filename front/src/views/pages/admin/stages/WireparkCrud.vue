@@ -41,7 +41,13 @@ const initFilters = () => {
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     id: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     fullName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-    group: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
+    'group.title': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    prettyVkNick: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+    },
+    tgNick: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+    phoneNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
   };
 };
 const loadLazyData = (event) => {
@@ -58,7 +64,10 @@ const loadLazyData = (event) => {
 const createModelClient = (seasonServer) => {
   return {
     ...seasonServer,
-    dateTimePretty: seasonServer.dateTime == null ? undefined : dateTimeService.formatDateTimeFromDate(dateTimeService.getDateFromTimestamp(seasonServer.dateTime))
+    'group.title': seasonServer.group,
+    dateTimePretty: seasonServer.dateTime == null ? undefined : dateTimeService.formatDateTimeFromDate(dateTimeService.getDateFromTimestamp(seasonServer.dateTime)),
+    prettyVkNick: seasonServer.vkNick == '' ? undefined : 'https://vk.com/' + seasonServer.vkNick,
+    prettyTgNick: seasonServer.tgNick == '' ? undefined : 'https://t.me/' + seasonServer.tgNick
   };
 };
 
@@ -157,15 +166,15 @@ const clearFilter = () => {
             </template>
           </Column>
 
-          <Column :sortable="true" field="group" header="Группа" headerStyle="width:10%; min-width:10rem;">
-            <template #body="slotProps">{{ slotProps.data.group ?? 'БЕЗ ГРУППЫ' }}</template>
+          <Column :sortable="true" field="group.title" header="Группа" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.group?.title ?? 'БЕЗ ГРУППЫ' }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по группе"
                          type="text" @keydown.enter="filterCallback()" />
             </template>
           </Column>
 
-          <Column :sortable="true" field="fullName" header="Имя" headerStyle="width:50%; min-width:10rem;">
+          <Column :sortable="true" field="fullName" header="Имя" headerStyle="width:30%; min-width:10rem;">
             <template #body="slotProps">{{ slotProps.data.fullName }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по имени"
@@ -173,9 +182,29 @@ const clearFilter = () => {
             </template>
           </Column>
 
-          <Column field="dateTimePretty" header="Слот" headerStyle="width:30%; min-width:10rem;">
+          <Column field="dateTimePretty" header="Слот" headerStyle="width:20%; min-width:10rem;">
             <template #body="slotProps">
               {{ slotProps.data.dateTimePretty }}
+            </template>
+          </Column>
+
+          <Column field="prettyVkNick" header="Ник ВК" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps"><a :href="slotProps.data.prettyVkNick">{{ slotProps.data.vkNick }}</a>
+            </template>
+          </Column>
+
+          <Column field="prettyTgNick" header="ТГ-контакт" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps"><a :href="slotProps.data.prettyTgNick">{{ slotProps.data.tgNick }}</a>
+            </template>
+          </Column>
+
+          <Column :sortable="true" field="phoneNumber" header="Номер телефона"
+                  headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.phoneNumber }}</template>
+            <template #filter="{ filterModel, filterCallback }">
+              <InputMask v-model="filterModel.value" class="p-column-filter" mask="+7 (999) 999-99-99"
+                         placeholder="+7 (123) 456-78-90"
+                         type="text" @keydown.enter="filterCallback()" />
             </template>
           </Column>
         </DataTable>

@@ -47,7 +47,13 @@ const initFilters = () => {
     'group.title': {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-    }
+    },
+    prettyVkNick: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+    },
+    tgNick: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+    phoneNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
   };
 };
 const loadLazyData = (event) => {
@@ -64,7 +70,10 @@ const loadLazyData = (event) => {
 const createModelClient = (seasonServer) => {
   return {
     ...seasonServer,
-    'group.title': seasonServer.group
+    'group.title': seasonServer.group,
+    prettyFile: !seasonServer.fileId ? '' : window.$frontHost + '/expert/file/' + seasonServer.fileId,
+    prettyVkNick: seasonServer.vkNick == '' ? undefined : 'https://vk.com/' + seasonServer.vkNick,
+    prettyTgNick: seasonServer.tgNick == '' ? undefined : 'https://t.me/' + seasonServer.tgNick
   };
 };
 
@@ -178,7 +187,7 @@ const watch = (videoId) => {
             </template>
           </Column>
 
-          <Column :sortable="true" field="fullName" header="Имя" headerStyle="width:40%; min-width:10rem;">
+          <Column :sortable="true" field="fullName" header="Имя" headerStyle="width:25%; min-width:10rem;">
             <template #body="slotProps">{{ slotProps.data.fullName }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по имени"
@@ -186,20 +195,39 @@ const watch = (videoId) => {
             </template>
           </Column>
 
-          <Column field="fileId" header="Файл" headerStyle="width:10%; min-width:10rem;">
+          <Column field="prettyFile" header="Файл" headerStyle="width:10%; min-width:10rem;">
             <template #body="slotProps">
               <a v-if="slotProps.data.fileId" href="#" @click="watch(slotProps.data.fileId)">Смотреть</a>
               <br>
-              <a v-if="slotProps.data.fileId" href="#" @click="fileService.download(slotProps.data.fileId)">Скачать</a>
+              <a v-if="slotProps.data.fileId" :href="slotProps.data.prettyFile" target="_blank">Скачать</a>
             </template>
           </Column>
 
-          <Column field="url" header="Ссылка" headerStyle="width:35%; min-width:10rem;">
+          <Column field="url" header="Ссылка" headerStyle="width:20%; min-width:10rem;">
             <template #body="slotProps">
               <a v-if="slotProps.data.url" :href="slotProps.data.url">{{ slotProps.data.url }}</a>
             </template>
           </Column>
 
+          <Column field="prettyVkNick" header="Ник ВК" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps"><a :href="slotProps.data.prettyVkNick">{{ slotProps.data.vkNick }}</a>
+            </template>
+          </Column>
+
+          <Column field="prettyTgNick" header="ТГ-контакт" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps"><a :href="slotProps.data.prettyTgNick">{{ slotProps.data.tgNick }}</a>
+            </template>
+          </Column>
+
+          <Column :sortable="true" field="phoneNumber" header="Номер телефона"
+                  headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.phoneNumber }}</template>
+            <template #filter="{ filterModel, filterCallback }">
+              <InputMask v-model="filterModel.value" class="p-column-filter" mask="+7 (999) 999-99-99"
+                         placeholder="+7 (123) 456-78-90"
+                         type="text" @keydown.enter="filterCallback()" />
+            </template>
+          </Column>
         </DataTable>
       </div>
     </div>

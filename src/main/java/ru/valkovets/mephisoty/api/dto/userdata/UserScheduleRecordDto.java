@@ -12,6 +12,9 @@ public record UserScheduleRecordDto(
     @Nullable Long id,
     @Nullable String fullName,
     @Nullable String group,
+    @Nullable String vkNick,
+    @Nullable String tgNick,
+    @Nullable String phoneNumber,
 
     @Nullable Long recordId,
     @Nullable OffsetDateTime dateTime) {
@@ -23,6 +26,10 @@ public static UserScheduleRecordDto from(final User user, final ScheduleRecord s
       user.getId(),
       user.getFullName(),
       group == null ? null : group.getTitle(),
+
+      user.getVkNick(),
+      user.getTgNick(),
+      user.getPhoneNumber(),
 
       scheduleRecord == null ? null : scheduleRecord.getId(),
       stageSchedule == null ? null : stageSchedule.getStart());

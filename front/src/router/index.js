@@ -11,6 +11,16 @@ const router = createRouter({
       component: () => import('@/views/pages/public/Index.vue')
     },
     {
+      path: '/expert/file/:id',
+      name: 'file',
+      component: () => import('@/views/pages/public/GetFile.vue')
+    },
+    //{
+    //  path: '/hack',
+    //  name: 'hackathon',
+    //  component: () => import('@/views/pages/public/Hackathon.vue')
+    //},
+    {
       path: '/logout',
       name: 'logout',
       component: () => import('@/views/pages/public/Logout.vue')

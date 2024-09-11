@@ -16,6 +16,10 @@ public record UserFileDto(
     @Nullable String fullName,
     @Nullable String group,
 
+    @Nullable String vkNick,
+    @Nullable String tgNick,
+    @Nullable String phoneNumber,
+
     @Nullable Long answerId,
     @Nullable Long fileId,
     @Nullable String url) {
@@ -27,6 +31,10 @@ public static UserFileDto from(final User user, @Nullable final Answer answer) {
       user.getId(),
       user.getFullName(),
       group == null ? null : group.getTitle(),
+
+      user.getVkNick(),
+      user.getTgNick(),
+      user.getPhoneNumber(),
 
       answer == null ? null : answer.getId(),
       answer == null || files.isEmpty() ? null : files.iterator().next().getId(),
