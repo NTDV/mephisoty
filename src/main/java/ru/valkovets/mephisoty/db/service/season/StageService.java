@@ -1,5 +1,7 @@
 package ru.valkovets.mephisoty.db.service.season;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
@@ -12,17 +14,22 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import ru.valkovets.mephisoty.api.controller.participant.ParticipantController;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
+import ru.valkovets.mephisoty.api.dto.season.HackathonApplyDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
 import ru.valkovets.mephisoty.api.dto.season.StageScheduleDto;
 import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
+import ru.valkovets.mephisoty.application.lifecycle.Init;
 import ru.valkovets.mephisoty.db.model.files.File;
 import ru.valkovets.mephisoty.db.model.season.Season;
 import ru.valkovets.mephisoty.db.model.season.Stage;
+import ru.valkovets.mephisoty.db.model.season.qa.Answer;
 import ru.valkovets.mephisoty.db.model.season.qa.Question;
 import ru.valkovets.mephisoty.db.model.season.schedule.StageSchedule;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.StageScore;
+import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.projection.extended.IdTitleProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaFullProj;
 import ru.valkovets.mephisoty.db.projection.special.file.FileProj;
@@ -34,13 +41,17 @@ import ru.valkovets.mephisoty.db.projection.special.stageSchedule.StageScheduleV
 import ru.valkovets.mephisoty.db.repository.files.FileRepository;
 import ru.valkovets.mephisoty.db.repository.season.SeasonRepository;
 import ru.valkovets.mephisoty.db.repository.season.StageRepository;
+import ru.valkovets.mephisoty.db.repository.season.qa.AnswerRepository;
 import ru.valkovets.mephisoty.db.repository.season.schedule.StageScheduleRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.CriteriaRepository;
+import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
 import ru.valkovets.mephisoty.settings.AllowState;
 import ru.valkovets.mephisoty.settings.FileAccessPolicy;
+import ru.valkovets.mephisoty.settings.UserRole;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,6 +64,10 @@ private final CriteriaRepository criteriaRepository;
 private final SeasonRepository seasonRepository;
 private final FileRepository fileRepository;
 private final StageScheduleRepository stageScheduleRepository;
+private final ObjectMapper objectMapper;
+private final UserRepository userRepository;
+private final AnswerRepository answerRepository;
+private final ParticipantController participantController;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification, final Sort sort) {
@@ -171,13 +186,29 @@ public List<StagePublicProj> getAllPublic(final Long i) {
       .stream()
       .filter(stage -> AllowState.ALLOW_READ_FOR_PARTICIPANTS.name().equals(stage.getStageVisibility()))
       .map(stage -> {
-        stage.setFiles(
-            stage.getFiles()
-                 .parallelStream()
-                 .filter(file -> file.getAccessPolicy().equals(FileAccessPolicy.ALL))
-                 .collect(Collectors.toUnmodifiableSet()));
+        final Set<FileProj> files = stage
+            .getFiles()
+            .parallelStream()
+            .filter(file -> file.getAccessPolicy().equals(FileAccessPolicy.ALL))
+            .map(file -> projectionFactory.createProjection(FileProj.class, file))
+            .collect(Collectors.toUnmodifiableSet());
 
-        return projectionFactory.createProjection(StagePublicProj.class, stage);
+        return (StagePublicProj) new StagePublicProj() {
+          @Override
+          public String getDescription() {return stage.getDescription();}
+
+          @Override
+          public String getApplyVisibility() {return stage.getApplyVisibility();}
+
+          @Override
+          public Set<FileProj> getFiles() {return files;}
+
+          @Override
+          public Long getId() {return stage.getId();}
+
+          @Override
+          public String getTitle() {return stage.getTitle();}
+        };
       })
       .toList();
 }
@@ -186,5 +217,43 @@ public StageScheduleViewProj addStageSchedule(final Long stageId, final StageSch
   final Stage stage = stageRepository.getById(stageId, Stage.class);
   final StageSchedule schedule = StageSchedule.from(scheduleDto, stage);
   return projectionFactory.createProjection(StageScheduleViewProj.class, stageScheduleRepository.save(schedule));
+}
+
+@Transactional
+public void applyHackathon(final HackathonApplyDto hackathonApplyDto) throws JsonProcessingException {
+  final String json = objectMapper.writeValueAsString(hackathonApplyDto);
+
+  final Credentials credentials = Credentials.getCurrent();
+  if (credentials != null && credentials.getRole() == UserRole.PARTICIPANT) {
+    final Long userId = credentials.getUser().getId();
+
+    final Set<Stage> chosenStages = userRepository.findById(userId)
+                                                  .orElseThrow()
+                                                  .getChosenStages();
+
+    final Stage fakeStage = Stage.builder().id(Init._2024_HACKATHON_STAGE_ID).build();
+    if (chosenStages.contains(fakeStage) && userId != 5L) {
+      final Set<Answer> answers =
+          answerRepository.findAllByParticipant_IdAndQuestion_Id(userId, Init._2024_HACKATHON_QUESTION_ID);
+
+      if (answers.size() > 1) {
+        throw new IllegalStateException("Multiple answers for one question");
+      } else if (answers.size() == 1) {
+        final Answer answer = answers.iterator().next();
+        answer.setRichAnswer(json);
+        answerRepository.save(answer);
+        return;
+      }
+    } else {
+      chosenStages.add(fakeStage);
+    }
+  }
+
+  answerRepository.save(Answer.builder()
+                              .question(Question.builder().id(Init._2024_HACKATHON_QUESTION_ID).build())
+                              .richAnswer(json)
+                              .participant(userRepository.findById(Optional.ofNullable(hackathonApplyDto.userId()).orElse(5L))
+                                                         .orElseThrow())
+                              .build());
 }
 }

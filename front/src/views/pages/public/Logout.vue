@@ -3,12 +3,7 @@ import { onBeforeMount } from 'vue';
 import AppTitle from '@/components/prefab/AppTitle.vue';
 
 onBeforeMount(() => {
-  delete localStorage.jwt;
-  delete localStorage.jwt_payload;
-  delete localStorage.fio;
-  delete localStorage.fullName;
-  delete localStorage.isNew;
-  delete localStorage.role;
+  localStorage.clear();
 });
 </script>
 

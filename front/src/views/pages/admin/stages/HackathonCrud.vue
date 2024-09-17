@@ -1,8 +1,8 @@
 <script setup>
-import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { FilterMatchMode } from 'primevue/api';
 import { onBeforeMount, onMounted, ref } from 'vue';
 import { DateTimeService } from '@/service/util/DateTimeService';
-import { WireparkStageService } from '@/service/admin/stages/WireparkStageService';
+import { HackathonStageService } from '@/service/admin/stages/HackathonStageService';
 
 const loading = ref(false);
 const lazyParams = ref({});
@@ -12,7 +12,7 @@ const selectAll = ref(false);
 
 const dt = ref(null);
 
-const wireparkStageService = new WireparkStageService();
+const hackathonStageService = new HackathonStageService();
 const dateTimeService = new DateTimeService();
 
 const models = ref(null);
@@ -38,36 +38,25 @@ onMounted(() => {
 
 const initFilters = () => {
   filters.value = {
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    id: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-    fullName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-    'group.title': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-    prettyVkNick: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-    },
-    tgNick: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-    phoneNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
   };
 };
 const loadLazyData = (event) => {
   loading.value = true;
   lazyParams.value = { ...lazyParams.value, first: event?.first || first.value };
 
-  wireparkStageService.getAll(lazyParams.value).then((data) => {
+  hackathonStageService.getAll(lazyParams.value).then((data) => {
     models.value = data.collection.map((val) => createModelClient(val));
     totalRecords.value = data.total;
     loading.value = false;
   });
 };
 
-const createModelClient = (seasonServer) => {
+const createModelClient = (modelServer) => {
   return {
-    ...seasonServer,
-    'group.title': seasonServer.group,
-    dateTimePretty: seasonServer.dateTime == null ? undefined : dateTimeService.formatDateTimeFromDate(dateTimeService.getDateFromTimestamp(seasonServer.dateTime)),
-    prettyVkNick: seasonServer.vkNick == '' ? undefined : 'https://vk.com/' + seasonServer.vkNick,
-    prettyTgNick: seasonServer.tgNick == '' ? undefined : 'https://t.me/' + seasonServer.tgNick
+    ...modelServer,
+    fullName: (modelServer.secondName + ' ' + modelServer.firstName + ' ' + modelServer.thirdName).trim(),
+    prettyTgNick: modelServer.tg == '' ? undefined : 'https://t.me/' + modelServer.tg
   };
 };
 
@@ -151,61 +140,42 @@ const clearFilter = () => {
           @row-unselect="onRowUnselect">
           <template #header>
             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-              <h5 class="m-0">Управление участниками Спортивного этапа в веревочном парке</h5>
+              <h5 class="m-0">Управление участниками Хакатона</h5>
               <Button icon="pi pi-filter-slash" label="Сбросить фильтры" outlined type="button"
                       @click="clearFilter()" />
             </div>
           </template>
           <template #empty> Участников не найдено.</template>
 
-          <Column :sortable="true" dataType="numeric" field="id" header="ID"
+          <Column dataType="numeric" field="userId" header="ID"
                   headerStyle="width:10%; min-width:5rem;">
-            <template #body="slotProps">{{ slotProps.data.id }}</template>
-            <template #filter="{ filterModel, filterCallback }">
-              <InputNumber v-model="filterModel.value" mode="decimal" @keydown.enter="filterCallback()" />
-            </template>
+            <template #body="slotProps">{{ slotProps.data.userId }}</template>
           </Column>
-
-          <Column :sortable="true" field="group.title" header="Группа" headerStyle="width:10%; min-width:10rem;">
-            <template #body="slotProps">{{ slotProps.data.group ?? 'БЕЗ ГРУППЫ' }}</template>
-            <template #filter="{ filterModel, filterCallback }">
-              <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по группе"
-                         type="text" @keydown.enter="filterCallback()" />
-            </template>
-          </Column>
-
-          <Column :sortable="true" field="fullName" header="Имя" headerStyle="width:30%; min-width:10rem;">
+          <Column field="fullName" header="Имя" headerStyle="width:30%; min-width:10rem;">
             <template #body="slotProps">{{ slotProps.data.fullName }}</template>
-            <template #filter="{ filterModel, filterCallback }">
-              <InputText v-model="filterModel.value" class="p-column-filter" placeholder="Искать по имени"
-                         type="text" @keydown.enter="filterCallback()" />
-            </template>
           </Column>
 
-          <Column field="dateTimePretty" header="Слот" headerStyle="width:20%; min-width:10rem;">
-            <template #body="slotProps">
-              {{ slotProps.data.dateTimePretty }}
-            </template>
+          <Column field="groupTitle" header="Группа" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.groupTitle }}</template>
           </Column>
-
-          <Column field="prettyVkNick" header="Ник ВК" headerStyle="width:10%; min-width:10rem;">
-            <template #body="slotProps"><a :href="slotProps.data.prettyVkNick">{{ slotProps.data.vkNick }}</a>
-            </template>
+          <Column field="filial" header="Филиал" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.filial }}</template>
           </Column>
 
           <Column field="prettyTgNick" header="ТГ-контакт" headerStyle="width:10%; min-width:10rem;">
-            <template #body="slotProps"><a :href="slotProps.data.prettyTgNick">{{ slotProps.data.tgNick }}</a>
+            <template #body="slotProps"><a :href="slotProps.data.prettyTgNick">{{ slotProps.data.tg }}</a>
+            </template>
+          </Column>
+          <Column field="email" header="Почта" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps"><a :href="'mailto:' + slotProps.data.email">{{ slotProps.data.email }}</a>
             </template>
           </Column>
 
-          <Column :sortable="true" field="phoneNumber" header="Номер телефона"
-                  headerStyle="width:10%; min-width:12rem;">
-            <template #body="slotProps">{{ slotProps.data.phoneNumber }}</template>
-            <template #filter="{ filterModel, filterCallback }">
-              <InputMask v-model="filterModel.value" class="p-column-filter" mask="+7 (999) 999-99-99"
-                         placeholder="+7 (123) 456-78-90"
-                         type="text" @keydown.enter="filterCallback()" />
-            </template>
+          <Column field="task" header="Задача" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.task }}</template>
+          </Column>
+          <Column field="commandTitle" header="Команда" headerStyle="width:10%; min-width:10rem;">
+            <template #body="slotProps">{{ slotProps.data.commandTitle }}</template>
           </Column>
         </DataTable>
       </div>

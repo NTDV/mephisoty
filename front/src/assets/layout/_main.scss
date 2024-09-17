@@ -87,6 +87,18 @@ textarea.fixed-resizable {
   z-index: 1;
 }
 
+.top-5 {
+  top: 5%;
+}
+
+.top-10 {
+  top: 10%;
+}
+
+.top-20 {
+  top: 20%;
+}
+
 .top-30 {
   top: 30%;
 }
@@ -176,6 +188,23 @@ textarea.fixed-resizable {
   background-color: var(--primary-colors-4);
 }
 
+.undersquare-alt-2 {
+  z-index: 1;
+  position: relative;
+}
+
+.undersquare-alt-2:before {
+  z-index: -1;
+  content: "";
+  display: inline-block;
+  position: absolute;
+  left: -0.4em;
+  top: 1em;
+  width: 2.1em;
+  height: 0.3em;
+  background-color: var(--primary-color);
+}
+
 .undersquare-3-alt-2 {
   z-index: 1;
   position: relative;
@@ -215,4 +244,8 @@ textarea.fixed-resizable {
 
 .border-primary-colors-1 {
   border-color: var(--primary-colors-1) !important;
+}
+
+.border-primary-colors-4 {
+  border-color: var(--primary-colors-4) !important;
 }

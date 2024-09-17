@@ -46,7 +46,15 @@ const apply = () => {
         </div>
       </div>
 
-      <div v-if="stageModel.applyVisibility !== 'DISALLOW_ALL_FOR_PARTICIPANTS'" class="" @click="apply">
+      <a v-if="stageModel.id === 2 && stageModel.applyVisibility !== 'DISALLOW_ALL_FOR_PARTICIPANTS'" class="block"
+         href="/hackathon">
+        <div
+          class="w-fit border-round-2xl border-1 border-white-alpha-90 py-3 px-4 xl:px-3 xxl:px-4 text-center cursor-pointer">
+          <span class="text-white text-lg md:text-xl lg:text-2xl">Участвовать</span>
+        </div>
+      </a>
+
+      <div v-else-if="stageModel.applyVisibility !== 'DISALLOW_ALL_FOR_PARTICIPANTS'" @click="apply">
         <div
           class="w-fit border-round-2xl border-1 border-white-alpha-90 py-3 px-4 xl:px-3 xxl:px-4 text-center cursor-pointer">
           <a class="text-white text-lg md:text-xl lg:text-2xl">Участвовать</a>

@@ -11,10 +11,13 @@ import ru.valkovets.mephisoty.api.dto.season.CriteriaScoresAllDto;
 import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
 import ru.valkovets.mephisoty.api.dto.season.StageCriteriasScoresAllDto;
 import ru.valkovets.mephisoty.db.manager.ParticipantsManager;
+import ru.valkovets.mephisoty.db.model.season.Stage;
+import ru.valkovets.mephisoty.db.model.season.Stage_;
 import ru.valkovets.mephisoty.db.model.season.scoring.Criteria;
 import ru.valkovets.mephisoty.db.model.season.scoring.CriteriaScore;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
 import ru.valkovets.mephisoty.db.model.userdata.User;
+import ru.valkovets.mephisoty.db.model.userdata.User_;
 import ru.valkovets.mephisoty.db.projection.simple.UserNameIdProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaScoreShortProj;
 import ru.valkovets.mephisoty.db.projection.special.CriteriaShortestProj;
@@ -37,13 +40,21 @@ private final UserRepository userRepository;
 private final CriteriaRepository criteriaRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
+@Transactional
 public CriteriaScoresAllDto getAll(final int page, final int size, final Long criteriaId,
                                    final Specification<User> participantsFilter,
                                    final Sort participantSort) {
   final List<UserNameIdProj> experts = getAllExperts();
 
-  final ParticipantsManager.ParticipantsTableResult result = ParticipantsManager
-      .getParticipantsTableResult(userRepository, page, size, participantsFilter, participantSort);
+  final Stage stage = criteriaRepository.findById(criteriaId).orElseThrow().getStage();
+
+  final ParticipantsManager.ParticipantsTableResult result = ParticipantsManager.getParticipantsTableResult(
+      userRepository, page, size,
+      Specification.where(participantsFilter)
+                   .and(((root, query, builder) -> builder.and(
+                       builder.equal(root.get(User_.credentials).get("role"), UserRole.PARTICIPANT),
+                       builder.equal(root.join(User_.chosenStages).get(Stage_.id), stage.getId())))),
+      participantSort);
 
   final Set<CriteriaScoreShortProj> scores = scoreRepository.getAllByParticipant_IdInAndCriteria_Id(
       result.participantsById().keySet(), criteriaId, CriteriaScoreShortProj.class);
@@ -74,8 +85,13 @@ public StageCriteriasScoresAllDto getAllForStage(final int page, final int size,
                                 (u1, u2) -> u1,
                                 LinkedHashMap::new));
 
-  final ParticipantsManager.ParticipantsTableResult result = ParticipantsManager
-      .getParticipantsTableResult(userRepository, page, size, participantsFilter, participantSort);
+  final ParticipantsManager.ParticipantsTableResult result = ParticipantsManager.getParticipantsTableResult(
+      userRepository, page, size,
+      Specification.where(participantsFilter)
+                   .and(((root, query, builder) -> builder.and(
+                       builder.equal(root.get(User_.credentials).get("role"), UserRole.PARTICIPANT),
+                       builder.equal(root.join(User_.chosenStages).get(Stage_.id), stageId)))),
+      participantSort);
 
   final Set<StageCriteriaScoreShortProj> scores = scoreRepository.getAllByExpertIdAndParticipant_IdInAndCriteria_IdIn(
       expertId, result.participantsById().keySet(), criterias.keySet(), StageCriteriaScoreShortProj.class);

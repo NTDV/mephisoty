@@ -74,7 +74,7 @@ const isMobile = ref(isMobileOrTablet);
 
           <div class="align-items-center flex-grow-1 justify-content-between hidden xxl:flex absolute xxl:static w-fit
                       left-0 px-6 xxl:px-0 z-2 text-4xl bg-black xxl:bg-transparent"
-               style="top: 120px;">
+               style="top: 70px;">
             <ul
               class="list-none p-0 m-0 flex xxl:align-items-center select-none flex-column xxl:flex-row cursor-pointer">
               <li>
@@ -298,7 +298,7 @@ const isMobile = ref(isMobileOrTablet);
             </a>
 
             <a class="border-round-3xl border-1 mr-2 md:mr-3 lg:mr-4 py-1 px-3 bg-primary-gradient text-white border-white-alpha-90 flex justify-content-center align-items-center mb-3 sm:mb-4 lg:mb-5 text-xl md:text-2xl lg:text-3xl"
-               href="https://t.me/student_of_year">
+               href="https://t.me/Best_MEPHI_student_bot">
               <img class="mr-2 p-0" src="/assets/images/logo_tg.svg" style="height: 2em;" />Telegram-бот
             </a>
 

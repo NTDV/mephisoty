@@ -1,5 +1,6 @@
 package ru.valkovets.mephisoty.security.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,38 +46,41 @@ protected boolean shouldNotFilter(final HttpServletRequest request) {
 
 @Override
 protected void doFilterInternal(
-    @NonNull final HttpServletRequest request,
-    @NonNull final HttpServletResponse response,
-    @NonNull final FilterChain filterChain) throws ServletException, IOException {
-
-  // Получаем токен из заголовка
-  final String authHeader = request.getHeader(HEADER_NAME);
-  if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-    filterChain.doFilter(request, response);
-    return;
-  }
-
-  // Обрезаем префикс и получаем имя пользователя из токена
-  final String jwt = authHeader.substring(BEARER_PREFIX.length());
-  final String username = jwtService.extractUserName(jwt);
-
-  if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-    final Credentials credentials = credentialsService.findByMephiLogin(username)
-                                                      .orElseThrow(() -> new AuthenticationCredentialsNotFoundException(
-                                                          "User not found"));
-
-    // Если токен валиден, то аутентифицируем пользователя
-    if (jwtService.isTokenValid(jwt, credentials)) {
-      final SecurityContext context = SecurityContextHolder.createEmptyContext();
-
-      final MephiAuthenticationToken authToken = new MephiAuthenticationToken(credentials);
-
-      authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-      context.setAuthentication(authToken);
-      SecurityContextHolder.setContext(context);
+    final @NonNull HttpServletRequest request,
+    final @NonNull HttpServletResponse response,
+    final @NonNull FilterChain filterChain) throws ServletException, IOException {
+  try {
+    // Получаем токен из заголовка
+    final String authHeader = request.getHeader(HEADER_NAME);
+    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+      filterChain.doFilter(request, response);
+      return;
     }
-  }
 
-  filterChain.doFilter(request, response);
+    // Обрезаем префикс и получаем имя пользователя из токена
+    final String jwt = authHeader.substring(BEARER_PREFIX.length());
+    final String username = jwtService.extractUserName(jwt);
+
+    if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
+      final Credentials credentials = credentialsService.findByMephiLogin(username)
+                                                        .orElseThrow(() -> new AuthenticationCredentialsNotFoundException(
+                                                            "User not found"));
+
+      // Если токен валиден, то аутентифицируем пользователя
+      if (jwtService.isTokenValid(jwt, credentials)) {
+        final SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+        final MephiAuthenticationToken authToken = new MephiAuthenticationToken(credentials);
+
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        context.setAuthentication(authToken);
+        SecurityContextHolder.setContext(context);
+      }
+    }
+
+    filterChain.doFilter(request, response);
+  } catch (final ExpiredJwtException expiredJwtException) {
+    response.getWriter().write("{\"err\":\"ExpiredJwtException\", \"dsc\":\"\"}");
+  }
 }
 }

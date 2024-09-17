@@ -129,8 +129,10 @@ import { loadSlim } from '@tsparticles/slim';
 import TextRunner from '@/components/prefab/TextRunner.vue';
 import StagePublicBlock from '@/components/prefab/StagePublicBlock.vue';
 import FilesEditor from '@/components/prefab/FilesEditor.vue';
+import PlanetRunner from '@/components/prefab/PlanetRunner.vue';
 
 const app = createApp(App);
+
 const locale = await fetch('/locale/ru.json')
   .then((res) => res.json())
   .then((d) => d.ru);
@@ -279,6 +281,7 @@ app.component('ScoreEditorBlock', ScoreEditorBlock);
 app.component('AchievementTypeInputBlock', AchievementTypeInputBlock);
 app.component('AppTitle', AppTitle);
 app.component('TextRunner', TextRunner);
+app.component('PlanetRunner', PlanetRunner);
 app.component('StagePublicBlock', StagePublicBlock);
 app.component('FilesEditor', FilesEditor);
 
@@ -355,7 +358,9 @@ function getFullUrl(relativeUrl) {
   return window.$apiHost + (relativeUrl.startsWith('/') ? relativeUrl : '/' + relativeUrl);
 }
 
-export default function fetchApi(relativeUrl, options, isFile = false) {
+export default function fetchApi(relativeUrl,
+                                 options,
+                                 isFile = false) {
   if (relativeUrl) {
     if (isFile) {
       return axios.post(getFullUrl(relativeUrl), options, {

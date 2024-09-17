@@ -15,11 +15,11 @@ const router = createRouter({
       name: 'file',
       component: () => import('@/views/pages/public/GetFile.vue')
     },
-    //{
-    //  path: '/hack',
-    //  name: 'hackathon',
-    //  component: () => import('@/views/pages/public/Hackathon.vue')
-    //},
+    {
+      path: '/hackathon',
+      name: 'hackathon',
+      component: () => import('@/views/pages/public/Hackathon.vue')
+    },
     {
       path: '/logout',
       name: 'logout',
@@ -129,6 +129,11 @@ const router = createRouter({
           path: '/admin/stages/wirepark/',
           name: 'wirepark',
           component: () => import('@/views/pages/admin/stages/WireparkCrud.vue')
+        },
+        {
+          path: '/admin/stages/hackathon/',
+          name: 'hackathoncrud',
+          component: () => import('@/views/pages/admin/stages/HackathonCrud.vue')
         }
       ]
     },

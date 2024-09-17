@@ -12,7 +12,7 @@ import ru.valkovets.mephisoty.api.dto.ErrorDto;
 public class DefaultHandler {
 @ExceptionHandler(Exception.class)
 public ResponseEntity<ErrorDto> handleException(final Exception e) {
-    log.error("Exception catched", e);
+    log.error("Exception caught", e);
     return new ResponseEntity<>(ErrorDto.from(e), HttpStatus.OK);
 }
 }

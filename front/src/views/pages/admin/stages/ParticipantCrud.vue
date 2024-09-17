@@ -3,6 +3,8 @@ import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { onBeforeMount, onMounted, ref } from 'vue';
 import { ParticipantsStageService } from '@/service/admin/stages/ParticipantsStageService';
 import { ParticipantStateService } from '@/service/util/ParticipantStateService';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { StageService } from '@/service/admin/StageService';
 
 const loading = ref(false);
 const lazyParams = ref({});
@@ -59,7 +61,7 @@ const loadLazyData = (event) => {
   loading.value = true;
   lazyParams.value = { ...lazyParams.value, first: event?.first || first.value };
 
-  participantsStageService.getAll(lazyParams.value).then((data) => {
+  participantsStageService.getAll(lazyParams.value, parentStage.value).then((data) => {
     models.value = data.collection.map((val) => createModelClient(val));
     totalRecords.value = data.total;
     loading.value = false;
@@ -113,6 +115,12 @@ const clearFilter = () => {
   lazyParams.value.filters = filters.value;
   loadLazyData();
 };
+
+const parentStage = ref(null);
+const stageService = new StageService();
+const changeSeason = () => {
+  loadLazyData();
+};
 </script>
 
 <template>
@@ -120,6 +128,13 @@ const clearFilter = () => {
     <div class="col-12">
       <div class="card">
         <Toolbar class="mb-4">
+          <template v-slot:start>
+            <div class="my-2">
+              <SelectIdByTitleBlock v-model="parentStage" :crudService="stageService" infix="stage"
+                                    label="Родительский этап: " style="min-width: 10em; max-width: 20em;"
+                                    @change="changeSeason" />
+            </div>
+          </template>
           <template v-slot:end>
             <div>
               <Button class="mr-2 mb-2" icon="pi pi-upload" label="Экспорт" severity="help"
@@ -210,7 +225,7 @@ const clearFilter = () => {
           </Column>
 
           <Column :sortable="true" field="phoneNumber" header="Номер телефона"
-                  headerStyle="width:10%; min-width:10rem;">
+                  headerStyle="width:10%; min-width:12rem;">
             <template #body="slotProps">{{ slotProps.data.phoneNumber }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputMask v-model="filterModel.value" class="p-column-filter" mask="+7 (999) 999-99-99"

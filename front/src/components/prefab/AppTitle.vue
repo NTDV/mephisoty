@@ -1,7 +1,8 @@
 <template>
   <div class="text-left">
     <div class="relative">
-      <img class="absolute" src="/assets/images/atom.svg" style="height: 7.1em; left: -0.85em; top: -2.6em" />
+      <img class="absolute pointer-events-none" src="/assets/images/atom.svg"
+           style="height: 7.1em; left: -0.85em; top: -2.6em" />
       <router-link style="color: inherit" to="/">
         <span class="relative space-font font-medium text-nowrap">Студент года 3.0</span>
         <div class="relative space-font font-medium text-nowrap flex align-items-center">

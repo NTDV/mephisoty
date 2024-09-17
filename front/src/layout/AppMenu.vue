@@ -24,6 +24,7 @@ const model = ref([
     label: 'Конкурс',
     items: [
       { label: 'Участники', icon: 'pi pi-fw pi-user', to: '/admin/stages/participants' },
+      { label: 'Хакатон', icon: 'pi pi-fw pi-code', to: '/admin/stages/hackathon' },
       { label: 'Веревочный парк', icon: 'pi pi-fw pi-directions', to: '/admin/stages/wirepark' },
       { label: 'Видео визитки', icon: 'pi pi-fw pi-video', to: '/admin/stages/video' },
       { label: 'Диктант победы', icon: 'pi pi-fw pi-pencil', to: '/admin/stages/dictant' }

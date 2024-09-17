@@ -220,7 +220,7 @@ const watch = (videoId) => {
           </Column>
 
           <Column :sortable="true" field="phoneNumber" header="Номер телефона"
-                  headerStyle="width:10%; min-width:10rem;">
+                  headerStyle="width:10%; min-width:12rem;">
             <template #body="slotProps">{{ slotProps.data.phoneNumber }}</template>
             <template #filter="{ filterModel, filterCallback }">
               <InputMask v-model="filterModel.value" class="p-column-filter" mask="+7 (999) 999-99-99"

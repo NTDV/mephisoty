@@ -23,38 +23,32 @@ import java.util.Set;
 public class Answer extends BasicEntity {
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "question_id", nullable = false)
-@NotNull
-private Question question;
+private @NotNull Question question;
 
-@Length(max = 120)
 @Column(name = "short", length = 120)
 @Builder.Default
-private String shortAnswer = "";
+private @Length(max = 120) String shortAnswer = "";
 
-@Length(max = 4000)
 @Column(name = "rich", length = 4000)
 @Builder.Default
-private String richAnswer = "";
+private @Length(max = 4000) String richAnswer = "";
 
-@NotNull
 @Builder.Default
 @ManyToMany(fetch = FetchType.EAGER)
 @JoinTable(name = "answer_files",
            joinColumns = @JoinColumn(name = "answer_id"),
            inverseJoinColumns = @JoinColumn(name = "files_id"))
-private Set<File> files = new LinkedHashSet<>();
+private @NotNull Set<File> files = new LinkedHashSet<>();
 
 @ManyToOne(fetch = FetchType.LAZY, optional = false)
 @JoinColumn(name = "participant_id", nullable = false)
-@NotNull
-private User participant;
+private @NotNull User participant;
 
 @ManyToOne(fetch = FetchType.LAZY, optional = true)
 @JoinColumn(name = "expert_id", nullable = true)
 private User expert;
 
 @Column(name = "score")
-@PositiveOrZero
 @Builder.Default
-private Float score = 0f;
+private @PositiveOrZero Float score = 0f;
 }

@@ -338,7 +338,7 @@ const chooseWireparkDate = (schedule_id, event) => {
               <InputText v-model.trim="user.vk" max-length="255" placeholder="id123456789" />
             </div>
             <div class="field">
-              <img alt="Vk logo" class="-mb-1 mr-1" height="20" src="/assets/images/logo_tg.svg" />
+              <img alt="Tg logo" class="-mb-1 mr-1" height="20" src="/assets/images/logo_tg.svg" />
               <label class="mb-0">Ник в Телеграм</label>
               <InputText v-model.trim="user.tg" max-length="255" placeholder="myusername" />
             </div>

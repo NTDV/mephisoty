@@ -17,7 +17,7 @@ import AppTitle from '@/components/prefab/AppTitle.vue';
               <i class="pi pi-fw pi-exclamation-circle text-2xl text-white"></i>
             </div>
             <h1 class="text-900 font-bold text-5xl mb-2">Произошла ошибка</h1>
-            <span class="text-600 mb-5">Обратитесь к организаторам или администратору.</span>
+            <span class="text-600 mb-5">Попробуйте <a href="/logout">выйти из аккаунта</a> или обратитесь к организаторам или администратору.</span>
             <img alt="Error" class="mb-5" src="/demo/images/error/asset-error.svg" width="80%" />
             <div class="col-12 mt-5 text-center">
               <i class="pi pi-fw pi-arrow-left text-blue-500 mr-2" style="vertical-align: center"></i>
