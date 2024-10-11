@@ -2,6 +2,7 @@ package ru.valkovets.mephisoty.db.repository.userdata;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.valkovets.mephisoty.db.model.userdata.User;
@@ -49,4 +50,7 @@ default <T> Page<T> findAllByStateOrderByGroup_TitleAscSecondNameAscFirstNameAsc
 
 @Query("select u from User u where u.fullName = ?1 and u.credentials is null")
 Set<User> findAllByFullNameAndWithoutCredentials(String fullName);
+
+@EntityGraph("user_stage_score")
+<T> Page<T> findAllByChosenStagesIdInOrderById(Collection<Long> chosenStagesIds, Pageable pageable, Class<T> type);
 }

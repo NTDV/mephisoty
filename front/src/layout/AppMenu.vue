@@ -23,11 +23,14 @@ const model = ref([
   {
     label: 'Конкурс',
     items: [
+      { label: 'Оценки', icon: 'pi pi-fw pi-check-square', to: '/admin/stagescore/' },
       { label: 'Участники', icon: 'pi pi-fw pi-user', to: '/admin/stages/participants' },
       { label: 'Хакатон', icon: 'pi pi-fw pi-code', to: '/admin/stages/hackathon' },
       { label: 'Веревочный парк', icon: 'pi pi-fw pi-directions', to: '/admin/stages/wirepark' },
       { label: 'Видео визитки', icon: 'pi pi-fw pi-video', to: '/admin/stages/video' },
-      { label: 'Диктант победы', icon: 'pi pi-fw pi-pencil', to: '/admin/stages/dictant' }
+      { label: 'Диктант победы', icon: 'pi pi-fw pi-pencil', to: '/admin/stages/dictant' },
+      { label: 'Мат. бои', icon: 'pi pi-fw pi-sort-numeric-up-alt', to: '/admin/stages/maths' },
+      { label: 'ЧГК', icon: 'pi pi-fw pi-question', to: '/admin/stages/www' }
     ]
   },
   {

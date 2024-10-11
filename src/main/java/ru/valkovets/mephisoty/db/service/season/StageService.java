@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import ru.valkovets.mephisoty.api.controller.participant.ParticipantController;
 import ru.valkovets.mephisoty.api.dto.season.CriteriaDto;
 import ru.valkovets.mephisoty.api.dto.season.HackathonApplyDto;
 import ru.valkovets.mephisoty.api.dto.season.StageDto;
@@ -67,7 +66,6 @@ private final StageScheduleRepository stageScheduleRepository;
 private final ObjectMapper objectMapper;
 private final UserRepository userRepository;
 private final AnswerRepository answerRepository;
-private final ParticipantController participantController;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<StageShortProj> getAll(final int page, final int size, final Specification<Stage> specification, final Sort sort) {

@@ -48,6 +48,12 @@ import java.util.Set;
                           @NamedAttributeNode("group"),
                           @NamedAttributeNode("credentials"),
                           @NamedAttributeNode("chosenStages"),
+                      }),
+    @NamedEntityGraph(name = "user_stage_score",
+                      attributeNodes = {
+                          @NamedAttributeNode("chosenStages"),
+                          @NamedAttributeNode("stageScores"),
+                          @NamedAttributeNode("criteriaScores"),
                       })
 })
 @EntityListeners(AuditingEntityListener.class)
@@ -65,52 +71,48 @@ private Credentials credentials;
 @JoinColumn(name = "avatar_id")
 private File avatar;
 
-@NotNull
 //@Enumerated(EnumType.STRING)
 @Builder.Default
 @Column(name = "state", nullable = false)
-private String state = ParticipantState.NOT_PARTICIPANT.name();
-@NotNull
+private @NotNull String state = ParticipantState.NOT_PARTICIPANT.name();
+
 @Builder.Default
-@Length(max = 50)
 @Column(name = "third_name", length = 100)
-private String thirdName = "";
-@NotNull
-@Length(max = 50)
+private @NotNull
+@Length(max = 50) String thirdName = "";
 @Builder.Default
 @Column(name = "first_name", nullable = false, length = 100)
-private String firstName = "";
-@NotNull
-@Length(max = 50)
+private @NotNull
+@Length(max = 50) String firstName = "";
 @Builder.Default
 @Column(name = "second_name", nullable = false, length = 100)
-private String secondName = "";
-@NotNull
+private @NotNull
+@Length(max = 50) String secondName = "";
+
 @Builder.Default
 @Column(name = "is_new", nullable = false)
-private Boolean isNew = true;
+private @NotNull Boolean isNew = true;
 
 @Formula("concat_ws(' ', second_name, first_name, nullif(third_name, ''))")
+@Basic(fetch = FetchType.EAGER)
 private String fullName;
-@NotNull
+
 @Builder.Default
 @Column(name = "vk_nick", nullable = true, length = 255)
-private String vkNick = "";
-@NotNull
+private @NotNull String vkNick = "";
 @Builder.Default
 @Column(name = "tg_nick", nullable = true, length = 255)
-private String tgNick = "";
-@NotNull
+private @NotNull String tgNick = "";
 @Builder.Default
 @Column(name = "phone_number", nullable = true)
-private String phoneNumber = "";
-@NotNull
+private @NotNull String phoneNumber = "";
+
 @Builder.Default
 @ManyToMany(fetch = FetchType.LAZY)
 @JoinTable(name = "user_stages",
            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
            inverseJoinColumns = @JoinColumn(name = "stage_id", referencedColumnName = "id"))
-private Set<Stage> chosenStages = new LinkedHashSet<>();
+private @NotNull Set<Stage> chosenStages = new LinkedHashSet<>();
 
 public static User newEmpty() {
   return User.builder()
@@ -172,55 +174,45 @@ public boolean isBanned() {
          participantState == ParticipantState.DISQUALIFIED;
 }
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "expert", orphanRemoval = true)
-private Set<CriteriaScore> criteriaScoresAsExpert = new LinkedHashSet<>();
+private @NotNull Set<CriteriaScore> criteriaScoresAsExpert = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<CriteriaScore> criteriaScores = new LinkedHashSet<>();
+private @NotNull Set<CriteriaScore> criteriaScores = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<StageScore> stageScores = new LinkedHashSet<>();
+private @NotNull Set<StageScore> stageScores = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<SeasonScore> seasonScores = new LinkedHashSet<>();
+private @NotNull Set<SeasonScore> seasonScores = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", orphanRemoval = true)
-private Set<Achievement> achievements = new LinkedHashSet<>();
+private @NotNull Set<Achievement> achievements = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<AchievementScore> achievementScores = new LinkedHashSet<>();
+private @NotNull Set<AchievementScore> achievementScores = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<ScheduleRecord> scheduleRecords = new LinkedHashSet<>();
+private @NotNull Set<ScheduleRecord> scheduleRecords = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @ManyToMany(fetch = FetchType.LAZY, mappedBy = "experts")
-private Set<StageSchedule> stageSchedulesAsExpert = new LinkedHashSet<>();
+private @NotNull Set<StageSchedule> stageSchedulesAsExpert = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<Answer> answers = new LinkedHashSet<>();
+private @NotNull Set<Answer> answers = new LinkedHashSet<>();
 
-@NotNull
 @Builder.Default
 @OneToMany(fetch = FetchType.LAZY, mappedBy = "participant", orphanRemoval = true)
-private Set<Answer> answersAsExpert = new LinkedHashSet<>();
+private @NotNull Set<Answer> answersAsExpert = new LinkedHashSet<>();
 
 @Transient
 public String tryGetGroupTitle() {

@@ -145,7 +145,7 @@ router.beforeEach(async (to) => {
     if (role !== 'ADMIN')
       return { name: 'accessDenied' };
 
-  } else if (path.startsWith('/expert')) {
+  } else if (path.startsWith('/expert') && !path.startsWith('/expert/file')) {
     if (role !== 'EXPERT' && role !== 'ADMIN')
       return { name: 'accessDenied' };
 
@@ -371,6 +371,16 @@ export default function fetchApi(relativeUrl,
       });
     } else {
       return fetch(getFullUrl(relativeUrl), updateOptions(options))
+        .then(res => {
+          res.clone().text().then(data => {
+            if (data === '{"err":"ExpiredJwtException", "dsc":""}') {
+              window.location.href = 'https://auth.mephi.ru/login?service=' + encodeURI(window.$frontHost);
+              throw new Error('ExpiredJwtException');
+            }
+          });
+
+          return res;
+        })
         .then(res => {
           if (res.status === 403) {
             window.location.href = 'https://auth.mephi.ru/login?service=' + encodeURI(window.$frontHost);

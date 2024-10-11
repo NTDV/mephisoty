@@ -10,7 +10,7 @@ const router = useRouter();
 const fileService = new FileService();
 
 onMounted(() => {
-  fileService.download(route.params.id)
+  fileService.downloadPublic(route.params.id)
     .then(() => {
       router.back();
     })

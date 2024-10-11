@@ -1,6 +1,8 @@
 package ru.valkovets.mephisoty.db.service.userdata;
 
 import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Positive;
@@ -14,11 +16,13 @@ import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import ru.valkovets.mephisoty.api.dto.TitleCaptainDto;
 import ru.valkovets.mephisoty.api.dto.VideoUploadDto;
 import ru.valkovets.mephisoty.api.dto.season.AchievementDto;
 import ru.valkovets.mephisoty.api.dto.userdata.ParticipantMeDto;
 import ru.valkovets.mephisoty.api.dto.userdata.StageMeDto;
 import ru.valkovets.mephisoty.api.lazydata.OffsetBasedPageRequest;
+import ru.valkovets.mephisoty.application.lifecycle.Init;
 import ru.valkovets.mephisoty.application.lifecycle.ticker.AchievementScoreTicker;
 import ru.valkovets.mephisoty.application.services.FileSystemStorageService;
 import ru.valkovets.mephisoty.db.model.files.File;
@@ -78,6 +82,8 @@ private final FileRepository fileRepository;
 private final ScheduleRecordRepository scheduleRecordRepository;
 private final AnswerRepository answerRepository;
 private final StageScheduleRepository stageScheduleRepository;
+
+private final ObjectMapper objectMapper;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<IdTitleProj> getAllForSelect(final Specification<User> specification, final long offset, final long limit) {
@@ -155,16 +161,16 @@ public ParticipantMeDto getMeFor(final Long userId) {
   final List<StageMeDto> appliedDtos = finalAndNonFinal
       .get(false)
       .stream()
-      .map(stage -> stage.getScoreVisibility().equals(AllowState.YES) ?
+      .map(stage -> stage.getScoreVisibility().equals(AllowState.YES.name()) ?
                     appliedStageScoresByStageId.getOrDefault(
-                        stage.getId(), new StageScore(stage, user, 0f)) :
-                    new StageScore(stage, user, null))
+                        stage.getId(), new StageScore(stage, user, 0f, 0f, null)) :
+                    new StageScore(stage, user, null, null, null))
       .map(stageScore -> {
         final String additionalInfo =
             switch (stageScore.getStage().getId().intValue()) {
-              case 1 -> ""; // Матбои
+              case 1 -> answerRepository.getStateForMaths(userId); // Матбои
               case 2 -> ""; // Хакатон
-              case 3 -> ""; // ЧГК
+              case 3 -> answerRepository.getStateForWww(userId); // ЧГК
               case 4 -> scheduleRecordRepository.getStateForWirepark(userId); // Веревочный парк
               case 5 -> ""; // Бег
               case 6 -> answerRepository.getStateForVideo(userId); // Видео
@@ -182,11 +188,11 @@ public ParticipantMeDto getMeFor(final Long userId) {
   final List<StageMeDto> appliedFinalDtos = finalAndNonFinal
       .get(true)
       .stream()
-      .filter(stage -> stage.getId() != _2024_PORTFOLIO_STAGE_ID)
-      .map(stage -> stage.getScoreVisibility().equals(AllowState.YES) ?
+      .filter(stage -> !Objects.equals(stage.getId(), _2024_PORTFOLIO_STAGE_ID))
+      .map(stage -> stage.getScoreVisibility().equals(AllowState.YES.name()) ?
                     appliedStageScoresByStageId.getOrDefault(
-                        stage.getId(), new StageScore(stage, user, 0f)) :
-                    new StageScore(stage, user, null))
+                        stage.getId(), new StageScore(stage, user, 0f, 0f, null)) :
+                    new StageScore(stage, user, 0f, 0f, null))
       .map(StageMeDto::from)
       .toList();
 
@@ -386,7 +392,7 @@ public Map<LocalDate, List<StageSchedulePublicProj>> getWireparkDates() {
   final OffsetDateTime now = OffsetDateTime.now();
   return stageScheduleRepository.getAvailableSchedule(_2024_WIREPARK_STAGE_ID)
                                 .stream()
-                                .filter(stageSchedule -> ChronoUnit.HOURS.between(now, stageSchedule.getStart()) > 3)
+                                .filter(stageSchedule -> ChronoUnit.HOURS.between(now, stageSchedule.getStart()) > 0)
                                 .sorted(Comparator.comparing(StageSchedule::getStart))
                                 .map(stageSchedule -> projectionFactory.createProjection(StageSchedulePublicProj.class,
                                                                                          stageSchedule))
@@ -436,12 +442,80 @@ public void chooseWireparkDate(final @Positive Long userId, final Long scheduleI
 
   final OffsetDateTime now = OffsetDateTime.now();
   if (!isAdmin && (
-      ChronoUnit.HOURS.between(now, scheduleRecord.setStageSchedule(stageSchedule).getStageSchedule().getStart()) < 3 ||
-      ChronoUnit.HOURS.between(now, stageSchedule.getStart()) < 3)) {
-    throw new AccessDeniedException("Нельзя выбрать дату менее чем за 3 часа до начала");
+      ChronoUnit.HOURS.between(now, scheduleRecord.setStageSchedule(stageSchedule).getStageSchedule().getStart()) < 0 ||
+      ChronoUnit.HOURS.between(now, stageSchedule.getStart()) < 0)) {
+    throw new AccessDeniedException("Нельзя выбрать дату менее чем за 0 часов до начала");
   }
 
   scheduleRecordRepository.save(scheduleRecord);
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).PARTICIPANT)")
+@Transactional
+public void applyToMaths(final Long userId, final TitleCaptainDto titleCaptainDto) throws JsonProcessingException {
+  final String json = objectMapper.writeValueAsString(titleCaptainDto);
+
+  final Set<Stage> chosenStages = userRepository.findById(userId)
+                                                .orElseThrow()
+                                                .getChosenStages();
+
+  final Stage fakeStage = Stage.builder().id(_2024_MATHS_STAGE_ID).build();
+  if (chosenStages.contains(fakeStage)) {
+    final Set<Answer> answers =
+        answerRepository.findAllByParticipant_IdAndQuestion_Id(userId, _2024_MATHS_QUESTION_ID);
+
+    if (answers.size() > 1) {
+      throw new IllegalStateException("Multiple answers for one question");
+    } else if (answers.size() == 1) {
+      final Answer answer = answers.iterator().next();
+      answer.setRichAnswer(json);
+      answerRepository.save(answer);
+      return;
+    }
+  } else {
+    chosenStages.add(fakeStage);
+  }
+
+  answerRepository.save(Answer.builder()
+                              .question(Question.builder().id(Init._2024_MATHS_QUESTION_ID).build())
+                              .richAnswer(json)
+                              .participant(userRepository.findById(userId).orElseThrow())
+                              .build());
+}
+
+@PreAuthorize("hasAnyAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN, " +
+              "T(ru.valkovets.mephisoty.settings.UserRole).PARTICIPANT)")
+@Transactional
+public void applyToWww(final Long userId, final TitleCaptainDto titleCaptainDto) throws JsonProcessingException {
+  final String json = objectMapper.writeValueAsString(titleCaptainDto);
+
+  final Set<Stage> chosenStages = userRepository.findById(userId)
+                                                .orElseThrow()
+                                                .getChosenStages();
+
+  final Stage fakeStage = Stage.builder().id(_2024_WWW_STAGE_ID).build();
+  if (chosenStages.contains(fakeStage)) {
+    final Set<Answer> answers =
+        answerRepository.findAllByParticipant_IdAndQuestion_Id(userId, _2024_WWW_QUESTION_ID);
+
+    if (answers.size() > 1) {
+      throw new IllegalStateException("Multiple answers for one question");
+    } else if (answers.size() == 1) {
+      final Answer answer = answers.iterator().next();
+      answer.setRichAnswer(json);
+      answerRepository.save(answer);
+      return;
+    }
+  } else {
+    chosenStages.add(fakeStage);
+  }
+
+  answerRepository.save(Answer.builder()
+                              .question(Question.builder().id(Init._2024_WWW_QUESTION_ID).build())
+                              .richAnswer(json)
+                              .participant(userRepository.findById(userId).orElseThrow())
+                              .build());
 }
 
 @SuppressWarnings("LombokGetterMayBeUsed")

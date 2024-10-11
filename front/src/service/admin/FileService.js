@@ -35,6 +35,27 @@ export class FileService {
       .then(fileUrl => URL.revokeObjectURL(fileUrl));
   }
 
+  downloadPublic(fileId) {
+    return fetchApi('/file/public/' + fileId)
+      .then(async (resp) => {
+        const contentDisposition = resp.headers.get('Content-Disposition');
+        let filename = contentDisposition.split('"')[1];
+
+        return [filename, await resp.blob()];
+      })
+      .then(([filename, blob]) => {
+        const fileURL = URL.createObjectURL(blob);
+
+        const fileLink = document.createElement('a');
+        fileLink.href = fileURL;
+        fileLink.download = filename;
+
+        fileLink.click();
+        return fileURL;
+      })
+      .then(fileUrl => URL.revokeObjectURL(fileUrl));
+  }
+
   upload(file, accessPolicy = null, code = null, newFileName = null) {
     const form = new FormData();
     form.append('file', file);

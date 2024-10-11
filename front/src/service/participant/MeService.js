@@ -31,6 +31,26 @@ export class MeService {
       .catch(e => false);
   }
 
+  chooseMaths(record) {
+    return fetchApi('/participant/maths', {
+      method: 'POST',
+      body: JSON.stringify(record)
+    })
+      .then((resp) => resp.text())
+      .then(data => data === '')
+      .catch(e => false);
+  }
+
+  chooseWww(record) {
+    return fetchApi('/participant/www', {
+      method: 'POST',
+      body: JSON.stringify(record)
+    })
+      .then((resp) => resp.text())
+      .then(data => data === '')
+      .catch(e => false);
+  }
+
   chooseDictantDate(dateId) {
     return fetchApi('/participant/dictant/' + dateId)
       .then((resp) => resp.text())

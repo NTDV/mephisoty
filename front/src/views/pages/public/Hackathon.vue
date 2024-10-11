@@ -27,7 +27,7 @@ onMounted(() => {
           request.value.secondName = me.secondName;
           request.value.thirdName = me.thirdName;
           request.value.groupTitle = me.groupTitle;
-          request.value.filial = { name: 'НИЯУ МИФИ, г. Москва' };
+          request.value.filial_ = { name: 'НИЯУ МИФИ, г. Москва' };
           request.value.tg = me.tg;
         }
       })
@@ -59,7 +59,8 @@ const validate = () => {
     !request.value.secondName ||
     //!request.value.thirdName ||
     !request.value.groupTitle ||
-    !request.value.filial ||
+    !request.value.filial_ ||
+    request.value.filial_?.name === 'Другой' && !request.value.filial ||
     !request.value.tg ||
     !request.value.email ||
     !request.value.task ||
@@ -79,7 +80,7 @@ const submitRequest = () => {
     ...request.value,
     tg: trimTg(request.value.tg),
     task: request.value.task.name,
-    filial: request.value.filial.name
+    filial: request.value.filial_.name === 'Другой' ? request.value.filial : request.value.filial_.name
   })
     .then((ok) => {
       if (!ok) {
@@ -126,6 +127,7 @@ const tasks = ref([
 
 const filials = ref([
   { name: 'НИЯУ МИФИ, г. Москва' },
+  { name: 'Другой' },
   { name: 'Обнинский институт атомной энергетики' },
   { name: 'Балаковский инженерно-технологический институт' },
   { name: 'Волгодонский инженерно-технический институт' },
@@ -447,8 +449,9 @@ const aboutPanel_mts = ref(null);
                       <a class="text-white text-lg md:text-xl lg:text-2xl text-nowrap">О задаче</a>
                     </div>
 
-                    <a class="text-white block ml-4" href="https://mts-link.ru/"><img src="/assets/images/logo_mts.svg"
-                                                                                      style="height: 3rem;" /></a>
+                    <a class="text-white block ml-4" href="https://mts-link.ru/">
+                      <img src="/assets/images/logo_mts.svg" style="height: 3rem;" />
+                    </a>
                   </div>
                 </div>
               </div>
@@ -522,7 +525,13 @@ const aboutPanel_mts = ref(null);
                           style="max-width: 50%">
               <div class="font-light md:text-lg lg:text-xl text-white p-3 pre mb-2">
                 <p>
-                  Описание скоро появится.
+                  Предсказание противовирусной активности соединений - очевидная актуальная задача, которая позволит
+                  ускорить создание лекарств, используя современные цифровые инструменты. В рамках задачи необходимо
+                  собрать информацию о различных химических соединениях, для которых активность простив одного из
+                  вирусов (A/H1N1, SARS-CoV-2, HIV-1) известна, а затем обучить модель для предсказания противовирусной
+                  активности.
+
+                  Для сбора <a href="https://www.ebi.ac.uk/chembl/">подходит, например, база.</a>
                   <br>
                   <br>
                   <b>Держатель кейса: Лаборатория Хемоинформатики НИЯУ МИФИ</b>
@@ -731,12 +740,18 @@ const aboutPanel_mts = ref(null);
 
       <div class="field flex-auto">
         <label class="mb-0 block">Филиал</label>
-        <Dropdown v-model.trim="request.filial" :disabled="authed" :options="filials"
+        <Dropdown v-model.trim="request.filial_" :disabled="authed" :options="filials"
                   class="w-full" option-label="name" required />
+      </div>
+      <div v-if="request?.filial_?.name === 'Другой'" class="field flex-auto">
+        <label class="mb-0 block">Учебное учреждение</label>
+        <InputText v-model.trim="request.filial" :disabled="authed" class="w-full" max-length="100" minlength="1"
+                   required />
       </div>
       <div class="field flex-auto">
         <label class="mb-0 block">Группа</label>
-        <InputText v-model.trim="request.groupTitle" :disabled="authed" class="w-full" max-length="10" required />
+        <InputText v-model.trim="request.groupTitle" :disabled="authed" class="w-full" max-length="10" minlength="1"
+                   required />
       </div>
 
       <div class="field flex-auto">

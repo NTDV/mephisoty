@@ -8,25 +8,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.valkovets.mephisoty.api.dto.GetAllDto;
-import ru.valkovets.mephisoty.api.dto.season.HackathonApplyDto;
+import ru.valkovets.mephisoty.api.dto.TitleCaptainApplyDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
+import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
-import ru.valkovets.mephisoty.db.service.stages.HackathonStageService;
+import ru.valkovets.mephisoty.db.service.stages.WwwStageService;
 
 @RestController
-@RequestMapping("/api/admin/stages/hackathon")
+@RequestMapping("/api/admin/stages/www")
 @RequiredArgsConstructor
-@Tag(name = "Хакатон")
-public class HackathonStageController {
-private final HackathonStageService hackathonStageService;
+@Tag(name = "Мат бои")
+public class WwwStageController {
+private final WwwStageService stageService;
 
 @PostMapping("/")
-@Operation(summary = "Получить информацию об участниках хакатона")
-public GetAllDto<HackathonApplyDto> getAll(@RequestBody final DataTablePageEvent searchParams) {
+@Operation(summary = "Получить информацию об участниках чгк")
+public GetAllDto<TitleCaptainApplyDto> getAll(@RequestBody final DataTablePageEvent searchParams) {
   return GetAllDto.from(
-      hackathonStageService.getAll(
+      stageService.getAll(
           searchParams.page() == null ? (int) (searchParams.first() / searchParams.rows()) : searchParams.page(),
           searchParams.rows(),
+          PageableService.parseFilter(searchParams),
           SortService.getSort(searchParams)));
 }
 }

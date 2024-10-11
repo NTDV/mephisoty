@@ -18,13 +18,26 @@ public class Init implements SmartInitializingSingleton {
 public static final Long _2024_SEASON_ID = 1L;
 public static final Long _2024_SEASON_FINAL_ID = 2L;
 
+public static final Long _2024_MATHS_STAGE_ID = 1L;
 public static final Long _2024_HACKATHON_STAGE_ID = 2L;
+public static final Long _2024_WWW_STAGE_ID = 3L;
 public static final Long _2024_WIREPARK_STAGE_ID = 4L;
 public static final Long _2024_VIDEO_STAGE_ID = 6L;
 public static final Long _2024_DICTANT_STAGE_ID = 7L;
 public static final Long _2024_PORTFOLIO_STAGE_ID = 10L;
 
+public static final List<Long> _STAGES_ID = List.of(
+    _2024_MATHS_STAGE_ID,
+    _2024_HACKATHON_STAGE_ID,
+    _2024_WWW_STAGE_ID,
+    _2024_WIREPARK_STAGE_ID,
+    _2024_VIDEO_STAGE_ID,
+    _2024_DICTANT_STAGE_ID,
+    _2024_PORTFOLIO_STAGE_ID);
+
 public static final Long _2024_HACKATHON_QUESTION_ID = 2L;
+public static final Long _2024_MATHS_QUESTION_ID = 3L;
+public static final Long _2024_WWW_QUESTION_ID = 4L;
 
 private final SeasonRepository seasonRepository;
 private final StageRepository stageRepository;

@@ -46,12 +46,12 @@ public record ParticipantMeDto(
     Float maximumScoreFinal
 ) implements Serializable {
 
-public static ParticipantMeDto from(@NotNull final User participant, @NotNull final Long lastPosition,
+public static ParticipantMeDto from(final @NotNull User participant, final @NotNull Long lastPosition,
                                     @Nullable final StageMeDto portfolioStage,
-                                    @NotNull final List<StageMeDto> appliedStages,
-                                    @NotNull final List<StageMeDto> appliedFinalStages,
+                                    final @NotNull List<StageMeDto> appliedStages,
+                                    final @NotNull List<StageMeDto> appliedFinalStages,
                                     @Nullable final SeasonScore seasonScore, @Nullable final SeasonScore seasonFinalScore,
-                                    @NotNull final Season season, @NotNull final Season seasonFinal) {
+                                    final @NotNull Season season, final @NotNull Season seasonFinal) {
   return ParticipantMeDto
       .builder()
       .avatarFileId(participant.tryGetAvatarId())

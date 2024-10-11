@@ -4,30 +4,38 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.valkovets.mephisoty.api.dto.GetAllDto;
 import ru.valkovets.mephisoty.api.dto.season.ScoreIdCommentDto;
-import ru.valkovets.mephisoty.api.dto.season.StageScoresAllDto;
 import ru.valkovets.mephisoty.api.lazydata.dto.DataTablePageEvent;
 import ru.valkovets.mephisoty.api.lazydata.service.PageableService;
 import ru.valkovets.mephisoty.api.lazydata.service.SortService;
+import ru.valkovets.mephisoty.db.projection.special.stagescore.StageScoreTableProj;
 import ru.valkovets.mephisoty.db.service.season.scoring.StageScoreService;
 
 @RestController
-@RequestMapping("/api/admin/seasonstagescore")
+@RequestMapping("/api/admin/stagescore")
 @RequiredArgsConstructor
-@Tag(name = "Оценки по этапам сезона")
-public class SeasonStagesScoreController {
+@Tag(name = "Оценки за этап")
+public class StageScoreController {
 private final StageScoreService scoreService;
 
-@PostMapping("/{seasonId}")
-@Operation(summary = "Получить информацию об оценках за этапы сезона")
-public StageScoresAllDto getAll(@PathVariable final Long seasonId,
-                                @RequestBody final DataTablePageEvent searchParams) {
-  return scoreService.getAllForSeason(
-      searchParams.page() == null ? (int) (searchParams.first() / searchParams.rows()) : searchParams.page(),
-      searchParams.rows(),
-      seasonId,
-      PageableService.parseFilter(searchParams),
-      SortService.getSortForScoreGetAll(searchParams));
+@PostMapping("/{stageId}")
+@Operation(summary = "Получить информацию об оценке за этап")
+public GetAllDto<StageScoreTableProj> getAll(@PathVariable final Long stageId,
+                                             @RequestBody final DataTablePageEvent searchParams) {
+  return GetAllDto.from(
+      scoreService.getAll(
+          searchParams.page() == null ? (int) (searchParams.first() / searchParams.rows()) : searchParams.page(),
+          searchParams.rows(),
+          stageId,
+          PageableService.parseFilter(searchParams),
+          SortService.getSort(searchParams)));
+}
+
+@GetMapping("/{stageId}")
+@Operation(summary = "Посчитать информацию об оценке за этап")
+public void evaluate(@PathVariable final Long stageId) {
+  scoreService.evaluateFor(stageId);
 }
 
 @PostMapping("/{stageId}/{participantId}")

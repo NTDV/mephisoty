@@ -116,6 +116,16 @@ const router = createRouter({
           component: () => import('@/views/pages/admin/stages/DictantCrud.vue')
         },
         {
+          path: '/admin/stages/maths/',
+          name: 'maths',
+          component: () => import('@/views/pages/admin/stages/MathsCrud.vue')
+        },
+        {
+          path: '/admin/stages/www/',
+          name: 'www',
+          component: () => import('@/views/pages/admin/stages/WwwCrud.vue')
+        },
+        {
           path: '/expert/stagecriteriasscores/',
           name: 'stagecriteriasscores',
           component: () => import('@/views/pages/expert/StageCriteriasScoreTable.vue')
@@ -134,6 +144,11 @@ const router = createRouter({
           path: '/admin/stages/hackathon/',
           name: 'hackathoncrud',
           component: () => import('@/views/pages/admin/stages/HackathonCrud.vue')
+        },
+        {
+          path: '/admin/stagescore/',
+          name: 'stagescore',
+          component: () => import('@/views/pages/admin/stages/StageScoreCrud.vue')
         }
       ]
     },

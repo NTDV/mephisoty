@@ -17,12 +17,12 @@ private GetAllDto() {
     throw new NotImplementedException("Can not create instance of GetAllDto without args.");
 }
 
-public GetAllDto(@NotNull final Page<T> page) {
+public GetAllDto(final @NotNull Page<T> page) {
     collection = page.getContent();
     total = page.getTotalElements();
 }
 
-public static <T> GetAllDto<T> from(@NotNull final Page<T> page) {
+public static <T> GetAllDto<T> from(final @NotNull Page<T> page) {
     return new GetAllDto<>(page);
 }
 }

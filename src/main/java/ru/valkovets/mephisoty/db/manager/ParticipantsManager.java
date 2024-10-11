@@ -33,12 +33,10 @@ public static ParticipantsTableResult getParticipantsTableResult(final UserRepos
   final long participantsTotal = participantsPage.getTotalElements();
   final int participantsCount = participantsById.size();
 
-  final LinkedHashMap<Long, ScoreForParticipantDto> scoresByParticipantId =
-      new LinkedHashMap<>(participantsCount);
+  final LinkedHashMap<Long, ScoreForParticipantDto> scoresByParticipantId = new LinkedHashMap<>(participantsCount);
   for (final UserSelectProj participant : participantsById.sequencedValues()) { // Может на стримах быстрее будет, но мне так не кажется
     final Long participantId = participant.getId();
-    final HashMap<Long, ScoreIdCommentDto> scoreByExpertId =
-        new HashMap<>(8);  // todo Уточнить сколько экспертов обычно оценивает одного человека
+    final HashMap<Long, ScoreIdCommentDto> scoreByExpertId = new HashMap<>(4);
     scoresByParticipantId.put(participantId, new ScoreForParticipantDto(participant, scoreByExpertId));
   }
 

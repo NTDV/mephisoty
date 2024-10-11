@@ -1,9 +1,11 @@
 package ru.valkovets.mephisoty.api.controller.participant;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.valkovets.mephisoty.api.dto.TitleCaptainDto;
 import ru.valkovets.mephisoty.api.dto.VideoUploadDto;
 import ru.valkovets.mephisoty.api.dto.userdata.ParticipantMeDto;
 import ru.valkovets.mephisoty.db.model.userdata.Credentials;
@@ -49,6 +51,18 @@ public void chooseDictantDate(@PathVariable final Long dateId) {
 @Operation(summary = "Загрузить видео")
 public void uploadVideo(@RequestBody final VideoUploadDto videoUploadDto) {
   userService.uploadVideo(Credentials.getCurrent().getId(), videoUploadDto);
+}
+
+@PostMapping("/maths")
+@Operation(summary = "Записаться на мат бои")
+public void applyToMaths(@RequestBody final TitleCaptainDto titleCaptainDto) throws JsonProcessingException {
+  userService.applyToMaths(Credentials.getCurrent().getId(), titleCaptainDto);
+}
+
+@PostMapping("/www")
+@Operation(summary = "Записаться на ЧГК")
+public void applyToWww(@RequestBody final TitleCaptainDto titleCaptainDto) throws JsonProcessingException {
+  userService.applyToWww(Credentials.getCurrent().getId(), titleCaptainDto);
 }
 
 @GetMapping("/me")

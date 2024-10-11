@@ -165,6 +165,48 @@ const chooseDictantDate = (date) => {
     .catch(() => toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Видео не загружено', life: 3000 }));
 };
 
+const chooseMaths = (record) => {
+  if (!record || !record.title || !record.captain) {
+    toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Необходимо заполнить все поля', life: 3000 });
+    return;
+  }
+
+  meService.chooseMaths(record)
+    .then((res) => {
+      if (!toastService.isServerError(res)) {
+        user.value.appliedStages[findIndexById(user.value.appliedStages, 1)].additionalInfo = JSON.stringify(record);
+        mathsBattlePanel.value.toggle();
+      }
+    })
+    .catch(() => toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Не удалось отправить заявку',
+      life: 3000
+    }));
+};
+
+const chooseWww = (record) => {
+  if (!record || !record.title) {
+    toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Необходимо заполнить все поля', life: 3000 });
+    return;
+  }
+
+  meService.chooseWww(record)
+    .then((res) => {
+      if (!toastService.isServerError(res)) {
+        user.value.appliedStages[findIndexById(user.value.appliedStages, 3)].additionalInfo = JSON.stringify(record);
+        wwwBattlePanel.value.toggle();
+      }
+    })
+    .catch(() => toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Не удалось отправить заявку',
+      life: 3000
+    }));
+};
+
 const getMyState = () => {
   return participantStateService.getContentFor(user.value.state);
 };
@@ -190,6 +232,10 @@ const particlesOption = ref({
 });
 
 const uploadVideoPanel = ref(null);
+const mathsBattlePanel = ref(null);
+const mathsRecord = ref({ title: '', captain: '' });
+const wwwBattlePanel = ref(null);
+const wwwRecord = ref({ title: '' });
 const chooseDictantDatePanel = ref(null);
 const chooseWireparkDatePanel = ref(null);
 const wireparkDates = ref(null);
@@ -240,6 +286,12 @@ const chooseWireparkDate = (schedule_id, event) => {
       }
     })
     .catch(() => toast.add({ severity: 'error', summary: 'Ошибка', detail: 'Не удалось выбрать дату', life: 3000 }));
+};
+
+const trimNumber = (num) => {
+  if (num === null || num === undefined) return num;
+
+  return Math.round(Number(num) * 100) / 100;
 };
 </script>
 
@@ -365,7 +417,7 @@ const chooseWireparkDate = (schedule_id, event) => {
                 </tr>
                 <tr>
                   <td class="undersquare-1">Баллы</td>
-                  <td>{{ user.score ?? '??' }}/{{ user.maximumScore }}</td>
+                  <td>{{ trimNumber(user.score) ?? '??' }}/{{ trimNumber(user.maximumScore) }}</td>
                 </tr>
               </table>
             </div>
@@ -398,41 +450,71 @@ const chooseWireparkDate = (schedule_id, event) => {
               <div class="card py-1 font-semibold h-full">
                 <p class="">{{ stage.title }}</p>
 
-                <p v-if="stage.id === 4" class="-mt-3">
+                <p v-if="stage.id === 1" class="-mt-3">
+                  <span v-if="stage.additionalInfo === 'multiple'"
+                        class="text-red-600">Ошибка: Подано больше одной заявки!</span>
+                  <span v-else-if="stage.additionalInfo" class="text-green-600" @click="mathsBattlePanel.toggle"
+                        @click.once="mathsRecord = JSON.parse(stage.additionalInfo)">
+                    {{ JSON.parse(stage.additionalInfo).title }}
+                  </span>
+                  <span v-else class="text-primary-colors-4 cursor-pointer"
+                        @click="mathsBattlePanel.toggle">Записаться</span>
+                </p>
+
+                <p v-else-if="stage.id === 3" class="-mt-3">
+                  <span v-if="stage.additionalInfo === 'multiple'"
+                        class="text-red-600">Ошибка: Подано больше одной заявки!</span>
+                  <span v-else-if="stage.additionalInfo" class="text-green-600" @click="wwwBattlePanel.toggle"
+                        @click.once="wwwRecord = JSON.parse(stage.additionalInfo)">
+                    {{ JSON.parse(stage.additionalInfo).title }}
+                  </span>
+                  <span v-else class="text-primary-colors-4 cursor-pointer"
+                        @click="wwwBattlePanel.toggle">Записаться</span>
+                </p>
+
+                <p v-else-if="stage.id === 4" class="-mt-3">
                   <span v-if="stage.additionalInfo === 'multiple'"
                         class="text-red-600">Ошибка: Выбрано больше одной даты!</span>
-                  <span v-else-if="stage.additionalInfo !== null" class="text-green-600"
-                        @click="openWireparkDatePanel">{{ stage.additionalInfo }}</span>
+                  <span v-else-if="stage.additionalInfo !== null" class="text-green-600">{{ stage.additionalInfo
+                    }}</span>
+                  <!--
                   <span v-else class="text-primary-colors-4 cursor-pointer"
                         @click="openWireparkDatePanel">Выбрать дату</span>
+                  -->
                 </p>
 
                 <p v-else-if="stage.id === 5" class="-mt-3"><a href="https://t.me/run_mephi_bot">ТГ-бот для отчетов</a>
                 </p>
 
+
                 <p v-else-if="stage.id === 6" class="-mt-3">
                   <span v-if="stage.additionalInfo === 'multiple'"
                         class="text-red-600">Ошибка: Указано больше одного видео!</span>
                   <span v-else-if="stage.additionalInfo === 'sent'" class="text-green-600">Видео отправлено</span>
-                  <span v-else class="text-primary-colors-4 cursor-pointer" @click="uploadVideoPanel.toggle">Загрузить видео</span>
+                  <!--<span v-else class="text-primary-colors-4 cursor-pointer" @click="uploadVideoPanel.toggle">Загрузить видео</span>-->
                 </p>
 
                 <p v-else-if="stage.id === 7" class="-mt-3">
                   <span v-if="stage.additionalInfo === 'multiple'"
                         class="text-red-600">Ошибка: Выбрано больше одной даты!</span>
-                  <span v-else-if="stage.additionalInfo !== null" @click="chooseDictantDatePanel.toggle"
+                  <span v-else-if="stage.additionalInfo !== null"
                         class="text-green-600">{{ stage.additionalInfo }}</span>
-                  <span v-else class="text-primary-colors-4 cursor-pointer" @click="chooseDictantDatePanel.toggle">Выбрать дату</span>
+                  <!--<span v-else class="text-primary-colors-4 cursor-pointer" @click="chooseDictantDatePanel.toggle">Выбрать дату</span>-->
                 </p>
 
-                <p v-else-if="stage.id === 8" class="-mt-3"><a href="https://it.mephi.ru/webform/1970">Загрузить проект
-                  или идею</a></p>
+                <!--
+                <p v-else-if="stage.id === 8" class="-mt-3"><a href="https://it.mephi.ru/webform/1970">Загрузить проект или идею</a></p>
+                -->
 
-                <a v-if="stage.protocol" :href="window.$apiHost + '/file/' + stage.protocol"
-                   class="flex align-items-center -mt-3 mb-4">
-                  <i class="text-primary-colors-4 pi pi-file-pdf text-2xl mr-1 font-100"></i>
+                <p v-else-if="stage.id === 9" class="-mt-3"><a href="https://sno.mephi.ru/priznanie">Регистрация на
+                  конкурс</a>
+                </p>
+
+                <span v-if="stage.protocolFileId" class="flex align-items-center -mt-3 mb-4 cursor-pointer"
+                      @click="fileService.downloadPublic(stage.protocolFileId)">
+                  <i class="text-primary pi pi-file-pdf text-2xl mr-1 font-100"></i>
                   <span class="text-primary">Протокол этапа</span>
-                </a>
+                </span>
                 <a v-else class="flex align-items-center -mt-3 mb-4">
                   <i class="text-primary-colors-1 pi pi-file text-xl lg:text-2xl mr-1 font-100"></i>
                   <span class="text-primary-colors-1">Протокол не готов</span>
@@ -442,7 +524,7 @@ const chooseWireparkDate = (schedule_id, event) => {
                   <div class="inline-block absolute text-center" style="margin-top: -2.55em;">
                     <img class="w-full" src="/assets/images/atom_alt.svg" />
                     <div class="absolute top-50 left-50" style="transform: translate(-50%, -50%)">
-                      <span class="text-2xl text-primary-colors-1">{{ stage.score ?? '??' }}</span>
+                      <span class="text-2xl text-primary-colors-1">{{ trimNumber(stage.score) ?? '??' }}</span>
                     </div>
                   </div>
                 </div>
@@ -476,6 +558,36 @@ const chooseWireparkDate = (schedule_id, event) => {
           <Button :disabled="isUploading || videoDto.url == null && videoDto.fileId == null" @click="submitVideo">
             Отправить
           </Button>
+        </div>
+      </div>
+    </OverlayPanel>
+
+    <OverlayPanel ref="mathsBattlePanel" appendTo="body" class="border-round-2xl max-w-full md:max-w-30rem"
+                  style="max-width: 50%">
+      <div class="md:text-lg lg:text-xl p-3">
+        <label>Укажите название команды</label>
+        <div class="field mt-2">
+          <InputText v-model.trim="mathsRecord.title" class="w-full" required />
+        </div>
+        <label>Укажите ФИО капитана</label>
+        <div class="field mt-2">
+          <InputText v-model.trim="mathsRecord.captain" class="w-full" required />
+        </div>
+        <div class="field mt-4 mb-0">
+          <Button class="w-full text-center" outlined @click="chooseMaths(mathsRecord)">Отправить</Button>
+        </div>
+      </div>
+    </OverlayPanel>
+
+    <OverlayPanel ref="wwwBattlePanel" appendTo="body" class="border-round-2xl max-w-full md:max-w-30rem"
+                  style="max-width: 50%">
+      <div class="md:text-lg lg:text-xl p-3">
+        <label>Укажите название команды</label>
+        <div class="field mt-2">
+          <InputText v-model.trim="wwwRecord.title" class="w-full" required />
+        </div>
+        <div class="field mt-4 mb-0">
+          <Button class="w-full text-center" outlined @click="chooseWww(wwwRecord)">Отправить</Button>
         </div>
       </div>
     </OverlayPanel>

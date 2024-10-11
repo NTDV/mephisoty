@@ -29,7 +29,6 @@ public static void addForExpertAddition(final long achievementScoreId, final int
 }
 
 public static void addForEvaluation(final long userId, final long stageId) {
-  System.out.println("addForEvaluation " + userId + " " + stageId);
   evaluationQueue.add(new AchievementScoreManager.UserIdStageId(userId, stageId));
 }
 
