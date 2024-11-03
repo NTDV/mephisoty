@@ -52,7 +52,7 @@ public Page<TitleCaptainApplyDto> getAll(final int page, final int size,
             .getAnswers()
             .stream()
             .filter(ans -> Objects.equals(ans.getQuestion().getId(),
-                                          Init._2024_MATHS_QUESTION_ID))
+                                          Init._2024_WWW_QUESTION_ID))
             .findAny()
             .orElse(Answer.builder().participant(participant).richAnswer("{}").build());
 

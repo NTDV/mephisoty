@@ -1,12 +1,12 @@
 <script setup>
-import {FilterMatchMode, FilterOperator} from 'primevue/api';
-import {onMounted, ref} from 'vue';
-import {useToast} from 'primevue/usetoast';
-import SelectIdByTitleBlock from "@/components/prefab/SelectIdByTitleBlock.vue";
-import {ToastService} from "@/service/util/ToastService";
-import UserNameIdBlock from "@/components/prefab/UserNameIdBlock.vue";
-import {SeasonService} from "@/service/admin/SeasonService";
-import {SeasonStagesScoreService} from "@/service/admin/SeasonStagesScoreService";
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { onMounted, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import SelectIdByTitleBlock from '@/components/prefab/SelectIdByTitleBlock.vue';
+import { ToastService } from '@/service/util/ToastService';
+import UserNameIdBlock from '@/components/prefab/UserNameIdBlock.vue';
+import { SeasonService } from '@/service/admin/SeasonService';
+import { SeasonStagesScoreService } from '@/service/admin/SeasonStagesScoreService';
 
 const toast = useToast();
 
@@ -217,7 +217,8 @@ const getClassForCell = (data) => {
 
         <DataTable v-if="parentId && scores" :first="first" :loading="loading"
                    :pt="{table: { style: 'min-width: 10rem; height: fit-content' }, column: {headerCell: { class: 'pt-2 pb-2 pl-2 pr-2'}, bodyCell: (data) => ({class: [{ 'pt-0 pb-0 pl-2 pr-2': true, ...getClassForCell(data) }]})}}"
-                   :rows="10" :rowsPerPageOptions="[5, 10, 25, 50, 100]" :totalRecords="totalParticipants"
+                   :rows="10" :rowsPerPageOptions="[5, 10, 25, 50, 100, 250, 500, 1000]"
+                   :totalRecords="totalParticipants"
                    :value="scores"
                    currentPageReportTemplate="Участники с {first} по {last} из {totalRecords} всего"
                    data-key="participant.id" editMode="cell" lazy paginator

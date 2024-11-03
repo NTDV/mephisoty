@@ -11,7 +11,7 @@ public record TitleCaptainApplyDto(
     String vkNick,
     String phoneNumber,
 
-    String title,
-    String captain
+    @Nullable String title,
+    @Nullable String captain
 ) {
 }
