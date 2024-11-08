@@ -450,66 +450,6 @@ const trimNumber = (num) => {
               <div class="card py-1 font-semibold h-full">
                 <p class="">{{ stage.title }}</p>
 
-                <p v-if="stage.id === 1" class="-mt-3">
-                  <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Ошибка: Подано больше одной заявки!</span>
-                  <span v-else-if="stage.additionalInfo" class="text-green-600" @click="mathsBattlePanel.toggle"
-                        @click.once="mathsRecord = JSON.parse(stage.additionalInfo)">
-                    {{ JSON.parse(stage.additionalInfo).title }}
-                  </span>
-                  <span v-else class="text-primary-colors-4 cursor-pointer"
-                        @click="mathsBattlePanel.toggle">Записаться</span>
-                </p>
-
-                <p v-else-if="stage.id === 3" class="-mt-3">
-                  <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Ошибка: Подано больше одной заявки!</span>
-                  <span v-else-if="stage.additionalInfo" class="text-green-600" @click="wwwBattlePanel.toggle"
-                        @click.once="wwwRecord = JSON.parse(stage.additionalInfo)">
-                    {{ JSON.parse(stage.additionalInfo).title }}
-                  </span>
-                  <span v-else class="text-primary-colors-4 cursor-pointer"
-                        @click="wwwBattlePanel.toggle">Записаться</span>
-                </p>
-
-                <p v-else-if="stage.id === 4" class="-mt-3">
-                  <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Ошибка: Выбрано больше одной даты!</span>
-                  <span v-else-if="stage.additionalInfo !== null" class="text-green-600">{{ stage.additionalInfo
-                    }}</span>
-                  <!--
-                  <span v-else class="text-primary-colors-4 cursor-pointer"
-                        @click="openWireparkDatePanel">Выбрать дату</span>
-                  -->
-                </p>
-
-                <p v-else-if="stage.id === 5" class="-mt-3"><a href="https://t.me/run_mephi_bot">ТГ-бот для отчетов</a>
-                </p>
-
-
-                <p v-else-if="stage.id === 6" class="-mt-3">
-                  <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Ошибка: Указано больше одного видео!</span>
-                  <span v-else-if="stage.additionalInfo === 'sent'" class="text-green-600">Видео отправлено</span>
-                  <!--<span v-else class="text-primary-colors-4 cursor-pointer" @click="uploadVideoPanel.toggle">Загрузить видео</span>-->
-                </p>
-
-                <p v-else-if="stage.id === 7" class="-mt-3">
-                  <span v-if="stage.additionalInfo === 'multiple'"
-                        class="text-red-600">Ошибка: Выбрано больше одной даты!</span>
-                  <span v-else-if="stage.additionalInfo !== null"
-                        class="text-green-600">{{ stage.additionalInfo }}</span>
-                  <!--<span v-else class="text-primary-colors-4 cursor-pointer" @click="chooseDictantDatePanel.toggle">Выбрать дату</span>-->
-                </p>
-
-                <!--
-                <p v-else-if="stage.id === 8" class="-mt-3"><a href="https://it.mephi.ru/webform/1970">Загрузить проект или идею</a></p>
-                -->
-
-                <p v-else-if="stage.id === 9" class="-mt-3"><a href="https://sno.mephi.ru/priznanie">Регистрация на
-                  конкурс</a>
-                </p>
-
                 <span v-if="stage.protocolFileId" class="flex align-items-center -mt-3 mb-4 cursor-pointer"
                       @click="fileService.downloadPublic(stage.protocolFileId)">
                   <i class="text-primary pi pi-file-pdf text-2xl mr-1 font-100"></i>

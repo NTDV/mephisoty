@@ -100,3 +100,15 @@ export function findIndexById(array, id) {
   }
   return -1;
 }
+
+export function roundTwo(number) {
+  if (typeof number !== 'number') return null;
+
+  return Math.round(number * 100) / 100;
+}
+
+export function roundTwoSafe(number) {
+  if (typeof number !== 'number') return 0;
+
+  return Math.round(number * 100) / 100;
+}

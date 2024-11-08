@@ -49,6 +49,7 @@ import ru.valkovets.mephisoty.db.repository.season.qa.AnswerRepository;
 import ru.valkovets.mephisoty.db.repository.season.schedule.ScheduleRecordRepository;
 import ru.valkovets.mephisoty.db.repository.season.schedule.StageScheduleRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.StageScoreRepository;
+import ru.valkovets.mephisoty.db.repository.season.scoring.TotalScoreRepository;
 import ru.valkovets.mephisoty.db.repository.season.scoring.portfolio.AchievementRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.GroupRepository;
 import ru.valkovets.mephisoty.db.repository.userdata.UserRepository;
@@ -84,6 +85,7 @@ private final AnswerRepository answerRepository;
 private final StageScheduleRepository stageScheduleRepository;
 
 private final ObjectMapper objectMapper;
+private final TotalScoreRepository totalScoreRepository;
 
 @PreAuthorize("hasAuthority(T(ru.valkovets.mephisoty.settings.UserRole).ADMIN)")
 public Page<IdTitleProj> getAllForSelect(final Specification<User> specification, final long offset, final long limit) {
@@ -183,7 +185,7 @@ public ParticipantMeDto getMeFor(final Long userId) {
 
         return StageMeDto.from(stageScore, additionalInfo);
       })
-      .toList();
+      .toList(); // TODO deprecated
 
   final List<StageMeDto> appliedFinalDtos = finalAndNonFinal
       .get(true)
@@ -196,7 +198,9 @@ public ParticipantMeDto getMeFor(final Long userId) {
       .map(StageMeDto::from)
       .toList();
 
-  final Long lastPosition = userRepository.countAllByState(PARTICIPANT.name());
+  final Long lastPosition = seasonScoreRepository.findTopBySeason_IdOrderByPlaceDesc(1L)
+                                                 .orElse(SeasonScore.builder().place(0L).build())
+                                                 .getPlace();
 
   return ParticipantMeDto.from(user, lastPosition,
                                portfolioStage,

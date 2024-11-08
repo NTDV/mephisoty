@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface SeasonScoreRepository extends BasicRepository<SeasonScore> {
 Optional<SeasonScore> findBySeason_IdAndParticipant_Id(Long seasonId, Long participantId);
+Optional<SeasonScore> findTopBySeason_IdOrderByPlaceDesc(Long seasonId);
 }
